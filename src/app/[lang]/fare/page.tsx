@@ -14,6 +14,7 @@ import {
 } from "@/lib/data";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { localizePath } from "@/lib/i18n/locales";
+import { listVerifiedRoutes } from "@/lib/routes/queries";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { locale, dict } = await getDictionary();
@@ -27,7 +28,11 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function FarePage() {
+export default async function FarePage() {
+  // Verified resident routes come from a cached query, so they join the prerendered
+  // shell with the presets and the page stays static until an admin approves one.
+  const communityRoutes = await listVerifiedRoutes();
+
   return (
     // The planner reads the trip from the address, so it renders in the browser behind Suspense
     // while the rest of the page is prerendered.
@@ -38,7 +43,7 @@ export default function FarePage() {
         jeepRules={jeepRules}
         jeepPreviousRates={jeepPreviousRates}
         jeepSource={jeepSource}
-        jeepRoutes={jeepRoutes}
+        jeepRoutes={[...jeepRoutes, ...communityRoutes]}
         landmarks={landmarks}
         boundary={cityBoundary}
       />

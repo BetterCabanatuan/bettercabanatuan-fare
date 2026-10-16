@@ -22,8 +22,22 @@ export type TodaListItem = {
   lastVerified: string;
 };
 
-/** Verified TODAs for the public directory. */
+/**
+ * Verified TODAs for the public directory. Returns [] when the database is unreachable
+ * so /toda renders its empty state instead of an error page.
+ */
 export async function listVerifiedTodas(): Promise<TodaListItem[]> {
+  try {
+    return await cachedVerifiedTodas();
+  } catch (error) {
+    // Caught outside the cached function so an outage is retried on the next request
+    // instead of being cached as an empty list for hours.
+    console.error("Could not load the TODA directory", error);
+    return [];
+  }
+}
+
+async function cachedVerifiedTodas(): Promise<TodaListItem[]> {
   "use cache";
   cacheTag(TODA_LIST_TAG);
   cacheLife("hours");

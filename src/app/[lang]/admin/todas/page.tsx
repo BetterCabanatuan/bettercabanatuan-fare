@@ -27,7 +27,17 @@ const dateTime = new Intl.DateTimeFormat("en-PH", {
 export default function AdminTodasPage({ searchParams }: PageProps<"/[lang]/admin/todas">) {
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8">
-      <h1 className="text-3xl font-extrabold tracking-tight">TODA submissions</h1>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <h1 className="text-3xl font-extrabold tracking-tight">TODA submissions</h1>
+        <nav aria-label="Admin sections" className="flex gap-4 text-sm font-semibold">
+          <span aria-current="page" className="text-muted-foreground">
+            TODAs
+          </span>
+          <Link href="/admin/routes" className="text-primary underline-offset-4 hover:underline">
+            Routes
+          </Link>
+        </nav>
+      </div>
       {/* Everything below reads the session or the query, so it renders per request. */}
       <Suspense fallback={<p className="text-muted-foreground">Loading submissions…</p>}>
         <ReviewQueue searchParams={searchParams} />

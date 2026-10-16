@@ -12,10 +12,12 @@ type LocationPickerProps = {
   value: LngLat | null;
   onChange: (position: LngLat) => void;
   boundary: LngLat[];
+  /** Accessible name of the pin; the picker is also used for route ends. */
+  markerLabel?: string;
 };
 
-/** Tap the map or drag the pin to mark where the TODA's terminal is. */
-export function LocationPicker({ value, onChange, boundary }: LocationPickerProps) {
+/** Tap the map or drag the pin to mark a place, such as a TODA terminal or a route end. */
+export function LocationPicker({ value, onChange, boundary, markerLabel = "Terminal location" }: LocationPickerProps) {
   return (
     <Map
       theme="light"
@@ -43,7 +45,7 @@ export function LocationPicker({ value, onChange, boundary }: LocationPickerProp
             <div className="flex size-11 items-center justify-center">
               <span
                 role="img"
-                aria-label="Terminal location"
+                aria-label={markerLabel}
                 className="size-6 rounded-full bg-[#F5C518] shadow-md ring-2 ring-[#15181C]"
               />
             </div>
