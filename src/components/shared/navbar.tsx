@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { LanguageToggle } from "@/components/shared/language-toggle";
+import { LogoMark } from "@/components/shared/logo-mark";
 import { MainNav, MainNavLinks, type NavItem } from "@/components/shared/main-nav";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { localizePath } from "@/lib/i18n/locales";
@@ -23,12 +24,7 @@ export async function Navbar() {
             href={localizePath(locale, "/")}
             className="mr-auto flex min-h-11 items-center gap-2.5 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
-            <span
-              aria-hidden="true"
-              className="grid size-[38px] shrink-0 place-items-center rounded-lg bg-highlight text-lg font-extrabold text-highlight-foreground"
-            >
-              ₱
-            </span>
+            <LogoMark className="size-[38px] shrink-0" />
             <span className="flex flex-col uppercase leading-none">
               <span className="text-base font-extrabold tracking-tight">Pamasahe</span>
               <span className="mt-1 text-[10px] font-semibold tracking-[0.18em] text-muted-foreground">
