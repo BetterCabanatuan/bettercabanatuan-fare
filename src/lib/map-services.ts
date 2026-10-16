@@ -71,13 +71,16 @@ export async function fetchRoadRoute(
   };
 }
 
-function toPlace(feature: PhotonFeature, position: LngLat = feature.geometry.coordinates): Place {
+// Null when Photon has nothing readable to call the place; callers skip it or use their own label.
+function toPlace(feature: PhotonFeature, position: LngLat = feature.geometry.coordinates): Place | null {
   const { name, street, housenumber, district, locality, city } = feature.properties;
   const streetLabel = [street, housenumber].filter(Boolean).join(" ");
   const detail = [district ?? locality, city].filter(Boolean).join(", ");
+  const label = name ?? (streetLabel || city);
+  if (!label) return null;
   return {
     position,
-    label: name ?? (streetLabel || city || "Unnamed place"),
+    label,
     ...(detail && { detail }),
   };
 }
@@ -85,10 +88,10 @@ function toPlace(feature: PhotonFeature, position: LngLat = feature.geometry.coo
 export async function searchPlaces(query: string, signal?: AbortSignal): Promise<Place[]> {
   const params = new URLSearchParams({ q: query, limit: "6", lang: "en", bbox: CITY_BBOX });
   const body = await getJson<PhotonResponse>(`${PHOTON_URL}/api/?${params}`, signal);
-  return (body.features ?? []).map((feature) => toPlace(feature));
+  return (body.features ?? []).map((feature) => toPlace(feature)).filter((place) => place !== null);
 }
 
-export async function reversePlace(position: LngLat, signal?: AbortSignal): Promise<Place> {
+export async function reversePlace(position: LngLat, signal?: AbortSignal): Promise<Place | null> {
   const params = new URLSearchParams({
     lon: String(position[0]),
     lat: String(position[1]),
@@ -97,5 +100,5 @@ export async function reversePlace(position: LngLat, signal?: AbortSignal): Prom
   const body = await getJson<PhotonResponse>(`${PHOTON_URL}/reverse?${params}`, signal);
   const feature = body.features?.[0];
   // Keep the pin where it was dropped; only the name comes from the nearest feature.
-  return feature ? toPlace(feature, position) : { position, label: "Dropped pin" };
+  return feature ? toPlace(feature, position) : null;
 }

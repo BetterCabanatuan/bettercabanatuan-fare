@@ -1,9 +1,11 @@
 "use client";
 
 import type { MapMouseEvent } from "maplibre-gl";
-import { useEffect } from "react";
+import { useEffect, type Ref } from "react";
 
+import { MapHint } from "@/components/fare/map-hint";
 import type { MapLine, Place, PointKey } from "@/components/fare/types";
+import { useDictionary } from "@/components/shared/dictionary-provider";
 import {
   Map,
   MapControls,
@@ -11,6 +13,7 @@ import {
   MapRoute,
   MarkerContent,
   useMap,
+  type MapRef,
 } from "@/components/ui/map";
 import type { LngLat } from "@/lib/geo";
 import { cn } from "@/lib/utils";
@@ -29,6 +32,7 @@ type PlannerMapProps = {
   onLocate: (position: LngLat) => void;
   loading?: boolean;
   className?: string;
+  ref?: Ref<MapRef>;
 };
 
 export function PlannerMap({
@@ -41,14 +45,18 @@ export function PlannerMap({
   onLocate,
   loading = false,
   className,
+  ref,
 }: PlannerMapProps) {
   const pins = [
     { key: "a" as const, place: a },
     { key: "b" as const, place: b },
   ];
+  // Same order as a map tap fills the points (FR-3).
+  const nextPin: PointKey | null = !a ? "a" : !b ? "b" : null;
 
   return (
-    <Map theme="light" center={CABANATUAN_CENTER} zoom={13} className={className}>
+    // The muted backdrop reads as a map area while tiles are still loading.
+    <Map ref={ref} theme="light" center={CABANATUAN_CENTER} zoom={13} className={cn("bg-muted", className)}>
       <MapRoute
         id="planner-boundary"
         coordinates={boundary}
@@ -88,6 +96,7 @@ export function PlannerMap({
       <MapClickHandler onMapClick={onMapClick} />
       <FitToTrip a={a} b={b} lines={lines} />
       {loading && <LoadingBar />}
+      {nextPin && <MapHint pin={nextPin} />}
     </Map>
   );
 }
@@ -145,11 +154,12 @@ function PlannerLine({ line }: { line: MapLine }) {
 
 /** Pin graphic: 32px circle inside a 44px drag target. Letters keep A and B apart without colour. */
 function PinIcon({ pin }: { pin: PointKey }) {
+  const { dict } = useDictionary();
   return (
     <div className="flex size-11 items-center justify-center">
       <span
         role="img"
-        aria-label={pin === "a" ? "Point A" : "Point B"}
+        aria-label={pin === "a" ? dict.planner.pointA : dict.planner.pointB}
         className={cn(
           "flex size-8 items-center justify-center rounded-full text-sm font-bold shadow-md",
           pin === "a"
@@ -217,10 +227,11 @@ function FitToTrip({ a, b, lines }: { a?: Place; b?: Place; lines: MapLine[] }) 
 }
 
 function LoadingBar() {
+  const { dict } = useDictionary();
   return (
     <div
       role="progressbar"
-      aria-label="Loading route"
+      aria-label={dict.planner.loadingRoute}
       className="pointer-events-none absolute inset-x-0 top-0 z-10 h-1 overflow-hidden bg-primary/15"
     >
       <style href="planner-map-loading-bar" precedence="default">

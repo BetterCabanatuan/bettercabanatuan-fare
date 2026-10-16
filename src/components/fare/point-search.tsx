@@ -1,9 +1,11 @@
 "use client";
 
 import { XIcon } from "lucide-react";
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 
+import { PinBadge } from "@/components/fare/pin-badge";
 import type { Place, PointKey } from "@/components/fare/types";
+import { useDictionary } from "@/components/shared/dictionary-provider";
 import {
   InputGroup,
   InputGroupAddon,
@@ -12,6 +14,7 @@ import {
 } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import type { Landmark } from "@/lib/data";
+import { fill } from "@/lib/i18n/locales";
 import { searchPlaces } from "@/lib/map-services";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +34,8 @@ type PointSearchProps = {
   onActivate: () => void;
   onSelect: (place: Place) => void;
   onClear: () => void;
+  /** Extra control shown on the label row, e.g. "Use my location". */
+  labelAction?: ReactNode;
 };
 
 type RemoteResults = { query: string; places: Place[]; failed: boolean };
@@ -70,7 +75,7 @@ function saveRecent(place: Place): void {
   }
 }
 
-const landmarkToPlace = (landmark: Landmark): Place => ({
+export const landmarkToPlace = (landmark: Landmark): Place => ({
   position: landmark.position,
   label: landmark.name,
   detail: landmark.area,
@@ -86,7 +91,9 @@ export function PointSearch({
   onActivate,
   onSelect,
   onClear,
+  labelAction,
 }: PointSearchProps) {
+  const { dict } = useDictionary();
   const inputRef = useRef<HTMLInputElement>(null);
   // Text the user is typing; null means the input shows the chosen place.
   const [draft, setDraft] = useState<string | null>(null);
@@ -134,9 +141,9 @@ export function PointSearch({
   const searchFailed = remoteReady && remote.failed;
 
   const groups: Group[] = [
-    { key: "landmarks", title: "Landmarks", places: matchingLandmarks },
-    { key: "recent", title: "Recent", places: query ? [] : recent },
-    { key: "search", title: "Search results", places: remoteReady ? remote.places : [] },
+    { key: "landmarks", title: dict.search.landmarks, places: matchingLandmarks },
+    { key: "recent", title: dict.search.recent, places: query ? [] : recent },
+    { key: "search", title: dict.search.results, places: remoteReady ? remote.places : [] },
   ].filter((group) => group.places.length > 0);
   const options = groups.flatMap((group) => group.places);
   const activeIndex = highlighted < options.length ? highlighted : -1;
@@ -188,23 +195,16 @@ export function PointSearch({
 
   return (
     <div className="relative grid gap-1.5">
-      <Label htmlFor={id}>{label}</Label>
+      <div className="flex min-h-8 items-center justify-between gap-2">
+        <Label htmlFor={id}>{label}</Label>
+        {labelAction}
+      </div>
       <InputGroup
         data-active={active || undefined}
         className={cn("h-11 bg-background", active && "border-primary ring-2 ring-primary")}
       >
         <InputGroupAddon align="inline-start">
-          <span
-            aria-hidden
-            className={cn(
-              "flex size-7 items-center justify-center rounded-full text-xs font-bold",
-              pin === "a"
-                ? "bg-[#15181C] text-white"
-                : "bg-[#F5C518] text-[#15181C] ring-2 ring-[#15181C] ring-inset",
-            )}
-          >
-            {pin.toUpperCase()}
-          </span>
+          <PinBadge pin={pin} />
         </InputGroupAddon>
         <InputGroupInput
           ref={inputRef}
@@ -213,7 +213,7 @@ export function PointSearch({
           role="combobox"
           autoComplete="off"
           spellCheck={false}
-          placeholder="Search a place or landmark"
+          placeholder={dict.search.placeholder}
           aria-autocomplete="list"
           aria-expanded={expanded}
           aria-controls={listboxId}
@@ -238,7 +238,7 @@ export function PointSearch({
             <InputGroupButton
               size="icon-sm"
               className="size-11"
-              aria-label={`Clear ${label}`}
+              aria-label={fill(dict.search.clear, { label })}
               onClick={() => {
                 close();
                 onClear();
@@ -252,7 +252,7 @@ export function PointSearch({
       </InputGroup>
       {active && (
         <span id={hintId} className="sr-only">
-          Currently editing this point. Tapping the map moves it.
+          {dict.search.editingHint}
         </span>
       )}
 
@@ -260,7 +260,7 @@ export function PointSearch({
         hidden={!expanded}
         className="absolute inset-x-0 top-full z-20 mt-1 max-h-80 overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
       >
-        <div id={listboxId} role="listbox" aria-label={`${label} suggestions`}>
+        <div id={listboxId} role="listbox" aria-label={fill(dict.search.suggestions, { label })}>
           {renderedGroups.map((group) => (
             <div key={group.key} role="group" aria-labelledby={`${id}-${group.key}`}>
               <div
@@ -296,17 +296,17 @@ export function PointSearch({
         </div>
         {searching && (
           <p className="px-2 py-2 text-sm text-muted-foreground" role="status">
-            Searching…
+            {dict.search.searching}
           </p>
         )}
         {searchFailed && (
           <p className="px-2 py-2 text-sm text-muted-foreground" role="status">
-            Online search isn&apos;t available right now. Try a landmark or tap the map.
+            {dict.search.searchFailed}
           </p>
         )}
         {!searching && !searchFailed && options.length === 0 && (
           <p className="px-2 py-2 text-sm text-muted-foreground" role="status">
-            No places found. Try a landmark or barangay name.
+            {dict.search.noResults}
           </p>
         )}
       </div>

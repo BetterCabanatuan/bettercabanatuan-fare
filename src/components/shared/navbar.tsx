@@ -1,14 +1,21 @@
 import Link from "next/link";
 
+import { LanguageToggle } from "@/components/shared/language-toggle";
 import { NavLink } from "@/components/shared/nav-link";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { localizePath } from "@/lib/i18n/locales";
 
-export function Navbar() {
+export async function Navbar() {
+  const { locale, dict } = await getDictionary();
+  const farePath = localizePath(locale, "/fare");
+
   return (
     <header className="border-b bg-background">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-2">
+      {/* On phones the toggle sits beside the logo and the links take their own row. */}
+      <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-2 gap-y-1 px-4 py-2">
         <Link
-          href="/"
-          className="flex min-h-11 items-center gap-2.5 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          href={localizePath(locale, "/")}
+          className="mr-auto flex min-h-11 items-center gap-2.5 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         >
           <span
             aria-hidden="true"
@@ -19,20 +26,23 @@ export function Navbar() {
           <span className="flex flex-col uppercase leading-none">
             <span className="text-base font-extrabold tracking-tight">Pamasahe</span>
             <span className="mt-1 text-[10px] font-semibold tracking-[0.18em] text-muted-foreground">
-              Cabanatuan City
+              {dict.nav.city}
             </span>
           </span>
         </Link>
-        <nav aria-label="Main">
+        <nav aria-label={dict.nav.main} className="order-3 w-full sm:order-2 sm:w-auto">
           <ul className="flex flex-wrap gap-1">
             <li>
-              <NavLink href="/fare">Tricycle fare</NavLink>
+              <NavLink href={farePath}>{dict.nav.tricycle}</NavLink>
             </li>
             <li>
-              <NavLink href="/fare?mode=jeep">Jeep fare</NavLink>
+              <NavLink href={`${farePath}?mode=jeep`}>{dict.nav.jeep}</NavLink>
             </li>
           </ul>
         </nav>
+        <div className="order-2 sm:order-3">
+          <LanguageToggle locale={locale} label={dict.nav.language} switchTo={dict.nav.switchTo} />
+        </div>
       </div>
     </header>
   );

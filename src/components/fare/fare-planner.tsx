@@ -1,16 +1,21 @@
 "use client";
 
-import { ArrowDownUp, X } from "lucide-react";
+import { ArrowDownUp, LocateFixed, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { JeepPanel } from "@/components/fare/jeep-panel";
 import { PlannerMap } from "@/components/fare/planner-map";
 import { PointSearch } from "@/components/fare/point-search";
+import { QuickPicks } from "@/components/fare/quick-picks";
 import { TricyclePanel } from "@/components/fare/tricycle-panel";
+import { useMyLocation } from "@/components/fare/use-my-location";
+import { useDictionary } from "@/components/shared/dictionary-provider";
+import { JeepIcon, TricycleIcon } from "@/components/shared/vehicle-icons";
 import type { MapLine, Place, PointKey, RouteStatus } from "@/components/fare/types";
 import { Button } from "@/components/ui/button";
-import type { FareSourceInfo, Landmark } from "@/lib/data";
+import type { MapRef } from "@/components/ui/map";
+import type { FareSourceInfo, JeepPreviousRates, Landmark } from "@/lib/data";
 import type { JeepFareRules, TricycleFareRules } from "@/lib/fare";
 import { isInsideRing, sliceLine, type LngLat } from "@/lib/geo";
 import type { JeepRoute, JeepTrip } from "@/lib/jeep-routes";
@@ -24,6 +29,7 @@ type FarePlannerProps = {
   tricycleRules: TricycleFareRules;
   tricycleSource: FareSourceInfo;
   jeepRules: JeepFareRules;
+  jeepPreviousRates: JeepPreviousRates;
   jeepSource: FareSourceInfo;
   jeepRoutes: JeepRoute[];
   landmarks: Landmark[];
@@ -37,9 +43,9 @@ const parsePosition = (value: string | null): LngLat | undefined => {
   return Number.isFinite(lat) && Number.isFinite(lng) && value ? [lng, lat] : undefined;
 };
 
-const placeFromUrl = (value: string | null): Place | undefined => {
+const placeFromUrl = (value: string | null, label: string): Place | undefined => {
   const position = parsePosition(value);
-  return position && { position, label: "Shared location" };
+  return position && { position, label };
 };
 
 const pointsKey = ({ a, b }: Points): string =>
@@ -72,17 +78,19 @@ export function FarePlanner({
   tricycleRules,
   tricycleSource,
   jeepRules,
+  jeepPreviousRates,
   jeepSource,
   jeepRoutes,
   landmarks,
   boundary,
 }: FarePlannerProps) {
+  const { dict } = useDictionary();
   const searchParams = useSearchParams();
   const mode: Mode = searchParams.get("mode") === "jeep" ? "jeep" : "tricycle";
 
   const [points, setPoints] = useState<Points>(() => ({
-    a: placeFromUrl(searchParams.get("a")),
-    b: placeFromUrl(searchParams.get("b")),
+    a: placeFromUrl(searchParams.get("a"), dict.planner.sharedLocation),
+    b: placeFromUrl(searchParams.get("b"), dict.planner.sharedLocation),
   }));
   const [editing, setEditing] = useState<PointKey>(points.a ? "b" : "a");
   const [routeResult, setRouteResult] = useState<{ key: string; status: RouteStatus }>({
@@ -90,6 +98,7 @@ export function FarePlanner({
     status: { state: "idle" },
   });
   const [selectedTrip, setSelectedTrip] = useState<{ key: string; trip: JeepTrip } | null>(null);
+  const mapRef = useRef<MapRef>(null);
 
   const currentKey = pointsKey(points);
   const aPosition = points.a?.position;
@@ -148,14 +157,16 @@ export function FarePlanner({
 
   /** Places a pin right away, then swaps in a readable name once it arrives. */
   const dropPin = (key: PointKey, position: LngLat): void => {
-    setPlace(key, { position, label: "Dropped pin" });
+    setPlace(key, { position, label: dict.planner.droppedPin });
     reversePlace(position)
-      .then((place) =>
+      .then((place) => {
+        // Nothing nameable nearby: the pin keeps its "Dropped pin" label.
+        if (!place) return;
         setPoints((current) =>
           // Keep the exact dropped position; only the name comes from the lookup.
           current[key]?.position === position ? { ...current, [key]: { ...place, position } } : current,
-        ),
-      )
+        );
+      })
       .catch(() => undefined);
   };
 
@@ -163,6 +174,26 @@ export function FarePlanner({
     const key: PointKey = !points.a ? "a" : !points.b ? "b" : editing;
     dropPin(key, position);
   };
+
+  // The map's own locate control and the panel button both set A this way.
+  const setFromLocation = (position: LngLat): void => dropPin("a", position);
+
+  const myLocation = useMyLocation(points.a?.position, (position) => {
+    setFromLocation(position);
+    // With B set, fitting both pins takes over; otherwise bring the new pin into view.
+    if (points.b) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    mapRef.current?.flyTo({ center: position, zoom: 15, duration: reduceMotion ? 0 : 1200 });
+  });
+
+  // Picks fill the field being edited, or else whichever point is still missing.
+  const pickTarget: PointKey | null = !points[editing]
+    ? editing
+    : !points.a
+      ? "a"
+      : !points.b
+        ? "b"
+        : null;
 
   const switchMode = (next: Mode): void => writeUrl(next, points);
 
@@ -182,49 +213,80 @@ export function FarePlanner({
     <main className="flex flex-1 flex-col lg:flex-row">
       <section
         aria-labelledby="planner-heading"
-        className="order-2 flex flex-col gap-5 p-4 sm:p-6 lg:order-1 lg:max-h-[calc(100dvh-4.5rem)] lg:w-[420px] lg:shrink-0 lg:overflow-y-auto lg:border-r"
+        className="order-2 flex flex-col gap-5 bg-muted/40 p-4 sm:p-6 lg:order-1 lg:max-h-[calc(100dvh-4.5rem)] lg:w-[440px] lg:shrink-0 lg:overflow-y-auto lg:border-r"
       >
         <div className="flex flex-col gap-1">
           <h1 id="planner-heading" className="text-2xl font-extrabold tracking-tight">
-            Where are you going?
+            {dict.planner.heading}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Tap the map or search for your start and end points.
+            {dict.planner.intro}
           </p>
         </div>
 
-        <div role="group" aria-label="Vehicle" className="grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
-          {(["tricycle", "jeep"] as const).map((option) => (
-            <button
-              key={option}
-              type="button"
-              aria-pressed={mode === option}
-              onClick={() => switchMode(option)}
-              className={cn(
-                "min-h-11 rounded-lg text-sm font-semibold transition-colors",
-                mode === option ? "bg-background shadow-sm ring-2 ring-primary" : "text-muted-foreground",
-              )}
-            >
-              {option === "tricycle" ? "Tricycle" : "Jeep"}
-            </button>
-          ))}
+        <div
+          role="group"
+          aria-label={dict.planner.vehicle}
+          className="grid grid-cols-2 gap-1 rounded-xl border bg-card p-1"
+        >
+          {(["tricycle", "jeep"] as const).map((option) => {
+            const Icon = option === "tricycle" ? TricycleIcon : JeepIcon;
+            return (
+              <button
+                key={option}
+                type="button"
+                aria-pressed={mode === option}
+                onClick={() => switchMode(option)}
+                className={cn(
+                  "flex min-h-11 items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                  mode === option
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                <Icon className="size-6" />
+                {option === "tricycle" ? dict.planner.tricycle : dict.planner.jeep}
+              </button>
+            );
+          })}
         </div>
 
-        <div className="flex flex-col gap-3">
-          <PointSearch
-            id="point-a"
-            label="From"
-            pin="a"
-            value={points.a}
-            landmarks={landmarks}
-            active={editing === "a"}
-            onActivate={() => setEditing("a")}
-            onSelect={(place) => setPlace("a", place)}
-            onClear={() => clearPoint("a")}
-          />
+        <div className="flex flex-col gap-4 rounded-2xl border bg-card p-4 shadow-xs">
+          <div>
+            <PointSearch
+              id="point-a"
+              label={dict.planner.from}
+              pin="a"
+              value={points.a}
+              landmarks={landmarks}
+              active={editing === "a"}
+              onActivate={() => setEditing("a")}
+              onSelect={(place) => setPlace("a", place)}
+              onClear={() => clearPoint("a")}
+              labelAction={
+                <button
+                  type="button"
+                  onClick={myLocation.locate}
+                  // aria-disabled rather than disabled, so keyboard focus stays on the button.
+                  aria-disabled={myLocation.locating}
+                  className="-my-1.5 -mr-2 inline-flex min-h-11 items-center gap-1.5 rounded-md px-2 text-sm font-semibold text-primary outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 aria-disabled:text-muted-foreground aria-disabled:no-underline"
+                >
+                  <LocateFixed aria-hidden className="size-4" />
+                  {myLocation.locating ? dict.planner.locating : dict.planner.useMyLocation}
+                </button>
+              }
+            />
+            <div role="status">
+              {myLocation.error && (
+                <p className="mt-2 rounded-lg border border-warning-border bg-warning px-3 py-2 text-sm text-warning-foreground">
+                  {myLocation.error === "denied" ? dict.planner.locationDenied : dict.planner.locationFailed}
+                </p>
+              )}
+            </div>
+          </div>
           <PointSearch
             id="point-b"
-            label="To"
+            label={dict.planner.to}
             pin="b"
             value={points.b}
             landmarks={landmarks}
@@ -234,15 +296,20 @@ export function FarePlanner({
             onClear={() => clearPoint("b")}
           />
           <div className="flex gap-2">
-            <Button variant="outline" size="lg" onClick={swap} disabled={!points.a && !points.b}>
+            <Button variant="outline" size="lg" className="h-11" onClick={swap} disabled={!points.a && !points.b}>
               <ArrowDownUp aria-hidden="true" />
-              Swap
+              {dict.planner.swap}
             </Button>
-            <Button variant="ghost" size="lg" onClick={clear} disabled={!points.a && !points.b}>
+            <Button variant="ghost" size="lg" className="h-11" onClick={clear} disabled={!points.a && !points.b}>
               <X aria-hidden="true" />
-              Clear
+              {dict.planner.clear}
             </Button>
           </div>
+          {pickTarget && landmarks.length > 0 && (
+            <div className="border-t pt-4">
+              <QuickPicks landmarks={landmarks} pin={pickTarget} onPick={(place) => setPlace(pickTarget, place)} />
+            </div>
+          )}
         </div>
 
         {mode === "tricycle" ? (
@@ -256,6 +323,7 @@ export function FarePlanner({
         ) : (
           <JeepPanel
             rules={jeepRules}
+            previousRates={jeepPreviousRates}
             source={jeepSource}
             routes={jeepRoutes}
             a={points.a?.position}
@@ -269,13 +337,14 @@ export function FarePlanner({
 
       <div className="order-1 h-[55dvh] lg:sticky lg:top-0 lg:order-2 lg:h-[calc(100dvh-4.5rem)] lg:flex-1">
         <PlannerMap
+          ref={mapRef}
           a={points.a}
           b={points.b}
           lines={lines}
           boundary={boundary}
           onMapClick={handleMapClick}
           onPinMove={dropPin}
-          onLocate={(position) => dropPin("a", position)}
+          onLocate={setFromLocation}
           loading={mode === "tricycle" && route.state === "loading"}
           className="h-full"
         />

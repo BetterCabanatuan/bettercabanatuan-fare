@@ -7,7 +7,7 @@ import landmarksJson from "../../data/geo/landmarks.json";
 import jeepRulesJson from "../../data/jeepney/fare-rules.json";
 import routesJson from "../../data/jeepney/routes.json";
 import tricycleJson from "../../data/tricycle/fare-matrix.json";
-import { toCentavos, type JeepFareRules, type TricycleFareRules } from "@/lib/fare";
+import { toCentavos, type Centavos, type JeepFareRules, type JeepType, type TricycleFareRules } from "@/lib/fare";
 import type { LngLat } from "@/lib/geo";
 import type { JeepRoute } from "@/lib/jeep-routes";
 
@@ -60,6 +60,10 @@ const jeepRulesSchema = z.object({
   discounts: z
     .object({ senior: z.number(), pwd: z.number(), student: z.number() })
     .refine((d) => d.senior === d.pwd && d.pwd === d.student, "Discount rates are expected to match"),
+  previous: z.object({
+    traditional: z.object({ baseFare: peso, perSucceedingKm: peso }),
+    modern: z.object({ baseFare: peso, perSucceedingKm: peso }),
+  }),
 });
 
 const routesSchema = z.object({
@@ -134,6 +138,20 @@ export const jeepRules: JeepFareRules = {
   effectiveDate: jeep.effectiveDate,
   discountRate: jeep.discounts.student,
   types: { traditional: toJeepRule(jeep.types.traditional), modern: toJeepRule(jeep.types.modern) },
+};
+
+export type JeepPreviousRates = Record<JeepType, { baseFare: Centavos; perSucceedingKm: Centavos }>;
+
+/** Rates in force before the current adjustment, for "what changed" context. */
+export const jeepPreviousRates: JeepPreviousRates = {
+  traditional: {
+    baseFare: toCentavos(jeep.previous.traditional.baseFare),
+    perSucceedingKm: toCentavos(jeep.previous.traditional.perSucceedingKm),
+  },
+  modern: {
+    baseFare: toCentavos(jeep.previous.modern.baseFare),
+    perSucceedingKm: toCentavos(jeep.previous.modern.perSucceedingKm),
+  },
 };
 
 export const jeepSource: FareSourceInfo = {

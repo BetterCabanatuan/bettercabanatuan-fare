@@ -1,9 +1,12 @@
 "use client";
 
 import { useId, useState, type ReactNode } from "react";
-import { Info, Maximize2, Minus, Plus, TriangleAlert } from "lucide-react";
+import { Maximize2, Minus, Plus, TriangleAlert } from "lucide-react";
 
+import { TricycleFareHistory } from "@/components/fare/tricycle-fare-history";
+import { TricycleFareMatrix } from "@/components/fare/tricycle-fare-matrix";
 import type { RouteStatus } from "@/components/fare/types";
+import { useDictionary } from "@/components/shared/dictionary-provider";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,13 +22,17 @@ import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import type { FareSourceInfo } from "@/lib/data";
+import { formatDate } from "@/lib/format-date";
 import {
   displayKm,
   formatPeso,
   tricycleFare,
   type Passengers,
+  type TricycleFare,
   type TricycleFareRules,
 } from "@/lib/fare";
+import type { Dictionary } from "@/lib/i18n/dictionaries/en";
+import { fill } from "@/lib/i18n/locales";
 
 // City limit not yet confirmed (spec §10, open item 8).
 const MAX_PASSENGERS = 6;
@@ -45,35 +52,39 @@ type TricyclePanelProps = {
 
 type Distance = { km: number; enteredByUser: boolean };
 
-const dateFormat = new Intl.DateTimeFormat("en-PH", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-  // Source dates are plain ISO dates; formatting in UTC stops them shifting a day.
-  timeZone: "UTC",
-});
+type TricycleText = Dictionary["tricycle"];
 
-// en-PH orders the parts "Oct 16, 2026"; riders expect "16 Oct 2026".
-function formatDate(isoDate: string): string {
-  const parts = dateFormat.formatToParts(new Date(isoDate));
-  const part = (type: Intl.DateTimeFormatPartTypes) =>
-    parts.find((p) => p.type === type)?.value ?? "";
-  return `${part("day")} ${part("month")} ${part("year")}`;
+function basisLine(source: FareSourceInfo, t: TricycleText): string {
+  return fill(t.basis, {
+    label: source.label,
+    reference: source.reference ? fill(t.reference, { reference: source.reference }) : "",
+    date: formatDate(source.lastChecked),
+  });
 }
 
-function basisLine(source: FareSourceInfo): string {
-  const reference = source.reference ? `, ordinance no. ${source.reference}` : "";
-  return `Based on the ${source.label}${reference}. Last checked ${formatDate(source.lastChecked)}.`;
+function distanceLine(distance: Distance, billableKm: number, t: TricycleText): string {
+  const km = displayKm(distance.km).toFixed(1);
+  const shown = fill(distance.enteredByUser ? t.enteredKm : t.roadKm, { km });
+  return [shown, fill(t.billedKm, { km: billableKm })].join(" · ");
 }
 
-const kmLabel = (km: number): string => `${displayKm(km).toFixed(1)} km`;
-
-function passengerSummary({ regular, discounted }: Passengers): string {
+function passengerSummary({ regular, discounted }: Passengers, t: TricycleText): string {
   const parts = [
-    regular > 0 ? `${regular} regular` : null,
-    discounted > 0 ? `${discounted} discounted` : null,
+    regular > 0 ? fill(t.regularCount, { count: regular }) : null,
+    discounted > 0 ? fill(t.discountedCount, { count: discounted }) : null,
   ].filter((part) => part !== null);
   return parts.join(" + ");
+}
+
+function perPassengerLines(
+  fare: TricycleFare,
+  { regular, discounted }: Passengers,
+  t: TricycleText,
+): string[] {
+  return [
+    regular > 0 ? fill(t.perRegular, { amount: formatPeso(fare.regularEach) }) : null,
+    discounted > 0 ? fill(t.perDiscounted, { amount: formatPeso(fare.discountedEach) }) : null,
+  ].filter((line) => line !== null);
 }
 
 function parseKm(text: string): number | null {
@@ -88,6 +99,8 @@ export function TricyclePanel({
   hasBothPoints,
   outsideCity,
 }: TricyclePanelProps) {
+  const { dict } = useDictionary();
+  const t = dict.tricycle;
   const [passengers, setPassengers] = useState<Passengers>({ regular: 1, discounted: 0 });
   const [manualOpen, setManualOpen] = useState(false);
   const [manualText, setManualText] = useState("");
@@ -116,50 +129,51 @@ export function TricyclePanel({
       : null;
 
   const fare = distance ? tricycleFare(rules, distance.km, passengers) : null;
-  const resultLabel = outsideCity ? "Estimate only — special trip likely" : "Tricycle fare";
-  const rateLabel = fare?.rate === "solo" ? "Solo rate" : "Shared rate";
-  const distanceLine = distance && fare
-    ? `${kmLabel(distance.km)}${distance.enteredByUser ? "" : " road"} · billed ${fare.billableKm} km`
-    : "";
-  const basis = basisLine(source);
+  const resultLabel = outsideCity ? t.estimateOnly : t.resultTitle;
+  const rateLabel = fare?.rate === "solo" ? t.soloRate : t.sharedRate;
+  const distanceText = distance && fare ? distanceLine(distance, fare.billableKm, t) : "";
+  const basis = basisLine(source, t);
+  const activeRate = totalPassengers === 1 ? "solo" : "shared";
+  const perPassenger = fare ? perPassengerLines(fare, passengers, t) : [];
 
   return (
     <div className="flex flex-col gap-5">
-      <fieldset className="flex flex-col gap-3">
-        <legend className="mb-2 text-base font-medium">Passengers</legend>
-        <PassengerCounter
-          label="Regular"
-          noun="regular passenger"
-          value={passengers.regular}
-          canDecrement={passengers.regular > 0 && !atMin}
-          canIncrement={!atMax}
-          onChange={(regular) => setPassengers({ ...passengers, regular })}
-        />
-        <PassengerCounter
-          label="Discounted"
-          description="Student, senior, PWD"
-          noun="discounted passenger"
-          value={passengers.discounted}
-          canDecrement={passengers.discounted > 0 && !atMin}
-          canIncrement={!atMax}
-          onChange={(discounted) => setPassengers({ ...passengers, discounted })}
-        />
-        <p className="text-sm text-muted-foreground">
-          {atMax
-            ? `Up to ${MAX_PASSENGERS} passengers per tricycle. `
-            : ""}
-          Discounted riders should show a valid ID.
-        </p>
-      </fieldset>
+      <div className="rounded-2xl border bg-card p-4 text-card-foreground">
+        <fieldset className="flex flex-col gap-3">
+          <legend className="mb-2 text-base font-bold tracking-tight">{t.passengers}</legend>
+          <PassengerCounter
+            label={t.regular}
+            addLabel={t.addRegular}
+            removeLabel={t.removeRegular}
+            value={passengers.regular}
+            canDecrement={passengers.regular > 0 && !atMin}
+            canIncrement={!atMax}
+            onChange={(regular) => setPassengers({ ...passengers, regular })}
+          />
+          <PassengerCounter
+            label={t.discounted}
+            description={t.discountedWho}
+            addLabel={t.addDiscounted}
+            removeLabel={t.removeDiscounted}
+            value={passengers.discounted}
+            canDecrement={passengers.discounted > 0 && !atMin}
+            canIncrement={!atMax}
+            onChange={(discounted) => setPassengers({ ...passengers, discounted })}
+          />
+          <p className="text-sm text-muted-foreground">
+            {atMax ? `${fill(t.maxPassengers, { max: MAX_PASSENGERS })} ` : ""}
+            {t.showId}
+          </p>
+        </fieldset>
+      </div>
 
       {!source.confirmed && (
         // A static disclaimer, so "note" rather than the Alert's default "alert" role.
         <Alert role="note" className="border-warning-border bg-warning text-warning-foreground">
           <TriangleAlert aria-hidden />
-          <AlertTitle>Not yet confirmed with the city</AlertTitle>
+          <AlertTitle>{t.unconfirmedTitle}</AlertTitle>
           <AlertDescription className="text-warning-foreground">
-            These rates are the November 2018 fare matrix as reported in a 2025 study. A 2026
-            fare ordinance is still in draft.
+            {t.unconfirmedBody}
           </AlertDescription>
         </Alert>
       )}
@@ -168,36 +182,29 @@ export function TricyclePanel({
         {measuring && (
           <p className="flex items-center gap-2 text-sm">
             <Spinner aria-hidden role="presentation" />
-            Measuring route…
+            {t.measuring}
           </p>
         )}
         {routeError === "no-route" && (
-          <p className="text-sm">
-            We couldn&apos;t find a road route between these points. Try moving a pin closer to a
-            road.
-          </p>
+          <p className="text-sm">{t.noRoute}</p>
         )}
         {routeError === "unreachable" && (
-          <p className="text-sm">Can&apos;t measure the route right now. Enter the distance instead.</p>
+          <p className="text-sm">{t.unreachable}</p>
         )}
         {idle && !distance && (
-          <p className="text-sm">
-            Tap the map or search to set where you start and where you&apos;re going.
-          </p>
+          <p className="text-sm">{t.idle}</p>
         )}
         {outsideCity && (
-          <Notice>This point is outside Cabanatuan City. City tricycle fares may not apply.</Notice>
+          <Notice>{t.outsideCity}</Notice>
         )}
         {roadRoute?.nationalRoad && (
-          <Notice>
-            This route uses {roadRoute.nationalRoad}, where tricycles may be restricted.
-          </Notice>
+          <Notice>{fill(t.nationalRoad, { road: roadRoute.nationalRoad })}</Notice>
         )}
         {distance && distance.km > LONG_TRIP_KM && (
-          <Notice>Long trips are usually special trips. Agree on the fare before riding.</Notice>
+          <Notice>{t.longTrip}</Notice>
         )}
         {distance && distance.km < VERY_CLOSE_KM && (
-          <Notice>Your start and end points are very close.</Notice>
+          <Notice>{t.veryClose}</Notice>
         )}
       </div>
 
@@ -209,20 +216,20 @@ export function TricyclePanel({
           aria-controls={manualRegionId}
           onClick={() => setManualOpen(!manualOpen)}
         >
-          Type the distance instead
+          {t.typeDistance}
         </Button>
       )}
 
       {showManual && (
         <Field id={manualRegionId} data-invalid={manualInvalid || undefined}>
-          <FieldLabel htmlFor={kmInputId}>Distance in km</FieldLabel>
+          <FieldLabel htmlFor={kmInputId}>{t.distanceLabel}</FieldLabel>
           <Input
             id={kmInputId}
             type="number"
             inputMode="decimal"
             step={0.1}
             min={MIN_MANUAL_KM}
-            placeholder="e.g. 4.2"
+            placeholder={t.distancePlaceholder}
             value={manualText}
             onChange={(event) => setManualText(event.target.value)}
             aria-invalid={manualInvalid || undefined}
@@ -230,9 +237,7 @@ export function TricyclePanel({
             className="h-11 tabular-nums"
           />
           <FieldDescription id={kmHintId}>
-            {manualInvalid
-              ? `Enter a distance of at least ${MIN_MANUAL_KM} km.`
-              : "Use the road distance, not a straight line."}
+            {manualInvalid ? fill(t.distanceTooShort, { min: MIN_MANUAL_KM }) : t.distanceHint}
           </FieldDescription>
         </Field>
       )}
@@ -240,62 +245,75 @@ export function TricyclePanel({
       {fare && distance && (
         <section
           aria-labelledby={resultTitleId}
-          className="flex flex-col gap-4 rounded-xl bg-foreground p-4 text-background"
+          className="flex flex-col gap-4 rounded-2xl bg-foreground p-5 text-background"
         >
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-2">
             <h3
               id={resultTitleId}
-              className={outsideCity ? "text-sm font-medium text-highlight" : "text-sm font-medium"}
+              className={
+                outsideCity
+                  ? "text-sm font-semibold text-highlight"
+                  : "text-sm font-semibold text-background/80"
+              }
             >
               {resultLabel}
             </h3>
             <div className="flex flex-wrap items-center gap-3">
-              <p className="text-5xl font-bold tabular-nums text-highlight">
+              <p className="text-5xl leading-none font-bold tracking-tight tabular-nums text-highlight">
                 {formatPeso(fare.total)}
               </p>
               <Badge className="bg-highlight text-highlight-foreground">{rateLabel}</Badge>
             </div>
-            <p className="tabular-nums">{distanceLine}</p>
-            {distance.enteredByUser ? (
-              <p className="text-sm text-background/70">Distance entered by you</p>
-            ) : (
-              <p className="text-sm text-background/70">
-                Fare is based on the route shown. A different road may change the distance.
+            <ul className="flex flex-col text-base font-semibold tabular-nums">
+              {perPassenger.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="flex flex-col gap-0.5">
+            <p className="text-sm font-medium tabular-nums">{distanceText}</p>
+            <p className="text-sm text-background/70">
+              {distance.enteredByUser ? t.enteredByYou : t.routeNote}
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-1 border-t border-background/20 pt-3">
+            <dl className="flex flex-col gap-1 text-sm">
+              {passengers.regular > 0 && (
+                <BreakdownRow
+                  label={t.regular}
+                  calculation={`${passengers.regular} × ${formatPeso(fare.regularEach)}`}
+                  amount={formatPeso(passengers.regular * fare.regularEach)}
+                />
+              )}
+              {passengers.discounted > 0 && (
+                <BreakdownRow
+                  label={t.discounted}
+                  calculation={`${passengers.discounted} × ${formatPeso(fare.discountedEach)}`}
+                  amount={formatPeso(passengers.discounted * fare.discountedEach)}
+                />
+              )}
+            </dl>
+            {fare.extraKm > 0 && (
+              <p className="text-sm text-background/70 tabular-nums">
+                {fill(t.extraKm, {
+                  extra: fare.extraKm,
+                  base: rules.baseKm,
+                  rate: formatPeso(rules.perSucceedingKmPerPassenger),
+                })}
               </p>
             )}
           </div>
 
-          <dl className="flex flex-col gap-1 border-t border-background/20 pt-3 text-sm">
-            {passengers.regular > 0 && (
-              <BreakdownRow
-                label="Regular"
-                calculation={`${passengers.regular} × ${formatPeso(fare.regularEach)}`}
-                amount={formatPeso(passengers.regular * fare.regularEach)}
-              />
-            )}
-            {passengers.discounted > 0 && (
-              <BreakdownRow
-                label="Discounted"
-                calculation={`${passengers.discounted} × ${formatPeso(fare.discountedEach)}`}
-                amount={formatPeso(passengers.discounted * fare.discountedEach)}
-              />
-            )}
-          </dl>
-          {fare.extraKm > 0 && (
-            <p className="-mt-2 text-sm text-background/70 tabular-nums">
-              Each fare includes {fare.extraKm} km after the first {rules.baseKm} km at{" "}
-              {formatPeso(rules.perSucceedingKmPerPassenger)} per km.
-            </p>
-          )}
-
           <Dialog>
             <DialogTrigger
               render={
-                <Button className="h-12 w-full bg-highlight text-base text-highlight-foreground hover:bg-highlight/90" />
+                <Button className="h-12 w-full bg-highlight text-base font-semibold text-highlight-foreground hover:bg-highlight/90" />
               }
             >
               <Maximize2 aria-hidden />
-              Show the driver
+              {t.showDriver}
             </DialogTrigger>
             <DialogContent
               showCloseButton={false}
@@ -305,31 +323,38 @@ export function TricyclePanel({
               <p className="text-7xl font-bold tabular-nums text-highlight sm:text-9xl">
                 {formatPeso(fare.total)}
               </p>
-              <p className="text-2xl tabular-nums">{distanceLine}</p>
+              <ul className="flex flex-col gap-1 text-2xl font-semibold tabular-nums">
+                {perPassenger.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+              <p className="text-2xl tabular-nums">{distanceText}</p>
               <p className="text-xl">
-                {passengerSummary(passengers)} · {rateLabel}
+                {passengerSummary(passengers, t)} · {rateLabel}
               </p>
               <DialogDescription className="max-w-xl text-base text-background/80">
                 {basis}
-                {source.confirmed ? "" : " Not yet confirmed with the city."}
+                {source.confirmed ? "" : ` ${t.notConfirmed}`}
               </DialogDescription>
               <DialogClose
                 render={
                   <Button className="h-12 min-w-40 bg-background text-base text-foreground hover:bg-background/90" />
                 }
               >
-                Close
+                {t.close}
               </DialogClose>
             </DialogContent>
           </Dialog>
         </section>
       )}
 
-      {fare && <p className="text-sm text-muted-foreground">{basis}</p>}
-      <p className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Info aria-hidden className="size-4 shrink-0" />
-        Special trip (arkila) rate not yet published.
-      </p>
+      <TricycleFareMatrix
+        rules={rules}
+        confirmed={source.confirmed}
+        basis={basis}
+        activeRate={activeRate}
+      />
+      <TricycleFareHistory />
     </div>
   );
 }
@@ -337,8 +362,8 @@ export function TricyclePanel({
 type PassengerCounterProps = {
   label: string;
   description?: string;
-  /** Used in the button labels, e.g. "Add a regular passenger". */
-  noun: string;
+  addLabel: string;
+  removeLabel: string;
   value: number;
   canDecrement: boolean;
   canIncrement: boolean;
@@ -348,7 +373,8 @@ type PassengerCounterProps = {
 function PassengerCounter({
   label,
   description,
-  noun,
+  addLabel,
+  removeLabel,
   value,
   canDecrement,
   canIncrement,
@@ -369,7 +395,7 @@ function PassengerCounter({
           variant="outline"
           size="icon"
           className="size-11"
-          aria-label={`Remove a ${noun}`}
+          aria-label={removeLabel}
           disabled={!canDecrement}
           // Keeps keyboard focus in place when the button hits a limit.
           focusableWhenDisabled
@@ -384,7 +410,7 @@ function PassengerCounter({
           variant="outline"
           size="icon"
           className="size-11"
-          aria-label={`Add a ${noun}`}
+          aria-label={addLabel}
           disabled={!canIncrement}
           focusableWhenDisabled
           onClick={() => onChange(value + 1)}

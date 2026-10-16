@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { FarePlanner } from "@/components/fare/fare-planner";
 import {
   cityBoundary,
+  jeepPreviousRates,
   jeepRoutes,
   jeepRules,
   jeepSource,
@@ -11,13 +12,20 @@ import {
   tricycleRules,
   tricycleSource,
 } from "@/lib/data";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { localizePath } from "@/lib/i18n/locales";
 
-export const metadata: Metadata = {
-  title: "Tricycle and jeep fare map",
-  description:
-    "Set where you start and where you're going in Cabanatuan City to see the tricycle fare, and find jeepney routes when they are mapped.",
-  alternates: { canonical: "/fare" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { locale, dict } = await getDictionary();
+  return {
+    title: dict.meta.fareTitle,
+    description: dict.meta.fareDescription,
+    alternates: {
+      canonical: localizePath(locale, "/fare"),
+      languages: { en: "/fare", tl: "/tl/fare", "x-default": "/fare" },
+    },
+  };
+}
 
 export default function FarePage() {
   return (
@@ -28,6 +36,7 @@ export default function FarePage() {
         tricycleRules={tricycleRules}
         tricycleSource={tricycleSource}
         jeepRules={jeepRules}
+        jeepPreviousRates={jeepPreviousRates}
         jeepSource={jeepSource}
         jeepRoutes={jeepRoutes}
         landmarks={landmarks}
