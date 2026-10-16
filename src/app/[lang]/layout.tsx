@@ -35,7 +35,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#1B3F8B",
+  // Matches the alpha strip at the top of every page (--warning), so the status bar blends in.
+  themeColor: "#FFF4D6",
+  // Lets the page use the full screen on notched phones; edges are padded back with env() insets.
+  viewportFit: "cover",
+  // Android: the keyboard shrinks the layout instead of covering it, as on iOS.
+  interactiveWidget: "resizes-content",
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/[lang]">) {
@@ -43,7 +48,7 @@ export default async function RootLayout({ children }: LayoutProps<"/[lang]">) {
 
   return (
     <html lang={locale} className={cn("antialiased", manrope.variable)}>
-      <body className="flex min-h-dvh flex-col">
+      <body className="flex min-h-dvh flex-col pr-[env(safe-area-inset-right)] pb-[calc(3.5rem+env(safe-area-inset-bottom))] pl-[env(safe-area-inset-left)] sm:pb-[env(safe-area-inset-bottom)]">
         <DictionaryProvider locale={locale} dict={dict}>
           <AlphaBanner />
           <Navbar />

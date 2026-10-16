@@ -22,16 +22,16 @@ export async function Hero() {
             Magkano ang pamasahe?
           </h1>
           <p className="max-w-xl text-lg text-pretty text-primary-foreground/85">{dict.home.intro}</p>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap">
             <Link
               href={farePath}
-              className="inline-flex min-h-11 items-center rounded-lg bg-highlight px-5 font-bold text-highlight-foreground transition-colors hover:bg-highlight/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-foreground"
+              className="inline-flex min-h-12 items-center justify-center rounded-lg bg-highlight px-5 font-bold text-highlight-foreground transition-colors hover:bg-highlight/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-foreground"
             >
               {dict.home.computeTricycle}
             </Link>
             <Link
               href={`${farePath}?mode=jeep`}
-              className="inline-flex min-h-11 items-center rounded-lg border-2 border-primary-foreground px-5 font-bold transition-colors hover:bg-primary-foreground/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-foreground"
+              className="inline-flex min-h-12 items-center justify-center rounded-lg border-2 border-primary-foreground px-5 font-bold transition-colors hover:bg-primary-foreground/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-foreground"
             >
               {dict.home.computeJeep}
             </Link>

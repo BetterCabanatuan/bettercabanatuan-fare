@@ -62,7 +62,7 @@ export function TodaDirectory({ todas }: { todas: TodaListItem[] }) {
                     <Phone aria-label="Contact" className="size-4" />
                   </dt>
                   <dd>
-                    <a href={`tel:${toda.officialContact.replace(/[^\d+]/g, "")}`} className="font-semibold text-primary underline-offset-4 hover:underline">
+                    <a href={`tel:${toda.officialContact.replace(/[^\d+]/g, "")}`} className="inline-flex min-h-11 items-center font-semibold text-primary underline-offset-4 hover:underline">
                       {toda.officialContact}
                     </a>
                   </dd>

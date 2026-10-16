@@ -143,6 +143,26 @@
   }
   html {
     @apply font-sans;
+    /* No grey flash on tap; controls give their own :active feedback. */
+    -webkit-tap-highlight-color: transparent;
+    /* No font inflation when the phone turns to landscape. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  /* Taps fire at once: these never double-tap-zoom. */
+  a,
+  button,
+  label,
+  summary,
+  [role="button"] {
+    touch-action: manipulation;
+  }
+  /* Long-press on a control shouldn't select its label. Links and body text stay selectable. */
+  button,
+  summary,
+  [role="button"] {
+    -webkit-user-select: none;
+    user-select: none;
   }
   .maplibregl-popup-content {
     @apply bg-transparent! shadow-none! p-0! rounded-none!;
