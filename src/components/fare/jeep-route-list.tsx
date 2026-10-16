@@ -1,13 +1,17 @@
 "use client";
 
 import { useId } from "react";
-import { ChevronDownIcon, InfoIcon, MapPinIcon } from "lucide-react";
+import { ChevronDownIcon, InfoIcon, MapPinIcon, PlusIcon, UsersIcon } from "lucide-react";
+import Link from "next/link";
 
 import { useDictionary } from "@/components/shared/dictionary-provider";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { fill } from "@/lib/i18n/locales";
+import { formatPeso } from "@/lib/fare";
+import { fill, localizePath } from "@/lib/i18n/locales";
 import { isApproximate, type JeepRoute } from "@/lib/jeep-routes";
+import { cn } from "@/lib/utils";
 
 export const isTodo = (value: string | undefined): boolean => !value || value.startsWith("TODO");
 
@@ -21,6 +25,30 @@ export function ApproximateBadge() {
   );
 }
 
+/** Routes sent in by residents and checked before they went on the map. */
+export function CommunityBadge() {
+  const { dict } = useDictionary();
+
+  return (
+    <Badge variant="outline" className="border-primary/30 bg-primary/5 text-primary">
+      <UsersIcon aria-hidden />
+      {dict.jeep.community}
+    </Badge>
+  );
+}
+
+/** What a rider reported paying end to end, when a community route carries it. */
+export function ReportedFare({ route }: { route: JeepRoute }) {
+  const { dict } = useDictionary();
+
+  if (route.reportedFare === undefined) return null;
+  return (
+    <span className="text-xs text-muted-foreground tabular-nums">
+      {fill(dict.jeep.ridersPaid, { fare: formatPeso(route.reportedFare) })}
+    </span>
+  );
+}
+
 function Terminal({ terminal }: { terminal: string | undefined }) {
   const { dict } = useDictionary();
 
@@ -30,6 +58,83 @@ function Terminal({ terminal }: { terminal: string | undefined }) {
       <span className="sr-only">{dict.jeep.terminalLabel} </span>
       {isTodo(terminal) ? dict.jeep.terminalUnconfirmed : terminal}
     </span>
+  );
+}
+
+/** The towns along the highlighted route with their km from the terminal, terminal first. */
+function RouteStops({ route }: { route: JeepRoute }) {
+  const { dict } = useDictionary();
+  const headingId = useId();
+
+  if (route.stops.length === 0) return null;
+  const lastIndex = route.stops.length - 1;
+
+  return (
+    <section
+      aria-labelledby={headingId}
+      className="mt-2 flex flex-col gap-2 rounded-lg border border-[#C2410C]/30 bg-[#C2410C]/5 p-3"
+    >
+      <div className="flex flex-col gap-0.5">
+        <h3 id={headingId} className="text-sm font-semibold">
+          {route.name}
+        </h3>
+        <p className="text-xs text-pretty text-muted-foreground">{dict.jeep.stopsNote}</p>
+      </div>
+      <ol className="flex flex-col">
+        {route.stops.map((stop, index) => {
+          const isEnd = index === 0 || index === lastIndex;
+          return (
+            <li
+              key={`${stop.name}-${index}`}
+              className="relative flex items-baseline justify-between gap-3 py-1.5 pl-5 text-sm"
+            >
+              {index < lastIndex && (
+                <span aria-hidden className="absolute top-1/2 left-[4px] h-full w-0.5 bg-[#C2410C]/40" />
+              )}
+              <span
+                aria-hidden
+                className={cn(
+                  "absolute top-1/2 left-0 size-2.5 -translate-y-1/2 rounded-full ring-2 ring-[#C2410C]",
+                  isEnd ? "bg-[#C2410C]" : "bg-white",
+                )}
+              />
+              <span className="min-w-0">
+                {stop.name}
+                {isEnd && (
+                  <span className="text-xs text-muted-foreground">
+                    {" "}
+                    · {index === 0 ? dict.jeep.stopTerminal : dict.jeep.stopEnd}
+                  </span>
+                )}
+              </span>
+              {stop.km !== undefined && (
+                <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                  {fill(dict.jeep.stopKm, { km: stop.km })}
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  );
+}
+
+function SuggestRoute() {
+  const { dict, locale } = useDictionary();
+
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border border-dashed p-3">
+      <p className="text-sm font-semibold text-balance">{dict.jeep.suggestTitle}</p>
+      <p className="text-xs text-pretty text-muted-foreground">{dict.jeep.suggestBody}</p>
+      <Link
+        href={localizePath(locale, "/fare/suggest")}
+        className={cn(buttonVariants({ variant: "outline", size: "lg" }), "h-11 self-start")}
+      >
+        <PlusIcon aria-hidden />
+        {dict.jeep.suggestCta}
+      </Link>
+    </div>
   );
 }
 
@@ -77,16 +182,20 @@ export function JeepRouteList({ routes, highlightedRouteId, onHighlightRoute }: 
                     <span className="text-xs text-muted-foreground">{fill(dict.jeep.via, { via: route.via })}</span>
                   )}
                   <Terminal terminal={route.terminal} />
+                  <ReportedFare route={route} />
                 </span>
                 <span className="flex shrink-0 flex-col items-end gap-1">
                   <Badge variant="secondary">{dict.jeep[route.type]}</Badge>
+                  {route.origin === "community" && <CommunityBadge />}
                   {isApproximate(route) && <ApproximateBadge />}
                 </span>
               </button>
+              {pressed && <RouteStops route={route} />}
             </li>
           );
         })}
       </ul>
+      <SuggestRoute />
     </section>
   );
 }
@@ -111,9 +220,11 @@ export function UnmappedRoutes({ routes }: { routes: JeepRoute[] }) {
                   <span className="text-xs text-muted-foreground">{fill(dict.jeep.via, { via: route.via })}</span>
                 )}
                 <Terminal terminal={route.terminal} />
+                <ReportedFare route={route} />
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1">
                 <Badge variant="secondary">{dict.jeep[route.type]}</Badge>
+                {route.origin === "community" && <CommunityBadge />}
                 <Badge variant="outline" className="border-warning-border bg-warning text-warning-foreground">
                   {dict.jeep.notMapped}
                 </Badge>

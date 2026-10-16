@@ -52,3 +52,15 @@ describe("approximate jeep route lines", () => {
     }
   });
 });
+
+describe("stops derived from waypoints", () => {
+  it("gives every preset route named stops in km order, starting at the terminal", () => {
+    for (const route of jeepRoutes.filter((candidate) => candidate.status === "approximate")) {
+      expect(route.stops.length, route.id).toBeGreaterThanOrEqual(2);
+      expect(route.stops[0].km, route.id).toBeLessThan(0.5);
+      const kms = route.stops.map((stop) => stop.km ?? 0);
+      expect([...kms].sort((x, y) => x - y), route.id).toEqual(kms);
+      expect(route.stops.some((stop) => stop.name.includes("routing aid")), route.id).toBe(false);
+    }
+  });
+});

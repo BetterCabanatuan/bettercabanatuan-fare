@@ -26,6 +26,7 @@ const route = (overrides: Partial<JeepRoute> = {}): JeepRoute => ({
   via: "Test",
   type: "traditional",
   source: "test fixture",
+  origin: "preset",
   status: "active",
   verifiedOn: "2026-10-16",
   directions: [{ id: "north", label: "Northbound", line: northLine }],

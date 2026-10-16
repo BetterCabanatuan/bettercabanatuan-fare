@@ -5,7 +5,13 @@ import { ChevronDownIcon } from "lucide-react";
 
 import { JeepFareCalculator } from "@/components/fare/jeep-fare-calculator";
 import { JeepRoadFare } from "@/components/fare/jeep-road-fare";
-import { ApproximateBadge, JeepRouteList, UnmappedRoutes } from "@/components/fare/jeep-route-list";
+import {
+  ApproximateBadge,
+  CommunityBadge,
+  JeepRouteList,
+  ReportedFare,
+  UnmappedRoutes,
+} from "@/components/fare/jeep-route-list";
 import type { RouteStatus } from "@/components/fare/types";
 import { useDictionary } from "@/components/shared/dictionary-provider";
 import { JeepIcon } from "@/components/shared/vehicle-icons";
@@ -181,8 +187,10 @@ function TripResults({
                   <span className="flex flex-wrap items-center gap-2">
                     <span className="font-medium">{trip.route.name}</span>
                     <Badge variant="secondary">{dict.jeep[trip.route.type]}</Badge>
+                    {trip.route.origin === "community" && <CommunityBadge />}
                     {isApproximate(trip.route) && <ApproximateBadge />}
                   </span>
+                  <ReportedFare route={trip.route} />
                   <span className="text-muted-foreground">{trip.direction.label}</span>
                   <span className="text-muted-foreground tabular-nums">
                     {fill(dict.jeep.walk, {

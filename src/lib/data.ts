@@ -8,8 +8,8 @@ import jeepRulesJson from "../../data/jeepney/fare-rules.json";
 import routesJson from "../../data/jeepney/routes.json";
 import tricycleJson from "../../data/tricycle/fare-matrix.json";
 import { toCentavos, type Centavos, type JeepFareRules, type JeepType, type TricycleFareRules } from "@/lib/fare";
-import type { LngLat } from "@/lib/geo";
-import type { JeepRoute } from "@/lib/jeep-routes";
+import { projectOntoLine, type LngLat } from "@/lib/geo";
+import type { JeepRoute, JeepStop } from "@/lib/jeep-routes";
 
 export type FareSourceInfo = {
   confirmed: boolean;
@@ -82,6 +82,7 @@ const routesSchema = z.object({
       directions: z
         .array(z.object({ id: z.string(), label: z.string(), line: z.array(lngLat).min(2) }))
         .default([]),
+      waypoints: z.array(z.object({ name: z.string(), position: lngLat })).default([]),
       stops: z.array(
         z.object({
           name: z.string(),
@@ -167,9 +168,28 @@ export const jeepSource: FareSourceInfo = {
   lastChecked: jeep.lastChecked,
 };
 
-export const jeepRoutes: JeepRoute[] = routesSchema.parse(routesJson).routes.map((route) => ({
+/** Named points along a preset line (terminal, via towns, destination) with their km from the start. */
+function stopsFromWaypoints(waypoints: { name: string; position: LngLat }[], line: LngLat[] | undefined): JeepStop[] {
+  if (!line) return [];
+  return waypoints
+    .filter((waypoint) => !waypoint.name.includes("routing aid"))
+    .map((waypoint) => {
+      const projection = projectOntoLine(waypoint.position, line);
+      return {
+        name: waypoint.name.replace(/\s*\((town|city) proper\)/, ""),
+        km: Math.round(projection.alongKm * 10) / 10,
+        position: projection.point,
+      };
+    });
+}
+
+export const jeepRoutes: JeepRoute[] = routesSchema.parse(routesJson).routes.map(({ waypoints, ...route }) => ({
   ...route,
-  stops: route.stops.map(({ lat, lng, ...stop }) => ({ ...stop, position: [lng, lat] })),
+  origin: "preset",
+  stops:
+    route.stops.length > 0
+      ? route.stops.map(({ lat, lng, ...stop }) => ({ ...stop, position: [lng, lat] }))
+      : stopsFromWaypoints(waypoints, route.directions[0]?.line),
 }));
 
 export const landmarks: Landmark[] = landmarksSchema

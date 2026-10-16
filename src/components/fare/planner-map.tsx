@@ -4,6 +4,7 @@ import type { MapMouseEvent } from "maplibre-gl";
 import { useEffect, type Ref } from "react";
 
 import { MapHint } from "@/components/fare/map-hint";
+import { RouteEndMarkers, StopDots } from "@/components/fare/stop-markers";
 import { TerminalMarkers } from "@/components/fare/terminal-markers";
 import type { MapLine, Place, PointKey } from "@/components/fare/types";
 import { useDictionary } from "@/components/shared/dictionary-provider";
@@ -39,7 +40,7 @@ type PlannerMapProps = {
   b?: Place;
   lines: MapLine[];
   boundary: LngLat[];
-  /** Jeep routes whose terminals get markers in jeep mode. */
+  /** Jeep routes whose terminals, far ends and (when highlighted) stops get markers in jeep mode. */
   routes: JeepRoute[];
   highlightedRouteId: string | null;
   onHighlightRoute: (routeId: string | null) => void;
@@ -97,12 +98,21 @@ export function PlannerMap({
       ))}
 
       {mode === "jeep" && (
-        <TerminalMarkers
-          routes={routes}
-          highlightedRouteId={highlightedRouteId}
-          onHighlightRoute={onHighlightRoute}
-          onPickPlace={onPickPlace}
-        />
+        <>
+          <TerminalMarkers
+            routes={routes}
+            highlightedRouteId={highlightedRouteId}
+            onHighlightRoute={onHighlightRoute}
+            onPickPlace={onPickPlace}
+          />
+          <RouteEndMarkers
+            routes={routes}
+            highlightedRouteId={highlightedRouteId}
+            onHighlightRoute={onHighlightRoute}
+            onPickPlace={onPickPlace}
+          />
+          <StopDots route={routes.find((route) => route.id === highlightedRouteId)} />
+        </>
       )}
 
       {pins.map(({ key, place }) =>

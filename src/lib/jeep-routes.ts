@@ -1,4 +1,4 @@
-import { jeepFare, type JeepFare, type JeepFareRules, type JeepType } from "@/lib/fare";
+import { jeepFare, type Centavos, type JeepFare, type JeepFareRules, type JeepType } from "@/lib/fare";
 import { projectOntoLine, type LineProjection, type LngLat } from "@/lib/geo";
 
 export type JeepStop = { name: string; barangay?: string; km?: number; position: LngLat };
@@ -20,6 +20,10 @@ export type JeepRoute = {
    * main roads between the terminal and the towns the route names, not an official route line.
    */
   status: "active" | "approximate" | "suspended" | "unverified";
+  /** preset: from data/jeepney/routes.json. community: a verified resident submission. */
+  origin: "preset" | "community";
+  /** What a rider reported paying end to end, in centavos, when known. */
+  reportedFare?: Centavos;
   verifiedOn?: string;
   directions: RouteDirection[];
   stops: JeepStop[];
