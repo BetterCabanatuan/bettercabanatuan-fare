@@ -401,6 +401,7 @@ export function FarePlanner({
           onPinMove={dropPin}
           onPickPlace={setPlace}
           onLocate={setFromLocation}
+          onLocateError={myLocation.fail}
           loading={route.state === "loading"}
           className="h-full"
         />

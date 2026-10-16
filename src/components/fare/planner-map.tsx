@@ -50,6 +50,7 @@ type PlannerMapProps = {
   onPinMove: (key: PointKey, position: LngLat) => void;
   onPickPlace: (key: PointKey, place: Place) => void;
   onLocate: (position: LngLat) => void;
+  onLocateError: (error: GeolocationPositionError) => void;
   loading?: boolean;
   className?: string;
   ref?: Ref<MapRef>;
@@ -69,6 +70,7 @@ export function PlannerMap({
   onPinMove,
   onPickPlace,
   onLocate,
+  onLocateError,
   loading = false,
   className,
   ref,
@@ -142,6 +144,7 @@ export function PlannerMap({
         showZoom
         showLocate
         onLocate={({ longitude, latitude }) => onLocate([longitude, latitude])}
+        onLocateError={onLocateError}
       />
       <MapClickHandler onMapClick={onMapClick} />
       <FitToTrip a={a} b={b} lines={lines} />
