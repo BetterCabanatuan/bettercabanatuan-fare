@@ -24,7 +24,7 @@ export async function Navbar() {
             href={localizePath(locale, "/")}
             className="mr-auto flex min-h-11 items-center gap-2.5 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
-            <LogoMark className="size-[38px] shrink-0" />
+            <LogoMark className="h-[38px] w-auto shrink-0" />
             <span className="flex flex-col uppercase leading-none">
               <span className="text-base font-extrabold tracking-tight">Pamasahe</span>
               <span className="mt-1 text-[10px] font-semibold tracking-[0.18em] text-muted-foreground">
