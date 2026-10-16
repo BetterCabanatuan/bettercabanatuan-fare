@@ -119,7 +119,7 @@ export const en = {
     showId: "Discounted riders should show a valid ID.",
     unconfirmedTitle: "Not yet confirmed with the city",
     unconfirmedBody:
-      "These rates are the November 2018 fare matrix as reported in a 2025 study. A 2026 fare ordinance is still in draft.",
+      "These rates are the November 2018 fare matrix as reported in a 2025 study. A new 2026 fare matrix has been approved and takes effect with new stickers from 19 October 2026; its amounts are not published yet.",
     measuring: "Measuring route…",
     noRoute: "We couldn't find a road route between these points. Try moving a pin closer to a road.",
     unreachable: "Can't measure the route right now. Enter the distance instead.",
@@ -163,7 +163,7 @@ export const en = {
     history: {
       title: "How this fare changed",
       current: "Current",
-      draft: "Draft",
+      draft: "Approved",
       ordinance2007: {
         when: "2007",
         what: "Ordinance 2007-040: ₱14 regular fare for the first 1 to 3 km.",
@@ -178,9 +178,9 @@ export const en = {
       },
       draft2026: {
         when: "2026",
-        what: "Draft fare ordinance. Public hearing held 31 March 2026. In April 2026 the city said it was not yet approved.",
+        what: "New fare ordinance approved by the city council on 14 April 2026 and the provincial board on 18 August 2026. New fare stickers from 19 October 2026; amounts not yet published.",
       },
-      note: "From news reports and studies. For reference only; not used to calculate fares.",
+      note: "From news reports, studies and city announcements. For reference only; not used to calculate fares.",
     },
   },
   jeep: {

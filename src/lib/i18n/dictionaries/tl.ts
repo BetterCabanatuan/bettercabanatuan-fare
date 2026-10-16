@@ -122,7 +122,7 @@ export const tl: Dictionary = {
     showId: "Ipakita ang valid ID para makakuha ng diskwento.",
     unconfirmedTitle: "Hindi pa kumpirmado ng lungsod",
     unconfirmedBody:
-      "Ang mga singil na ito ay mula sa fare matrix noong Nobyembre 2018, ayon sa isang pag-aaral noong 2025. Draft pa lang ang bagong fare ordinance para sa 2026.",
+      "Ang mga singil na ito ay mula sa fare matrix noong Nobyembre 2018, ayon sa isang pag-aaral noong 2025. Aprubado na ang bagong fare matrix para sa 2026 at magsisimula ito kasabay ng bagong sticker sa 19 Oktubre 2026, pero hindi pa nailalathala ang mga halaga.",
     measuring: "Sinusukat ang ruta…",
     noRoute: "Walang nahanap na daan sa pagitan ng mga puntong ito. Subukang ilapit ang pin sa kalsada.",
     unreachable: "Hindi masukat ang ruta ngayon. I-type na lang ang layo.",
@@ -168,7 +168,7 @@ export const tl: Dictionary = {
     history: {
       title: "Paano nagbago ang pamasahe",
       current: "Kasalukuyan",
-      draft: "Draft",
+      draft: "Aprubado",
       ordinance2007: {
         when: "2007",
         what: "Ordinansa 2007-040: ₱14 ang regular na pamasahe sa unang 1 hanggang 3 km.",
@@ -183,9 +183,9 @@ export const tl: Dictionary = {
       },
       draft2026: {
         when: "2026",
-        what: "Draft na fare ordinance. Nagkaroon ng public hearing noong 31 Marso 2026. Noong Abril 2026, sinabi ng lungsod na hindi pa ito aprubado.",
+        what: "Inaprubahan ng Sangguniang Panlungsod ang bagong fare ordinance noong 14 Abril 2026, at ng Sangguniang Panlalawigan noong 18 Agosto 2026. Bagong fare sticker mula 19 Oktubre 2026; hindi pa nailalathala ang mga halaga.",
       },
-      note: "Mula sa mga balita at pag-aaral. Pang-impormasyon lang; hindi ginagamit sa pagkuwenta ng pamasahe.",
+      note: "Mula sa mga balita, pag-aaral at anunsyo ng lungsod. Pang-impormasyon lang; hindi ginagamit sa pagkuwenta ng pamasahe.",
     },
   },
   jeep: {
