@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { JeepFareRules } from "@/lib/fare";
 import { cumulativeKm, isInsideRing, sliceLine, type LngLat } from "@/lib/geo";
-import { findTrips, isMapped, type JeepRoute } from "@/lib/jeep-routes";
+import { findTrips, hasLine, isApproximate, isMapped, type JeepRoute } from "@/lib/jeep-routes";
 
 const rules: JeepFareRules = {
   effectiveDate: "2026-09-28",
@@ -64,8 +64,16 @@ describe("findTrips", () => {
     expect(search.nearest?.offsetKm).toBeGreaterThan(2);
   });
 
-  it("ignores routes that are not mapped", () => {
+  it("ignores suspended and unverified routes", () => {
     expect(findTrips([route({ status: "suspended" })], rules, a, b, 0.5)).toEqual({ trips: [] });
+    expect(findTrips([route({ status: "unverified" })], rules, a, b, 0.5)).toEqual({ trips: [] });
+  });
+
+  it("matches approximate preset lines and marks them as approximate", () => {
+    const preset = route({ status: "approximate", verifiedOn: undefined });
+    expect(hasLine(preset)).toBe(true);
+    expect(isApproximate(preset)).toBe(true);
+    expect(findTrips([preset], rules, a, b, 0.5).trips).toHaveLength(1);
   });
 });
 

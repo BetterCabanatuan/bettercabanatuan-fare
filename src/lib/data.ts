@@ -74,8 +74,9 @@ const routesSchema = z.object({
       via: z.string(),
       type: z.enum(["traditional", "modern"]),
       terminal: z.string().optional(),
+      terminalPosition: lngLat.optional(),
       source: z.string(),
-      status: z.enum(["active", "suspended", "unverified"]).default("unverified"),
+      status: z.enum(["active", "approximate", "suspended", "unverified"]).default("unverified"),
       verifiedOn: z.iso.date().optional(),
       directions: z
         .array(z.object({ id: z.string(), label: z.string(), line: z.array(lngLat).min(2) }))
