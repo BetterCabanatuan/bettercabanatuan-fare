@@ -37,7 +37,7 @@ export const en = {
     fareBoardModern: "Modern jeep",
     fareBoardTricycle: "Tricycle, solo",
     fareBoardJeepRule: "First {baseKm} km, then {perKm}/km",
-    fareBoardTricycleRule: "First {baseKm} km, then {perKm}/km per passenger",
+    fareBoardTricycleRule: "First {baseKm} km, then {perKm}/km when riding alone",
     fareBoardFooter: "Students, seniors and PWDs get {percent}% off jeep fares · effective {date}",
     unconfirmed: "Unconfirmed",
     modesHeading: "Choose your ride",
@@ -136,7 +136,7 @@ export const en = {
     showId: "Discounted riders should show a valid ID.",
     unconfirmedTitle: "Not yet confirmed with the city",
     unconfirmedBody:
-      "These rates are the November 2018 fare matrix as reported in a 2025 study. A new 2026 fare matrix has been approved and takes effect with new stickers from 19 October 2026; its amounts are not published yet.",
+      "Shared rates are the November 2018 fare matrix as reported in a 2025 study. The solo rate per km comes from fares riders report paying, not an official matrix. A new 2026 fare matrix has been approved and takes effect with new stickers from 19 October 2026; its amounts are not published yet.",
     measuring: "Measuring route…",
     noRoute: "We couldn't find a road route between these points. Try moving a pin closer to a road.",
     unreachable: "Can't measure the route right now. Enter the distance instead.",
@@ -176,7 +176,7 @@ export const en = {
     matrixSolo: "Solo",
     matrixShared: "2 or more, each",
     matrixYourRate: "Your rate",
-    matrixPerKm: "+ {perKm} per passenger for every km after {baseKm} km",
+    matrixPerKm: "After {baseKm} km: + {solo} per km when riding alone, + {shared} per passenger per km when shared.",
     history: {
       title: "How this fare changed",
       current: "Current",

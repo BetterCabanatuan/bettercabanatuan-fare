@@ -40,7 +40,7 @@ export const tl: Dictionary = {
     fareBoardModern: "Modern jeep",
     fareBoardTricycle: "Tricycle, mag-isa",
     fareBoardJeepRule: "Unang {baseKm} km, tapos {perKm} bawat km",
-    fareBoardTricycleRule: "Unang {baseKm} km, tapos {perKm} bawat km kada pasahero",
+    fareBoardTricycleRule: "Unang {baseKm} km, tapos {perKm} bawat km kapag mag-isa",
     fareBoardFooter: "May {percent}% discount sa jeep ang estudyante, senior at PWD · simula {date}",
     unconfirmed: "Hindi pa kumpirmado",
     modesHeading: "Ano ang sasakyan mo?",
@@ -139,7 +139,7 @@ export const tl: Dictionary = {
     showId: "Ipakita ang valid ID para makakuha ng diskwento.",
     unconfirmedTitle: "Hindi pa kumpirmado ng lungsod",
     unconfirmedBody:
-      "Ang mga singil na ito ay mula sa fare matrix noong Nobyembre 2018, ayon sa isang pag-aaral noong 2025. Aprubado na ang bagong fare matrix para sa 2026 at magsisimula ito kasabay ng bagong sticker sa 19 Oktubre 2026, pero hindi pa nailalathala ang mga halaga.",
+      "Ang singil kapag may kasabay ay mula sa fare matrix noong Nobyembre 2018, ayon sa isang pag-aaral noong 2025. Ang singil bawat km kapag mag-isa ay batay sa iniulat na binayaran ng mga pasahero, hindi sa opisyal na matrix. Aprubado na ang bagong fare matrix para sa 2026 at magsisimula ito kasabay ng bagong sticker sa 19 Oktubre 2026, pero hindi pa nailalathala ang mga halaga.",
     measuring: "Sinusukat ang ruta…",
     noRoute: "Walang nahanap na daan sa pagitan ng mga puntong ito. Subukang ilapit ang pin sa kalsada.",
     unreachable: "Hindi masukat ang ruta ngayon. I-type na lang ang layo.",
@@ -181,7 +181,7 @@ export const tl: Dictionary = {
     matrixSolo: "Mag-isa",
     matrixShared: "2 o higit pa, bawat isa",
     matrixYourRate: "Para sa inyo",
-    matrixPerKm: "+ {perKm} bawat pasahero sa bawat km lampas sa unang {baseKm} km",
+    matrixPerKm: "Lampas sa {baseKm} km: + {solo} bawat km kapag mag-isa, + {shared} bawat pasahero bawat km kapag may kasabay.",
     history: {
       title: "Paano nagbago ang pamasahe",
       current: "Kasalukuyan",

@@ -42,6 +42,7 @@ const tricycleSchema = z.object({
       discounted: z.object({ single: peso, perPassengerIfTwoOrMore: peso }),
     }),
     perSucceedingKmPerPassenger: peso,
+    perSucceedingKmSolo: peso,
   }),
 });
 
@@ -117,7 +118,10 @@ export const tricycleRules: TricycleFareRules = {
     solo: toCentavos(tricycle.current.fares.discounted.single),
     shared: toCentavos(tricycle.current.fares.discounted.perPassengerIfTwoOrMore),
   },
-  perSucceedingKmPerPassenger: toCentavos(tricycle.current.perSucceedingKmPerPassenger),
+  perSucceedingKm: {
+    solo: toCentavos(tricycle.current.perSucceedingKmSolo),
+    shared: toCentavos(tricycle.current.perSucceedingKmPerPassenger),
+  },
 };
 
 export const tricycleSource: FareSourceInfo = {

@@ -7,7 +7,8 @@ export type TricycleFareRules = {
   baseKm: number;
   regular: { solo: Centavos; shared: Centavos };
   discounted: { solo: Centavos; shared: Centavos };
-  perSucceedingKmPerPassenger: Centavos;
+  /** Added for each km after baseKm, per passenger; a solo rider pays the solo rate. */
+  perSucceedingKm: { solo: Centavos; shared: Centavos };
 };
 
 export type JeepType = "traditional" | "modern";
@@ -59,9 +60,10 @@ export const displayKm = (distanceKm: number): number => Math.round(distanceKm *
 /**
  * Kilometres charged for a trip.
  * The official rule for part-kilometres is not yet confirmed (see docs/specs).
- * Working assumption: round the displayed distance up to the next whole km, at least 1 km.
+ * Working assumption: round the displayed distance to the nearest whole km, at least 1 km.
+ * This matches a rider-reported fare (11.4 km solo billed as 11 km for ₱100).
  */
-export const billableKm = (distanceKm: number): number => Math.max(1, Math.ceil(displayKm(distanceKm)));
+export const billableKm = (distanceKm: number): number => Math.max(1, Math.round(displayKm(distanceKm)));
 
 export function tricycleFare(
   rules: TricycleFareRules,
@@ -71,7 +73,7 @@ export function tricycleFare(
   const rate = passengers.regular + passengers.discounted === 1 ? "solo" : "shared";
   const km = billableKm(distanceKm);
   const extraKm = Math.max(0, km - rules.baseKm);
-  const extraEach = extraKm * rules.perSucceedingKmPerPassenger;
+  const extraEach = extraKm * rules.perSucceedingKm[rate];
   const regularEach = rules.regular[rate] + extraEach;
   const discountedEach = rules.discounted[rate] + extraEach;
 
