@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { Suspense } from "react";
 
 import { FarePlanner } from "@/components/fare/fare-planner";
@@ -29,26 +30,34 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function FarePage() {
-  // Verified resident routes come from a cached query, so they join the prerendered
-  // shell with the presets and the page stays static until an admin approves one.
-  const communityRoutes = await listVerifiedRoutes();
-
+export default function FarePage() {
   return (
     // The planner reads the trip from the address, so it renders in the browser behind Suspense
     // while the rest of the page is prerendered.
     <Suspense fallback={<main className="flex-1" aria-busy="true" />}>
-      <FarePlanner
-        tricycleRules={tricycleRules}
-        tricycleSource={tricycleSource}
-        jeepRules={jeepRules}
-        jeepPreviousRates={jeepPreviousRates}
-        jeepSource={jeepSource}
-        jeepRoutes={[...jeepRoutes, ...communityRoutes]}
-        landmarks={landmarks}
-        terminals={terminals}
-        boundary={cityBoundary}
-      />
+      <Planner />
     </Suspense>
+  );
+}
+
+async function Planner() {
+  // Verified resident routes are read per request, not at build time, so the image builds
+  // without a database. The query is cached, so this hits the database at most hourly
+  // or after an admin approves a route.
+  await connection();
+  const communityRoutes = await listVerifiedRoutes();
+
+  return (
+    <FarePlanner
+      tricycleRules={tricycleRules}
+      tricycleSource={tricycleSource}
+      jeepRules={jeepRules}
+      jeepPreviousRates={jeepPreviousRates}
+      jeepSource={jeepSource}
+      jeepRoutes={[...jeepRoutes, ...communityRoutes]}
+      landmarks={landmarks}
+      terminals={terminals}
+      boundary={cityBoundary}
+    />
   );
 }

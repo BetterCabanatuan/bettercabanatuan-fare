@@ -1,0 +1,67 @@
+# Pamasahe Cabanatuan on a single VPS: Postgres, a one-shot migration, and the app.
+#
+#   cp .env.example .env      # then fill in the "Docker / VPS" section
+#   docker compose up -d --build
+#
+# The app listens on 127.0.0.1:3000; put a reverse proxy (Caddy, nginx) in front for HTTPS.
+# Variables below come from .env in this folder.
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pamasahe
+      POSTGRES_USER: pamasahe
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pamasahe -d pamasahe"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Applies pending Prisma migrations, then exits. The app waits for it to succeed.
+  migrate:
+    build:
+      context: .
+      target: migrate
+    environment:
+      DATABASE_URL: postgresql://pamasahe:${POSTGRES_PASSWORD}@db:5432/pamasahe
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      target: runner
+      args:
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:?Set NEXT_PUBLIC_SITE_URL in .env}
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://pamasahe:${POSTGRES_PASSWORD}@db:5432/pamasahe
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET in .env}
+      BETTER_AUTH_URL: ${NEXT_PUBLIC_SITE_URL}
+      ADMIN_EMAILS: ${ADMIN_EMAILS:?Set ADMIN_EMAILS in .env}
+      # Production refuses to send admin sign-in links without it.
+      RESEND_API_KEY: ${RESEND_API_KEY:?Set RESEND_API_KEY in .env}
+      EMAIL_FROM: ${EMAIL_FROM:-Pamasahe Cabanatuan <onboarding@resend.dev>}
+    ports:
+      - "127.0.0.1:${APP_PORT:-3000}:3000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    # A tiny init as PID 1 passes stop signals to Node, so shutdowns are clean and quick.
+    init: true
+    # Logs are capped so a busy month can't fill the disk.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  pgdata:
