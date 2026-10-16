@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── TODA directory ───────────────────────────────────────────────────────────
+
+enum SubmissionStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+/// What a resident sent through /toda/submit. Never shown publicly as-is: an admin
+/// verifies it first, and only then is it copied into `Toda`.
+model TodaSubmission {
+  id                  String           @id @default(cuid())
+  name                String
+  terminalDescription String
+  barangay            String
+  lat                 Float?
+  lng                 Float?
+  barangaysServed     String[]
+  units               Int?
+  /// Association hotline or office number. Published once verified.
+  officialContact     String?
+  /// Who sent it. Private: only admins see these two fields.
+  submitterName       String?
+  submitterContact    String?
+  notes               String?
+
+  status          SubmissionStatus @default(PENDING)
+  rejectionReason String?
+  reviewedAt      DateTime?
+  reviewedBy      User?            @relation(fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedById    String?
+  /// The directory entry this submission created or updated when it was verified.
+  toda            Toda?            @relation(fields: [todaId], references: [id], onDelete: SetNull)
+  todaId          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@map("toda_submission")
+}
+
+/// The public TODA list. Rows are only written when an admin verifies a submission.
+model Toda {
+  /// Slug of the name, e.g. "sumacab-este-toda".
+  id                  String   @id
+  name                String
+  terminalDescription String
+  barangay            String
+  lat                 Float?
+  lng                 Float?
+  barangaysServed     String[]
+  units               Int?
+  officialContact     String?
+  /// "community" for resident submissions, "official" once the city's list confirms it.
+  source              String   @default("community")
+  lastVerified        DateTime
+
+  submissions TodaSubmission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("toda")
+}
+
+// ── Better Auth (admin magic-link sign-in) ───────────────────────────────────
+
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  reviewedSubmissions TodaSubmission[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}

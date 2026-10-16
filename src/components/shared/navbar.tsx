@@ -31,6 +31,9 @@ export function Navbar() {
             <li>
               <NavLink href="/fare?mode=jeep">Jeep fare</NavLink>
             </li>
+            <li>
+              <NavLink href="/toda">TODA</NavLink>
+            </li>
           </ul>
         </nav>
       </div>

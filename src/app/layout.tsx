@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
 
+import { AlphaBanner } from "@/components/shared/alpha-banner";
 import { Footer } from "@/components/shared/footer";
 import { Navbar } from "@/components/shared/navbar";
 import { siteName, siteUrl } from "@/lib/site";
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={cn("antialiased", manrope.variable)}>
       <body className="flex min-h-dvh flex-col">
+        <AlphaBanner />
         <Navbar />
         {children}
         <Footer />

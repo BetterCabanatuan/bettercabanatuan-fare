@@ -4,7 +4,8 @@ export function Footer() {
       <div className="mx-auto flex max-w-5xl flex-col gap-2 px-4 py-8 text-sm sm:flex-row sm:items-center sm:justify-between">
         <p>
           <span className="font-bold">Pamasahe Cabanatuan</span> · Community-made
-          with BetterCabanatuan. Not an official city government site.
+          with BetterCabanatuan. Not an official city government site. Alpha version: fares are
+          estimates and may differ from the actual rates.
         </p>
         <p>
           <a
