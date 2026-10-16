@@ -30,10 +30,17 @@
     ]
   },
   "pending": {
-    "label": "Proposed 2026 fare matrix (draft ordinance)",
-    "status": "Draft. Public hearing held 2026-03-31. As of early April 2026 the city said it was not yet approved. No later news found.",
-    "fares": "TODO: get the final approved version from the Sangguniang Panlungsod",
+    "label": "New 2026 tricycle fare matrix (approved ordinance)",
+    "status": "Approved. Public hearing held 2026-03-31. Passed by the Sangguniang Panlungsod 2026-04-14, approved by the Sangguniang Panlalawigan 2026-08-18. Fare matrix stickers roll out 2026-10-19. The LGU post gives no fare amounts.",
+    "ordinanceNo": "TODO: ask the Public Transport Regulation Division or CBLIPO",
+    "publicHearing": "2026-03-31",
+    "approvedBySangguniangPanlungsod": "2026-04-14",
+    "approvedBySangguniangPanlalawigan": "2026-08-18",
+    "stickerRollout": "2026-10-19",
+    "fares": "TODO: copy from the new fare matrix sticker or the ordinance text",
+    "complaintsHotline": "0998-500-2726",
     "sources": [
+      "https://www.facebook.com/lgucabanatuan/posts/pfbid0ArUeMyUy87U4dAfXG5Y8XeZmcJeYvEnkXmfW3Ya1DGtSX3mU91YH1F3ot6HRwH4yl",
       "https://www.rappler.com/newsbreak/fact-check/new-cabanatuan-city-fare-matrix-ordinance-draft-not-yet-in-force/"
     ]
   },
