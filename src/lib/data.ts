@@ -11,6 +11,7 @@ import tricycleJson from "../../data/tricycle/fare-matrix.json";
 import { toCentavos, type Centavos, type JeepFareRules, type JeepType, type TricycleFareRules } from "@/lib/fare";
 import { projectOntoLine, type LngLat } from "@/lib/geo";
 import type { JeepRoute, JeepStop, JeepTerminal } from "@/lib/jeep-routes";
+import { collectUrls } from "@/lib/source-text";
 
 export type FareSourceInfo = {
   confirmed: boolean;
@@ -183,6 +184,14 @@ export const jeepSource: FareSourceInfo = {
   effectiveDate: jeep.effectiveDate,
   lastChecked: jeep.lastChecked,
 };
+
+/** Every reference URL in the fare files (current, pending and past rates), for the Sources page. */
+export const tricycleFareReferences: string[] = collectUrls(tricycleJson);
+export const jeepFareReferences: string[] = collectUrls(jeepRulesJson);
+/** Every URL in each preset route's entry: its source plus any additional sources and notes. */
+export const routeReferences: Record<string, string[]> = Object.fromEntries(
+  routesJson.routes.map((route) => [route.id, collectUrls(route)]),
+);
 
 /** Named points along a preset line (terminal, via towns, destination) with their km from the start. */
 function stopsFromWaypoints(waypoints: { name: string; position: LngLat }[], line: LngLat[] | undefined): JeepStop[] {

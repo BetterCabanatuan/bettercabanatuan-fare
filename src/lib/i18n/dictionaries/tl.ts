@@ -25,6 +25,7 @@ export const tl: Dictionary = {
   footer: {
     about: "Gawa ng komunidad kasama ang BetterCabanatuan. Hindi ito opisyal na website ng pamahalaang lungsod.",
     mapData: "Datos ng mapa © mga contributor ng OpenStreetMap",
+    sources: "Mga pinagkunan",
     alpha: "Alpha version: tantiya lang ang mga pamasahe at maaaring iba sa aktuwal na singil.",
   },
   banner: {
@@ -106,6 +107,7 @@ export const tl: Dictionary = {
     busTerminal: "Terminal ng bus",
     jeepStop: "Sakayan ng jeep",
     unverifiedPlace: "hindi pa kumpirmado ang lokasyon",
+    source: "Pinagkunan",
     noRoutesHere: "Wala pang nakamapang ruta ng jeep mula rito. Puwede mo pa ring simulan o tapusin dito ang biyahe mo.",
     busOnly: "Mga bus papuntang probinsya lang. Sa Central Terminal at sa mga pangunahing kalsada sumasakay sa jeep.",
     terminalMarker: "{kind}: {name}",
@@ -291,6 +293,28 @@ export const tl: Dictionary = {
     suggestTitle: "May alam kang ruta ng jeep na wala pa rito?",
     suggestBody: "Sabihin mo kung saan ito dumadaan at magkano ang bayad. Sinusuri namin ang bawat isa bago ilagay sa mapa.",
     suggestCta: "Magmungkahi ng ruta",
+  },
+  sources: {
+    title: "Mga pinagkunan",
+    description:
+      "Saan galing ang mga pamasahe, ruta ng jeep, terminal at datos ng mapa sa Pamasahe Cabanatuan, kasama ang link para masuri mo ang bawat isa.",
+    intro:
+      "Galing sa pampublikong pinagkunan ang bawat pamasahe, ruta at terminal dito. Nakalista silang lahat para masuri mo mismo. Karamihan ay balita, pananaliksik at travel guide at hindi opisyal na rekord ng lungsod, kaya ituring munang tantiya ang mga halaga hanggang mailagay dito ang opisyal na fare matrix.",
+    servicesTitle: "Mapa, layo sa kalsada at paghahanap ng lugar",
+    osm: "Datos ng mapa, hangganan ng lungsod, mga palatandaan at karamihan ng lokasyon ng terminal. © mga contributor ng OpenStreetMap, sa ilalim ng Open Database License.",
+    carto: "Ang base na itsura at tiles ng mapa (Positron at Dark Matter).",
+    osrm: "Layo sa kalsada para sa pamasahe sa tricycle, mula sa OSRM routing server ng FOSSGIS.",
+    photon: "Paghahanap ng lugar at pangalan ng mga pin na inilalagay mo, gawa ng komoot.",
+    tricycleTitle: "Pamasahe sa tricycle",
+    tricycleNote:
+      "Ang singil kada km kapag mag-isa ay kinuwenta mula sa iniulat na pamasahe ng isang pasahero, hindi mula sa ordinansa. Papalitan ito ng opisyal na 2026 fare matrix.",
+    jeepTitle: "Pamasahe sa jeep",
+    jeepNote: "{authority}, epektibo simula {date}.",
+    routesTitle: "Mga ruta ng jeep",
+    routesNote:
+      "Binabanggit ng bawat pinagkunan ang terminal at mga bayan ng ruta. Sinusundan ng linya sa mapa ang mga pangunahing kalsada sa pagitan nila, kaya tantiya lang ito. Sinusuri muna ng admin ang mga rutang idinagdag ng mga residente bago lumabas.",
+    terminalsTitle: "Mga terminal at sakayan",
+    unverified: "hindi pa kumpirmado ang lokasyon",
   },
   suggest: {
     title: "Magmungkahi ng ruta ng jeep",

@@ -6,6 +6,7 @@ import { useEffect, useId, useRef, type KeyboardEvent } from "react";
 
 import type { PointKey } from "@/components/fare/types";
 import { useDictionary } from "@/components/shared/dictionary-provider";
+import { SourceText } from "@/components/shared/source-text";
 import { Button } from "@/components/ui/button";
 import { MapPopup, useMap } from "@/components/ui/map";
 import type { LngLat } from "@/lib/geo";
@@ -16,6 +17,8 @@ type RoutePopupProps = {
   position: LngLat;
   title: string;
   subtitle: string;
+  /** Where this spot's position comes from, when it is a listed terminal. */
+  source?: string;
   /** Routes that pass this spot; those with a line can be highlighted from the list. */
   routes: JeepRoute[];
   /** Shown instead of the list when no mapped route is attached to this spot. */
@@ -36,6 +39,7 @@ export function RoutePopup({
   position,
   title,
   subtitle,
+  source,
   routes,
   emptyNote,
   highlightedRouteId,
@@ -100,6 +104,12 @@ export function RoutePopup({
               {title}
             </p>
             <p className="text-xs text-muted-foreground">{subtitle}</p>
+            {source && (
+              // Long notes (every bus bay id) are clipped here; the Sources page has them in full.
+              <p className="line-clamp-2 text-xs text-muted-foreground">
+                {dict.planner.source}: <SourceText source={source} />
+              </p>
+            )}
           </div>
           <button
             type="button"
@@ -143,6 +153,9 @@ export function RoutePopup({
                     <span className="pl-6 text-xs text-muted-foreground">{dict.planner.lineNotDrawn}</span>
                   </p>
                 )}
+                <p className="truncate pb-1 pl-8 text-xs text-muted-foreground">
+                  {dict.planner.source}: <SourceText source={route.source} />
+                </p>
               </li>
             );
           })}

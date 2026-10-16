@@ -22,6 +22,7 @@ export const en = {
   footer: {
     about: "Community-made with BetterCabanatuan. Not an official city government site.",
     mapData: "Map data © OpenStreetMap contributors",
+    sources: "Sources",
     alpha: "Alpha version: fares are estimates and may differ from the actual rates.",
   },
   banner: {
@@ -104,6 +105,7 @@ export const en = {
     jeepStop: "Jeep stop",
     terminalMarker: "{kind}: {name}",
     unverifiedPlace: "position not yet confirmed",
+    source: "Source",
     noRoutesHere: "No mapped jeep route leaves from here yet. You can still start or end your trip here.",
     busOnly: "Provincial buses only. Jeeps load at the Central Terminal and along the main roads.",
     terminalRoutes: "Jeeps that leave from here",
@@ -286,6 +288,28 @@ export const en = {
     suggestTitle: "Know a jeep route we're missing?",
     suggestBody: "Tell us where it goes and what you paid. We check each one before it goes on the map.",
     suggestCta: "Suggest a route",
+  },
+  sources: {
+    title: "Sources",
+    description:
+      "Where the fares, jeep routes, terminals and map data on Pamasahe Cabanatuan come from, with a link to check each one.",
+    intro:
+      "Every fare, route and terminal on this site comes from a public source. They are all listed here so you can check them yourself. Most are news reports, research and travel guides rather than the city's own records, so treat the amounts as estimates until the official fare matrix is posted here.",
+    servicesTitle: "Map, road distances and place search",
+    osm: "Map data, the city boundary, landmarks and most terminal positions. © OpenStreetMap contributors, available under the Open Database License.",
+    carto: "The map's base style and tiles (Positron and Dark Matter).",
+    osrm: "Road distances for tricycle fares, from the OSRM routing server run by FOSSGIS.",
+    photon: "Place search and the names of pins you drop, by komoot.",
+    tricycleTitle: "Tricycle fares",
+    tricycleNote:
+      "The solo rate per km is worked out from one rider's reported fare, not from an ordinance. It will be replaced by the official 2026 fare matrix.",
+    jeepTitle: "Jeep fares",
+    jeepNote: "{authority}, effective {date}.",
+    routesTitle: "Jeep routes",
+    routesNote:
+      "Each source names the route's terminal and towns. The line on the map follows the main roads between them, so it is approximate. Routes added by residents are checked by an admin before they appear.",
+    terminalsTitle: "Terminals and stops",
+    unverified: "position not yet confirmed",
   },
   suggest: {
     title: "Suggest a jeep route",

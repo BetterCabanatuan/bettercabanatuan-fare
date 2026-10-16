@@ -20,6 +20,8 @@ type Terminal = {
   /** Unset while the terminal's name is still a TODO in the data. */
   name?: string;
   verified: boolean;
+  /** Unset for a spot that comes only from a route's terminal position. */
+  source?: string;
   routes: JeepRoute[];
 };
 
@@ -44,6 +46,7 @@ function groupTerminals(terminals: JeepTerminal[], routes: JeepRoute[]): Termina
     kind: terminal.kind,
     name: terminal.name,
     verified: terminal.verified,
+    source: terminal.source,
     routes: [],
   }));
   for (const route of routes) {
@@ -148,6 +151,7 @@ export function TerminalMarkers({
           key={open.key}
           position={open.position}
           title={open.name ?? kindLabel(open.kind)}
+          source={open.source}
           subtitle={open.verified ? kindLabel(open.kind) : `${kindLabel(open.kind)} · ${dict.planner.unverifiedPlace}`}
           routes={open.routes}
           emptyNote={open.kind === "bus" ? dict.planner.busOnly : dict.planner.noRoutesHere}
