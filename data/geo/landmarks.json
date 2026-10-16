@@ -1,0 +1,10 @@
+{
+  "_source": "Coordinates from OpenStreetMap via Nominatim, fetched 2026-10-16. Data (c) OpenStreetMap contributors, ODbL. Extend this list with common pickup and drop-off points.",
+  "landmarks": [
+    { "id": "central-terminal", "name": "Cabanatuan City Central Transport Terminal", "area": "Mabini Extension", "lat": 15.47244, "lng": 120.96897 },
+    { "id": "sm-city", "name": "SM City Cabanatuan", "area": "San Juan Poblacion", "lat": 15.46573, "lng": 120.9539 },
+    { "id": "ne-pacific-mall", "name": "NE Pacific Mall", "area": "San Juan Poblacion", "lat": 15.46021, "lng": 120.94865 },
+    { "id": "waltermart", "name": "WalterMart Cabanatuan", "area": "Isla", "lat": 15.48652, "lng": 120.97135 },
+    { "id": "cabiao-jeep-terminal", "name": "Cabiao Jeep Terminal", "area": "M. S. Garcia", "lat": 15.47188, "lng": 120.96703 }
+  ]
+}

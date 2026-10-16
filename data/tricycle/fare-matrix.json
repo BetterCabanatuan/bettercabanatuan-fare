@@ -1,0 +1,52 @@
+{
+  "_status": "UNCONFIRMED. Figures come from a 2025 research paper, not the ordinance itself. Get the ordinance number and a scanned copy from the City Legalization Division before launch.",
+  "confirmed": false,
+  "lastChecked": "2026-10-16",
+  "current": {
+    "label": "Cabanatuan tricycle fare matrix last adjusted November 2018 (stickers issued 2019)",
+    "ordinanceNo": "TODO: ask City Legalization Division",
+    "effectiveDate": "TODO",
+    "baseKm": 3,
+    "fares": {
+      "regular": {
+        "single": 20.0,
+        "perPassengerIfTwoOrMore": 15.0
+      },
+      "discounted": {
+        "single": 15.0,
+        "perPassengerIfTwoOrMore": 10.0
+      }
+    },
+    "discountedCovers": [
+      "student",
+      "senior",
+      "pwd"
+    ],
+    "perSucceedingKmPerPassenger": 5.0,
+    "specialTrip": "TODO: not found in any public source",
+    "sources": [
+      "https://www.slideshare.net/slideshow/economic-suitability-of-electronic-fare-meters-for-tricycle-drivers-in-cabanatuan-city/276068065",
+      "https://www.researchgate.net/publication/389360461_Economic_Suitability_of_Electronic_Fare_Meters_for_Tricycle_Drivers_in_Cabanatuan_City"
+    ]
+  },
+  "pending": {
+    "label": "Proposed 2026 fare matrix (draft ordinance)",
+    "status": "Draft. Public hearing held 2026-03-31. As of early April 2026 the city said it was not yet approved. No later news found.",
+    "fares": "TODO: get the final approved version from the Sangguniang Panlungsod",
+    "sources": [
+      "https://www.rappler.com/newsbreak/fact-check/new-cabanatuan-city-fare-matrix-ordinance-draft-not-yet-in-force/"
+    ]
+  },
+  "history": [
+    {
+      "ordinanceNo": "2007-040",
+      "summary": "P14 regular fare for the first 1 to 3 km",
+      "source": "https://www.researchpublish.com/upload/book/Cabanatuan%20City-3270.pdf"
+    },
+    {
+      "year": 2018,
+      "summary": "Before the Nov 2018 update: P14 first 2 km, +P2 per extra km, P10 each for multiple passengers",
+      "source": "https://tempo.mb.com.ph/2018/02/23/cabanatuan-as-tricycle-city/"
+    }
+  ]
+}

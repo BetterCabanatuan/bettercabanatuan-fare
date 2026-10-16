@@ -1,0 +1,22 @@
+{
+  "_status": "Route names only. Stops and km markers still need to be mapped (OpenStreetMap or riding the route with GPS). Confirm each route against Cabanatuan's LPTRP / LTFRB Region III franchise list.",
+  "_reportedFareNote": "reportedFare values are third-party, pre-September-2026 snapshots. Use only as a sanity check, never as the official fare.",
+  "routes": [
+    { "id": "cab-sanjose", "name": "Cabanatuan – San Jose City", "via": "Talavera (Maharlika Hwy)", "type": "traditional", "terminal": "TODO", "stops": [], "source": "https://flickr.com/photos/vlikid_7070/43012518231" },
+    { "id": "cab-talavera", "name": "Cabanatuan – Talavera", "via": "Maharlika Hwy", "type": "traditional", "terminal": "Central Transport Terminal", "reportedFare": 35, "stops": [], "source": "https://ph.commutetour.com/ph/terminal/cabanatuan/" },
+    { "id": "cab-gapan", "name": "Cabanatuan – Gapan City", "via": "Santa Rosa", "type": "traditional", "terminal": "Central Transport Terminal", "reportedFare": 40, "stops": [], "source": "https://ph.commutetour.com/ph/terminal/cabanatuan/" },
+    { "id": "cab-sanmiguel", "name": "Cabanatuan – San Miguel, Bulacan", "via": "Santa Rosa, Gapan", "type": "traditional", "terminal": "Central Transport Terminal", "stops": [], "source": "https://www.camella.com.ph/property/house-and-lot-santa-rosa-nueva-ecija/" },
+    { "id": "cab-cabiao", "name": "Cabanatuan – Cabiao", "via": "Santa Rosa", "type": "traditional", "terminal": "Central Transport Terminal", "stops": [], "source": "https://www.camella.com.ph/property/house-and-lot-santa-rosa-nueva-ecija/" },
+    { "id": "cab-zaragoza", "name": "Cabanatuan – Zaragoza", "via": "Santa Rosa", "type": "modern", "operator": "Zaragoza Ramstar Transport Service Cooperative", "reportedFare": 45, "stops": [], "source": "https://www.pna.gov.ph/articles/1196835" },
+    { "id": "cab-tarlac", "name": "Cabanatuan – Tarlac City", "via": "Santa Rosa, Zaragoza, La Paz", "type": "modern", "operator": "Zaragoza Ramstar Transport Service Cooperative", "stops": [], "source": "https://www.pna.gov.ph/articles/1196835" },
+    { "id": "cab-bongabon", "name": "Cabanatuan – Bongabon", "via": "Palayan City", "type": "modern", "operator": "Bongabon Prime Movers Transport Service Cooperative", "reportedFare": 50, "stops": [], "source": "https://www.pna.gov.ph/articles/1180704" },
+    { "id": "cab-fortmagsaysay", "name": "Cabanatuan – Fort Magsaysay (South Gate)", "via": "Cabanatuan–Fort Magsaysay Road", "type": "traditional", "terminal": "Behind Shell Crossing (per a 2023 comment)", "stops": [], "source": "https://www.lakadpilipinas.com/2015/08/nueva-ecija-travel-guide.html" },
+    { "id": "cab-gentinio", "name": "Cabanatuan – General Tinio", "via": "San Leonardo", "type": "traditional", "terminal": "Central Transport Terminal", "stops": [], "source": "https://www.generaltinio.gov.ph/view/article/8" },
+    { "id": "cab-laur", "name": "Cabanatuan – Laur", "via": "TODO", "type": "traditional", "terminal": "Central Transport Terminal", "stops": [], "source": "https://www.travelguideph.net/2026/07/cabanatuan-central-terminal-bus-schedule.html" },
+    { "id": "cab-gabaldon", "name": "Cabanatuan – Gabaldon", "via": "TODO", "type": "traditional", "terminal": "Central Transport Terminal", "stops": [], "source": "https://www.travelguideph.net/2026/07/cabanatuan-central-terminal-bus-schedule.html" },
+    { "id": "cab-licab", "name": "Cabanatuan – Licab", "via": "TODO", "type": "traditional", "terminal": "Central Transport Terminal", "reportedFare": 70, "stops": [], "source": "https://ph.commutetour.com/ph/terminal/cabanatuan/" },
+    { "id": "cab-pantabangan", "name": "Cabanatuan – Pantabangan", "via": "TODO", "type": "traditional", "terminal": "Central Transport Terminal", "reportedFare": 100, "stops": [], "source": "https://ph.commutetour.com/ph/terminal/cabanatuan/" },
+    { "id": "cab-gennatividad", "name": "Cabanatuan – General Natividad", "via": "TODO", "type": "traditional", "terminal": "Central Transport Terminal", "stops": [], "source": "https://ph.commutetour.com/ph/terminal/cabanatuan/" }
+  ],
+  "stopShape": { "name": "Example Stop", "barangay": "Example", "km": 0.0, "lat": 15.4908, "lng": 120.9678 }
+}

@@ -1,0 +1,17 @@
+{
+  "_status": "EMPTY. No public list of Cabanatuan TODAs was found online. Request it from the City Economic Enterprise and Public Utilities Management Office / Transport Management and Legalization Unit, or collect it via a community form.",
+  "_privacy": "Publish only an official TODA contact (association hotline or office), not personal mobile numbers, unless the person agrees in writing.",
+  "todas": [],
+  "shape": {
+    "id": "example-toda",
+    "name": "Example TODA",
+    "acronymMeaning": "",
+    "terminal": { "description": "", "barangay": "", "lat": null, "lng": null },
+    "barangaysServed": [],
+    "units": null,
+    "president": "",
+    "officialContact": "",
+    "lastVerified": "YYYY-MM-DD",
+    "source": "official | community"
+  }
+}
