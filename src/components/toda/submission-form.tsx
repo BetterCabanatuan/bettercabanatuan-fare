@@ -33,6 +33,12 @@ type BarangayRow = { key: number; value: string };
 const initialState: SubmitState = { status: "idle" };
 
 export function SubmissionForm({ boundary }: { boundary: LngLat[] }) {
+  // A new key remounts the form, which clears every field and the action state.
+  const [round, setRound] = useState(0);
+  return <SubmissionRound key={round} boundary={boundary} onAddAnother={() => setRound((r) => r + 1)} />;
+}
+
+function SubmissionRound({ boundary, onAddAnother }: { boundary: LngLat[]; onAddAnother: () => void }) {
   const [state, dispatch] = useActionState(submitToda, initialState);
   const [isPending, startTransition] = useTransition();
   const [clientErrors, setClientErrors] = useState<FieldErrors | null>(null);
@@ -74,7 +80,7 @@ export function SubmissionForm({ boundary }: { boundary: LngLat[] }) {
   }
 
   if (state.status === "received") {
-    return <Received reference={state.reference} />;
+    return <Received reference={state.reference} onAddAnother={onAddAnother} />;
   }
 
   const addRow = () => {
@@ -278,7 +284,7 @@ export function SubmissionForm({ boundary }: { boundary: LngLat[] }) {
   );
 }
 
-function Received({ reference }: { reference: string }) {
+function Received({ reference, onAddAnother }: { reference: string; onAddAnother: () => void }) {
   return (
     <div role="status" className="flex flex-col items-start gap-4 rounded-xl border bg-card p-6">
       <CircleCheck aria-hidden="true" className="size-8 text-primary" />
@@ -293,7 +299,7 @@ function Received({ reference }: { reference: string }) {
         <Button render={<Link href="/toda" />} nativeButton={false} variant="outline" size="lg">
           See the TODA list
         </Button>
-        <Button render={<a href="/toda/submit" />} nativeButton={false} variant="ghost" size="lg">
+        <Button variant="ghost" size="lg" onClick={onAddAnother}>
           Add another TODA
         </Button>
       </div>
