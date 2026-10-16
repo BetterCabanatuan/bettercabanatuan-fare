@@ -18,7 +18,7 @@ import {
   type MapRef,
 } from "@/components/ui/map";
 import type { LngLat } from "@/lib/geo";
-import type { JeepRoute } from "@/lib/jeep-routes";
+import type { JeepRoute, JeepTerminal } from "@/lib/jeep-routes";
 import { cn } from "@/lib/utils";
 
 const CABANATUAN_CENTER: LngLat = [120.9667, 15.4865];
@@ -42,6 +42,8 @@ type PlannerMapProps = {
   boundary: LngLat[];
   /** Jeep routes whose terminals, far ends and (when highlighted) stops get markers in jeep mode. */
   routes: JeepRoute[];
+  /** Listed terminals and stops, shown in jeep mode. */
+  terminals: JeepTerminal[];
   highlightedRouteId: string | null;
   onHighlightRoute: (routeId: string | null) => void;
   onMapClick: (position: LngLat) => void;
@@ -60,6 +62,7 @@ export function PlannerMap({
   lines,
   boundary,
   routes,
+  terminals,
   highlightedRouteId,
   onHighlightRoute,
   onMapClick,
@@ -100,6 +103,7 @@ export function PlannerMap({
       {mode === "jeep" && (
         <>
           <TerminalMarkers
+            terminals={terminals}
             routes={routes}
             highlightedRouteId={highlightedRouteId}
             onHighlightRoute={onHighlightRoute}

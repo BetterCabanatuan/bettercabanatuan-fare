@@ -18,7 +18,7 @@ import type { MapRef } from "@/components/ui/map";
 import type { FareSourceInfo, JeepPreviousRates, Landmark } from "@/lib/data";
 import type { JeepFareRules, TricycleFareRules } from "@/lib/fare";
 import { isInsideRing, sliceLine, type LngLat } from "@/lib/geo";
-import { hasLine, type JeepRoute, type JeepTrip } from "@/lib/jeep-routes";
+import { hasLine, type JeepRoute, type JeepTerminal, type JeepTrip } from "@/lib/jeep-routes";
 import { fetchRoadRoute, reversePlace } from "@/lib/map-services";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +32,7 @@ type FarePlannerProps = {
   jeepPreviousRates: JeepPreviousRates;
   jeepSource: FareSourceInfo;
   jeepRoutes: JeepRoute[];
+  terminals: JeepTerminal[];
   landmarks: Landmark[];
   boundary: LngLat[];
 };
@@ -82,6 +83,7 @@ export function FarePlanner({
   jeepPreviousRates,
   jeepSource,
   jeepRoutes,
+  terminals,
   landmarks,
   boundary,
 }: FarePlannerProps) {
@@ -392,6 +394,7 @@ export function FarePlanner({
           lines={lines}
           boundary={boundary}
           routes={jeepRoutes}
+          terminals={terminals}
           highlightedRouteId={highlightedRouteId}
           onHighlightRoute={highlightRoute}
           onMapClick={handleMapClick}

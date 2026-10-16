@@ -9,6 +9,7 @@ import {
   jeepRules,
   jeepSource,
   landmarks,
+  terminals,
   tricycleRules,
   tricycleSource,
 } from "@/lib/data";
@@ -45,6 +46,7 @@ export default async function FarePage() {
         jeepSource={jeepSource}
         jeepRoutes={[...jeepRoutes, ...communityRoutes]}
         landmarks={landmarks}
+        terminals={terminals}
         boundary={cityBoundary}
       />
     </Suspense>

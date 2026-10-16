@@ -1,0 +1,85 @@
+{
+  "_status": "Positions from OpenStreetMap (ODbL) unless noted, fetched 2026-10-17. Which jeep routes leave from each terminal is attached by the app from routes.json; most route-to-terminal links are still unconfirmed on site.",
+  "terminals": [
+    {
+      "id": "central-terminal",
+      "name": "Cabanatuan City Central Transport Terminal",
+      "kind": "mixed",
+      "lat": 15.47244,
+      "lng": 120.96897,
+      "verified": true,
+      "note": "Jeeps and UV Express, plus the Five Star, Baliwag, Genesis, Aurora and D Liner bus bays inside the compound.",
+      "source": "OpenStreetMap way 837741332; bus bays nodes 1352497777, 1352497779, 1352497788, 1352497791, 2148694656"
+    },
+    {
+      "id": "cabiao-jeep-terminal",
+      "name": "Cabiao Jeep Terminal",
+      "kind": "jeep",
+      "lat": 15.47188,
+      "lng": 120.96703,
+      "verified": true,
+      "note": "Circumferential Road, about 220 m west of the Central Terminal.",
+      "source": "OpenStreetMap node 4780171537"
+    },
+    {
+      "id": "crossing",
+      "name": "Crossing jeepney terminal (Del Pilar St.)",
+      "kind": "jeep",
+      "lat": 15.4932,
+      "lng": 120.9744,
+      "verified": false,
+      "note": "Behind the Shell station at Crossing; the Fort Magsaysay jeeps queue here.",
+      "source": "Waze place listing and a 2023 traveller comment (community); position approximate"
+    },
+    {
+      "id": "sm-city-terminal",
+      "name": "SM City Cabanatuan Transport Terminal",
+      "kind": "jeep",
+      "lat": 15.46573,
+      "lng": 120.9539,
+      "verified": true,
+      "note": "Maharlika Highway side of SM City Cabanatuan.",
+      "source": "OpenStreetMap way 749118496"
+    },
+    {
+      "id": "waltermart-terminal",
+      "name": "WalterMart Cabanatuan Transport Terminal",
+      "kind": "jeep",
+      "lat": 15.48652,
+      "lng": 120.97135,
+      "verified": true,
+      "note": "Narra Street, Isla.",
+      "source": "OpenStreetMap way 750790516"
+    },
+    {
+      "id": "ne-pacific-mall",
+      "name": "NE Pacific Mall jeepney stop",
+      "kind": "stop",
+      "lat": 15.46021,
+      "lng": 120.94865,
+      "verified": false,
+      "note": "Jeeps along Maharlika Highway load and unload in front of the mall. No terminal is mapped here yet.",
+      "source": "Mall position from OpenStreetMap way 116466809; stop inferred, unverified"
+    },
+    {
+      "id": "es-transport",
+      "name": "ES Transport bus terminal",
+      "kind": "bus",
+      "lat": 15.49388,
+      "lng": 120.97521,
+      "verified": true,
+      "note": "M. H. del Pilar Street, Sangitan, near Crossing.",
+      "source": "OpenStreetMap way 120865151"
+    },
+    {
+      "id": "five-star-depot",
+      "name": "Five Star and Baliwag Transit depots",
+      "kind": "bus",
+      "lat": 15.48308,
+      "lng": 120.96113,
+      "verified": true,
+      "note": "Zulueta Street, Kapitan Pepe Subdivision.",
+      "source": "OpenStreetMap nodes 1003847611 and 921123555"
+    }
+  ]
+}

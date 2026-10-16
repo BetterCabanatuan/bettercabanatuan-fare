@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { cityBoundary, jeepRoutes, jeepRules, landmarks, tricycleRules, tricycleSource } from "@/lib/data";
+import { cityBoundary, jeepRoutes, jeepRules, landmarks, terminals, tricycleRules, tricycleSource } from "@/lib/data";
 import { haversineKm, isInsideRing } from "@/lib/geo";
 
 describe("data files", () => {
@@ -62,5 +62,13 @@ describe("stops derived from waypoints", () => {
       expect([...kms].sort((x, y) => x - y), route.id).toEqual(kms);
       expect(route.stops.some((stop) => stop.name.includes("routing aid")), route.id).toBe(false);
     }
+  });
+});
+
+describe("terminals", () => {
+  it("lists every terminal inside the city with a unique id", () => {
+    expect(terminals.length).toBeGreaterThanOrEqual(5);
+    expect(new Set(terminals.map((terminal) => terminal.id)).size).toBe(terminals.length);
+    expect(terminals.every((terminal) => isInsideRing(terminal.position, cityBoundary))).toBe(true);
   });
 });

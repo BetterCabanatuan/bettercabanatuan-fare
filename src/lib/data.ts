@@ -6,10 +6,11 @@ import boundaryJson from "../../data/geo/cabanatuan-boundary.json";
 import landmarksJson from "../../data/geo/landmarks.json";
 import jeepRulesJson from "../../data/jeepney/fare-rules.json";
 import routesJson from "../../data/jeepney/routes.json";
+import terminalsJson from "../../data/jeepney/terminals.json";
 import tricycleJson from "../../data/tricycle/fare-matrix.json";
 import { toCentavos, type Centavos, type JeepFareRules, type JeepType, type TricycleFareRules } from "@/lib/fare";
 import { projectOntoLine, type LngLat } from "@/lib/geo";
-import type { JeepRoute, JeepStop } from "@/lib/jeep-routes";
+import type { JeepRoute, JeepStop, JeepTerminal } from "@/lib/jeep-routes";
 
 export type FareSourceInfo = {
   confirmed: boolean;
@@ -92,6 +93,21 @@ const routesSchema = z.object({
           lng: z.number(),
         }),
       ),
+    }),
+  ),
+});
+
+const terminalsSchema = z.object({
+  terminals: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      kind: z.enum(["jeep", "bus", "mixed", "stop"]),
+      lat: z.number(),
+      lng: z.number(),
+      verified: z.boolean(),
+      note: z.string().optional(),
+      source: z.string(),
     }),
   ),
 });
@@ -191,6 +207,10 @@ export const jeepRoutes: JeepRoute[] = routesSchema.parse(routesJson).routes.map
       ? route.stops.map(({ lat, lng, ...stop }) => ({ ...stop, position: [lng, lat] }))
       : stopsFromWaypoints(waypoints, route.directions[0]?.line),
 }));
+
+export const terminals: JeepTerminal[] = terminalsSchema
+  .parse(terminalsJson)
+  .terminals.map(({ lat, lng, ...terminal }) => ({ ...terminal, position: [lng, lat] }));
 
 export const landmarks: Landmark[] = landmarksSchema
   .parse(landmarksJson)

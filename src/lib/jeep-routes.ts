@@ -3,6 +3,20 @@ import { projectOntoLine, type LineProjection, type LngLat } from "@/lib/geo";
 
 export type JeepStop = { name: string; barangay?: string; km?: number; position: LngLat };
 
+/** jeep: jeeps queue here. bus: provincial buses only. mixed: both. stop: a roadside loading spot. */
+export type TerminalKind = "jeep" | "bus" | "mixed" | "stop";
+
+export type JeepTerminal = {
+  id: string;
+  name: string;
+  kind: TerminalKind;
+  position: LngLat;
+  /** False when the spot comes from a community source or is inferred. */
+  verified: boolean;
+  note?: string;
+  source: string;
+};
+
 /** One direction of travel; outbound and return can use different streets. */
 export type RouteDirection = { id: string; label: string; line: LngLat[] };
 

@@ -18,6 +18,8 @@ type RoutePopupProps = {
   subtitle: string;
   /** Routes that pass this spot; those with a line can be highlighted from the list. */
   routes: JeepRoute[];
+  /** Shown instead of the list when no mapped route is attached to this spot. */
+  emptyNote?: string;
   highlightedRouteId: string | null;
   onHighlightRoute: (routeId: string | null) => void;
   /** Which pick leads: riders board at a terminal and get off at a route's far end. */
@@ -35,6 +37,7 @@ export function RoutePopup({
   title,
   subtitle,
   routes,
+  emptyNote,
   highlightedRouteId,
   onHighlightRoute,
   leadingPick,
@@ -108,6 +111,7 @@ export function RoutePopup({
           </button>
         </div>
 
+        {routes.length === 0 && emptyNote && <p className="text-sm text-muted-foreground">{emptyNote}</p>}
         <ul className="-mx-1 flex max-h-48 flex-col overflow-y-auto">
           {routes.map((route) => {
             const highlighted = route.id === highlightedRouteId;
