@@ -812,6 +812,8 @@ type MapControlsProps = {
   className?: string;
   /** Callback with user coordinates when located */
   onLocate?: (coords: { longitude: number; latitude: number }) => void;
+  /** Callback when the browser can't or won't give a location */
+  onLocateError?: (error: GeolocationPositionError) => void;
 };
 
 const positionClasses = {
@@ -867,6 +869,7 @@ function MapControls({
   showFullscreen = false,
   className,
   onLocate,
+  onLocateError,
 }: MapControlsProps) {
   const { map } = useMap();
   const [waitingForLocation, setWaitingForLocation] = useState(false);
@@ -900,15 +903,17 @@ function MapControls({
         onLocate?.(coords);
         setWaitingForLocation(false);
       },
+      // A denied or unavailable location is the rider's setting, not a bug, so it goes to the
+      // caller to explain rather than to console.error (which also opens the Next dev overlay).
       (error) => {
-        console.error("Error getting location:", error);
         setWaitingForLocation(false);
+        onLocateError?.(error);
       },
       // Without a timeout the spec default is Infinity: a dismissed permission
       // prompt would leave the button disabled forever.
       { timeout: 10000 },
     );
-  }, [map, onLocate]);
+  }, [map, onLocate, onLocateError]);
 
   const handleFullscreen = useCallback(() => {
     const container = map?.getContainer();
