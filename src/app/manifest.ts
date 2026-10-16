@@ -14,7 +14,7 @@ export default function manifest(): MetadataRoute.Manifest {
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
       { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
-      // Full-bleed with the pin inside the safe zone, so Android's circle or squircle mask never clips it.
+      // Full-bleed with the peso sun inside the safe zone, so Android's circle or squircle mask never clips it.
       { src: "/icons/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };

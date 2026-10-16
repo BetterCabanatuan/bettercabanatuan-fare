@@ -1,6 +1,6 @@
 # Pamasahe logo
 
-A sibling of the [BetterCabanatuan](https://bettercabanatuan.org) logo: the Cabanatuan city silhouette with the Philippine sun rising behind it, where the sun is a peso coin. Same palette as BetterCabanatuan: blue `#0032A0`, sun yellow `#F2C91D`.
+A sibling of the [BetterCabanatuan](https://bettercabanatuan.org) logo: the Cabanatuan city silhouette with the Philippine sun rising behind it, where the sun is a peso coin. The sun follows the flag's construction: eight groups of three rays reaching 19/9 of the disc radius. Same palette as BetterCabanatuan: blue `#0032A0`, sun yellow `#F2C91D`.
 
 ![Logo, app tile and favicon](logo-sizes.png)
 
