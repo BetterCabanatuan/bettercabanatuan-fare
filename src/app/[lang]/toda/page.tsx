@@ -1,6 +1,8 @@
 import { Plus } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { connection } from "next/server";
+import { Suspense } from "react";
 
 import { TodaDirectory } from "@/components/toda/toda-directory";
 import { listVerifiedTodas } from "@/lib/toda/queries";
@@ -12,9 +14,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/toda" },
 };
 
-export default async function TodaPage() {
-  const todas = await listVerifiedTodas();
-
+export default function TodaPage() {
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -34,20 +34,30 @@ export default async function TodaPage() {
         </Link>
       </header>
 
-      {todas.length === 0 ? (
-        <section className="flex flex-col items-start gap-3 rounded-xl border border-dashed p-6">
-          <h2 className="text-lg font-bold">No TODAs listed yet</h2>
-          <p className="max-w-xl text-muted-foreground">
-            Know the TODA at your terminal? Tell us its name and where it waits for passengers. It will
-            appear here once an admin checks it.
-          </p>
-          <Link href="/toda/submit" className="font-semibold text-primary underline-offset-4 hover:underline">
-            Add the first TODA
-          </Link>
-        </section>
-      ) : (
-        <TodaDirectory todas={todas} />
-      )}
+      {/* Read per request, not at build time, so the image builds without a database. */}
+      <Suspense fallback={<p className="text-muted-foreground">Loading the TODA list…</p>}>
+        <TodaList />
+      </Suspense>
     </main>
+  );
+}
+
+async function TodaList() {
+  await connection();
+  const todas = await listVerifiedTodas();
+
+  return todas.length === 0 ? (
+    <section className="flex flex-col items-start gap-3 rounded-xl border border-dashed p-6">
+      <h2 className="text-lg font-bold">No TODAs listed yet</h2>
+      <p className="max-w-xl text-muted-foreground">
+        Know the TODA at your terminal? Tell us its name and where it waits for passengers. It will
+        appear here once an admin checks it.
+      </p>
+      <Link href="/toda/submit" className="font-semibold text-primary underline-offset-4 hover:underline">
+        Add the first TODA
+      </Link>
+    </section>
+  ) : (
+    <TodaDirectory todas={todas} />
   );
 }
