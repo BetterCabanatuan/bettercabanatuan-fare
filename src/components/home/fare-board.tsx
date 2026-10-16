@@ -21,7 +21,7 @@ export async function FareBoard() {
       amount: tricycleRules.regular.solo,
       rule: fill(t.fareBoardTricycleRule, {
         baseKm: tricycleRules.baseKm,
-        perKm: formatPeso(tricycleRules.perSucceedingKmPerPassenger),
+        perKm: formatPeso(tricycleRules.perSucceedingKm.solo),
       }),
       unconfirmed: !tricycleSource.confirmed,
     },

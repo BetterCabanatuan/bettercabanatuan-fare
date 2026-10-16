@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { FareSourceInfo, JeepPreviousRates } from "@/lib/data";
-import { formatPeso, jeepFare, type JeepFareRules, type JeepType } from "@/lib/fare";
+import { formatPeso, jeepFare, type JeepFare, type JeepFareRules, type JeepType } from "@/lib/fare";
 import { formatDate } from "@/lib/format-date";
 import { fill } from "@/lib/i18n/locales";
 
@@ -34,10 +34,8 @@ export function JeepFareCalculator({ rules, previousRates, source }: JeepFareCal
   const [km, setKm] = useState(5);
   const ids = useId();
   const headingId = `${ids}-heading`;
-  const typeLabelId = `${ids}-type`;
   const kmLabelId = `${ids}-km`;
 
-  const rule = rules.types[type];
   const fare = jeepFare(rules, type, km);
 
   return (
@@ -47,33 +45,7 @@ export function JeepFareCalculator({ rules, previousRates, source }: JeepFareCal
           {dict.jeep.computeByDistance}
         </h2>
 
-        <div className="flex flex-col gap-2">
-          <span id={typeLabelId} className="text-sm font-medium">
-            {dict.jeep.jeepType}
-          </span>
-          <ToggleGroup
-            aria-labelledby={typeLabelId}
-            variant="outline"
-            spacing={0}
-            className="w-full"
-            value={[type]}
-            onValueChange={(value) => {
-              const next = JEEP_TYPES.find((jeepType) => jeepType === value[0]);
-              // Ignore the deselect that toggling the active item would cause.
-              if (next) setType(next);
-            }}
-          >
-            {JEEP_TYPES.map((jeepType) => (
-              <ToggleGroupItem
-                key={jeepType}
-                value={jeepType}
-                className="h-11 flex-1 aria-pressed:bg-primary aria-pressed:text-primary-foreground"
-              >
-                {dict.jeep[jeepType]}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-        </div>
+        <JeepTypeToggle value={type} onChange={setType} />
 
         <div className="flex flex-col gap-2">
           <span id={kmLabelId} className="text-sm font-medium">
@@ -126,22 +98,7 @@ export function JeepFareCalculator({ rules, previousRates, source }: JeepFareCal
           </div>
         </div>
 
-        <dl className="flex flex-col gap-1 text-sm tabular-nums">
-          <div className="flex justify-between gap-4">
-            <dt>{fill(dict.jeep.firstKm, { km: rule.baseKm, type: dict.jeep[type] })}</dt>
-            <dd>{formatPeso(rule.baseFare)}</dd>
-          </div>
-          {fare.extraKm > 0 && (
-            <div className="flex justify-between gap-4">
-              <dt>{fill(dict.jeep.moreKm, { count: fare.extraKm, rate: formatPeso(rule.perSucceedingKm) })}</dt>
-              <dd>{formatPeso(fare.regular - rule.baseFare)}</dd>
-            </div>
-          )}
-          <div className="flex justify-between gap-4 text-muted-foreground">
-            <dt>{fill(dict.jeep.discount, { percent: Math.round(rules.discountRate * 100) })}</dt>
-            <dd>−{formatPeso(fare.regular - fare.discounted)}</dd>
-          </div>
-        </dl>
+        <JeepFareBreakdown rules={rules} type={type} fare={fare} />
 
         <JeepFareBasis rules={rules} source={source} />
       </section>
@@ -160,5 +117,64 @@ export function JeepFareBasis({ rules, source }: { rules: JeepFareRules; source:
     <p className="text-xs text-muted-foreground">
       {fill(dict.jeep.basis, { effective: formatDate(rules.effectiveDate), date: formatDate(source.lastChecked) })}
     </p>
+  );
+}
+
+export function JeepTypeToggle({ value, onChange }: { value: JeepType; onChange: (type: JeepType) => void }) {
+  const { dict } = useDictionary();
+  const labelId = useId();
+
+  return (
+    <div className="flex flex-col gap-2">
+      <span id={labelId} className="text-sm font-medium">
+        {dict.jeep.jeepType}
+      </span>
+      <ToggleGroup
+        aria-labelledby={labelId}
+        variant="outline"
+        spacing={0}
+        className="w-full"
+        value={[value]}
+        onValueChange={(next) => {
+          const type = JEEP_TYPES.find((jeepType) => jeepType === next[0]);
+          // Ignore the deselect that toggling the active item would cause.
+          if (type) onChange(type);
+        }}
+      >
+        {JEEP_TYPES.map((jeepType) => (
+          <ToggleGroupItem
+            key={jeepType}
+            value={jeepType}
+            className="h-11 flex-1 aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+          >
+            {dict.jeep[jeepType]}
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+    </div>
+  );
+}
+
+export function JeepFareBreakdown({ rules, type, fare }: { rules: JeepFareRules; type: JeepType; fare: JeepFare }) {
+  const { dict } = useDictionary();
+  const rule = rules.types[type];
+
+  return (
+    <dl className="flex flex-col gap-1 text-sm tabular-nums">
+      <div className="flex justify-between gap-4">
+        <dt>{fill(dict.jeep.firstKm, { km: rule.baseKm, type: dict.jeep[type] })}</dt>
+        <dd>{formatPeso(rule.baseFare)}</dd>
+      </div>
+      {fare.extraKm > 0 && (
+        <div className="flex justify-between gap-4">
+          <dt>{fill(dict.jeep.moreKm, { count: fare.extraKm, rate: formatPeso(rule.perSucceedingKm) })}</dt>
+          <dd>{formatPeso(fare.regular - rule.baseFare)}</dd>
+        </div>
+      )}
+      <div className="flex justify-between gap-4 text-muted-foreground">
+        <dt>{fill(dict.jeep.discount, { percent: Math.round(rules.discountRate * 100) })}</dt>
+        <dd>−{formatPeso(fare.regular - fare.discounted)}</dd>
+      </div>
+    </dl>
   );
 }

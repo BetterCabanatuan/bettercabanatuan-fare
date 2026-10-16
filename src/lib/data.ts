@@ -42,6 +42,7 @@ const tricycleSchema = z.object({
       discounted: z.object({ single: peso, perPassengerIfTwoOrMore: peso }),
     }),
     perSucceedingKmPerPassenger: peso,
+    perSucceedingKmSolo: peso,
   }),
 });
 
@@ -74,8 +75,9 @@ const routesSchema = z.object({
       via: z.string(),
       type: z.enum(["traditional", "modern"]),
       terminal: z.string().optional(),
+      terminalPosition: lngLat.optional(),
       source: z.string(),
-      status: z.enum(["active", "suspended", "unverified"]).default("unverified"),
+      status: z.enum(["active", "approximate", "suspended", "unverified"]).default("unverified"),
       verifiedOn: z.iso.date().optional(),
       directions: z
         .array(z.object({ id: z.string(), label: z.string(), line: z.array(lngLat).min(2) }))
@@ -116,7 +118,10 @@ export const tricycleRules: TricycleFareRules = {
     solo: toCentavos(tricycle.current.fares.discounted.single),
     shared: toCentavos(tricycle.current.fares.discounted.perPassengerIfTwoOrMore),
   },
-  perSucceedingKmPerPassenger: toCentavos(tricycle.current.perSucceedingKmPerPassenger),
+  perSucceedingKm: {
+    solo: toCentavos(tricycle.current.perSucceedingKmSolo),
+    shared: toCentavos(tricycle.current.perSucceedingKmPerPassenger),
+  },
 };
 
 export const tricycleSource: FareSourceInfo = {

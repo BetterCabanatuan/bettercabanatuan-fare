@@ -94,7 +94,8 @@ export function TricycleFareMatrix({ rules, confirmed, basis, activeRate }: Tric
 
       <p className="text-sm font-medium tabular-nums">
         {fill(t.matrixPerKm, {
-          perKm: formatPeso(rules.perSucceedingKmPerPassenger),
+          solo: formatPeso(rules.perSucceedingKm.solo),
+          shared: formatPeso(rules.perSucceedingKm.shared),
           baseKm: rules.baseKm,
         })}
       </p>

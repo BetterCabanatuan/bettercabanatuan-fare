@@ -18,7 +18,7 @@ import type { MapRef } from "@/components/ui/map";
 import type { FareSourceInfo, JeepPreviousRates, Landmark } from "@/lib/data";
 import type { JeepFareRules, TricycleFareRules } from "@/lib/fare";
 import { isInsideRing, sliceLine, type LngLat } from "@/lib/geo";
-import type { JeepRoute, JeepTrip } from "@/lib/jeep-routes";
+import { hasLine, type JeepRoute, type JeepTrip } from "@/lib/jeep-routes";
 import { fetchRoadRoute, reversePlace } from "@/lib/map-services";
 import { cn } from "@/lib/utils";
 
@@ -61,6 +61,7 @@ function writeUrl(mode: Mode, { a, b }: Points): void {
   window.history.replaceState(null, "", query ? `?${query}` : window.location.pathname);
 }
 
+/** The trip draws over its whole route, which stays highlighted as the picked one. */
 function tripLines(trip: JeepTrip, { a, b }: Points): MapLine[] {
   const walks: MapLine[] = [
     a && { id: "walk-a", line: [a.position, trip.board.point], kind: "walk" as const },
@@ -68,7 +69,7 @@ function tripLines(trip: JeepTrip, { a, b }: Points): MapLine[] {
   ].filter((line) => line !== undefined);
 
   return [
-    { id: "faded", line: trip.direction.line, kind: "faded" },
+    { id: "picked", line: trip.direction.line, kind: "routeActive" },
     { id: "ride", line: sliceLine(trip.direction.line, trip.board.alongKm, trip.alight.alongKm), kind: "ride" },
     ...walks,
   ];
@@ -98,15 +99,17 @@ export function FarePlanner({
     status: { state: "idle" },
   });
   const [selectedTrip, setSelectedTrip] = useState<{ key: string; trip: JeepTrip } | null>(null);
+  const [highlightedRouteId, setHighlightedRouteId] = useState<string | null>(null);
   const mapRef = useRef<MapRef>(null);
 
   const currentKey = pointsKey(points);
   const aPosition = points.a?.position;
   const bPosition = points.b?.position;
 
-  // The road route comes from an outside service, so it is synced in an effect.
+  // The road route comes from an outside service, so it is synced in an effect. Both modes
+  // draw it: jeep mode shows it until the rider picks a trip.
   useEffect(() => {
-    if (mode !== "tricycle" || !aPosition || !bPosition) return;
+    if (!aPosition || !bPosition) return;
     const controller = new AbortController();
     fetchRoadRoute(aPosition, bPosition, controller.signal)
       .then((route) =>
@@ -121,7 +124,7 @@ export function FarePlanner({
         }
       });
     return () => controller.abort();
-  }, [mode, currentKey, aPosition, bPosition]);
+  }, [currentKey, aPosition, bPosition]);
 
   const route: RouteStatus = !currentKey
     ? { state: "idle" }
@@ -131,14 +134,22 @@ export function FarePlanner({
 
   const trip = selectedTrip?.key === currentKey ? selectedTrip.trip : null;
 
+  const roadLines: MapLine[] = route.state === "ready" ? [{ id: "road", line: route.route.line, kind: "road" }] : [];
+  const drawableRoutes = jeepRoutes.filter(hasLine);
+  const highlightedRoute = drawableRoutes.find((preset) => preset.id === highlightedRouteId);
+  const pickedLines: MapLine[] = highlightedRoute
+    ? [{ id: "picked", line: highlightedRoute.directions[0].line, kind: "routeActive" }]
+    : [];
+
   const lines: MapLine[] =
     mode === "tricycle"
-      ? route.state === "ready"
-        ? [{ id: "road", line: route.route.line, kind: "road" }]
-        : []
-      : trip
-        ? tripLines(trip, points)
-        : [];
+      ? roadLines
+      : [
+          ...drawableRoutes
+            .filter((preset) => preset !== highlightedRoute)
+            .map((preset): MapLine => ({ id: preset.id, line: preset.directions[0].line, kind: "route" })),
+          ...(trip ? tripLines(trip, points) : [...pickedLines, ...roadLines]),
+        ];
 
   const outsideCity = [points.a, points.b].some(
     (place) => place !== undefined && !isInsideRing(place.position, boundary),
@@ -196,6 +207,17 @@ export function FarePlanner({
         : null;
 
   const switchMode = (next: Mode): void => writeUrl(next, points);
+
+  const highlightRoute = (routeId: string | null): void => {
+    setHighlightedRouteId(routeId);
+    // A trip on another route would contradict the highlight.
+    if (trip && trip.route.id !== routeId) setSelectedTrip(null);
+  };
+
+  const selectTrip = (next: JeepTrip | null): void => {
+    setSelectedTrip(next && { key: currentKey, trip: next });
+    setHighlightedRouteId(next ? next.route.id : null);
+  };
 
   const swap = (): void => updatePoints({ a: points.b, b: points.a });
 
@@ -328,8 +350,12 @@ export function FarePlanner({
             routes={jeepRoutes}
             a={points.a?.position}
             b={points.b?.position}
+            route={route}
+            hasBothPoints={Boolean(currentKey)}
             selectedTripKey={trip ? `${trip.route.id}:${trip.direction.id}` : null}
-            onSelectTrip={(next) => setSelectedTrip(next && { key: currentKey, trip: next })}
+            onSelectTrip={selectTrip}
+            highlightedRouteId={highlightedRouteId}
+            onHighlightRoute={highlightRoute}
             onUseTricycle={() => switchMode("tricycle")}
           />
         )}
@@ -338,14 +364,19 @@ export function FarePlanner({
       <div className="order-1 h-[55dvh] lg:sticky lg:top-0 lg:order-2 lg:h-[calc(100dvh-4.5rem)] lg:flex-1">
         <PlannerMap
           ref={mapRef}
+          mode={mode}
           a={points.a}
           b={points.b}
           lines={lines}
           boundary={boundary}
+          routes={jeepRoutes}
+          highlightedRouteId={highlightedRouteId}
+          onHighlightRoute={highlightRoute}
           onMapClick={handleMapClick}
           onPinMove={dropPin}
+          onPickPlace={setPlace}
           onLocate={setFromLocation}
-          loading={mode === "tricycle" && route.state === "loading"}
+          loading={route.state === "loading"}
           className="h-full"
         />
       </div>

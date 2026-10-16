@@ -1,5 +1,5 @@
 {
-  "_status": "UNCONFIRMED. Figures come from a 2025 research paper, not the ordinance itself. Get the ordinance number and a scanned copy from the City Legalization Division before launch.",
+  "_status": "UNCONFIRMED. Figures come from a 2025 research paper, not the ordinance itself. Get the ordinance number and a scanned copy from the City Legalization Division before launch. The solo per-km rate (perSucceedingKmSolo) is calibrated from a rider report, not the ordinance.",
   "confirmed": false,
   "lastChecked": "2026-10-16",
   "current": {
@@ -23,6 +23,8 @@
       "pwd"
     ],
     "perSucceedingKmPerPassenger": 5.0,
+    "perSucceedingKmSolo": 10.0,
+    "soloRateNote": "UNOFFICIAL. Calibrated from one rider-reported fare: a solo regular ride from the Kalikid Norte / Patalac area (Bangad-Fort Magsaysay Road) to Jollibee Crossing, 11.4 km by road, paid PHP 100 (reported 2026-10-17). PHP 20 for the first 3 km + PHP 10 per km x 8 km (11.4 km billed as 11) = PHP 100. Replace with the official solo rule from the 2026 fare matrix sticker.",
     "specialTrip": "TODO: not found in any public source",
     "sources": [
       "https://www.slideshare.net/slideshow/economic-suitability-of-electronic-fare-meters-for-tricycle-drivers-in-cabanatuan-city/276068065",

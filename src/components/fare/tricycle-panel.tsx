@@ -300,7 +300,7 @@ export function TricyclePanel({
                 {fill(t.extraKm, {
                   extra: fare.extraKm,
                   base: rules.baseKm,
-                  rate: formatPeso(rules.perSucceedingKmPerPassenger),
+                  rate: formatPeso(rules.perSucceedingKm[fare.rate]),
                 })}
               </p>
             )}

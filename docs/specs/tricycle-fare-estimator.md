@@ -92,17 +92,19 @@ The site has no server of its own (static site). The routing and search services
 | Solo (1 passenger) | ₱20.00 | ₱15.00 |
 | Shared (2 or more), each | ₱15.00 | ₱10.00 |
 
-After the first 3 km, add **₱5.00 per passenger for every km**.
+After the first 3 km:
+- **Shared (2 or more):** add **₱5.00 per passenger for every km** (2018 matrix).
+- **Solo (1 passenger):** add **₱10.00 for every km**. This is **unofficial**: it is calibrated from one rider-reported fare. A solo regular ride from the Kalikid Norte / Patalac area to Jollibee Crossing (11.4 km by road) cost ₱100 on 2026-10-17. The 2018 matrix would give ₱65 for that trip.
 
-These figures come from a 2025 study, not the ordinance. A 2026 draft ordinance had a public hearing on 31 March 2026 and is not yet approved. **[FILL: confirmed rates, ordinance number and effective date from the City Legalization Division]**
+The shared figures come from a 2025 study, not the ordinance. A new 2026 fare matrix was approved (Sangguniang Panlungsod 2026-04-14, Sangguniang Panlalawigan 2026-08-18), and stickers roll out from 2026-10-19; its amounts are not published yet. **[FILL: confirmed rates, including the official solo rule, ordinance number and effective date]**
 
 ### 5.2 Steps
 
 1. **Distance.** Take the road distance from the routing service, in km.
-2. **Billable distance.** Round the distance using the city's rule. **[FILL: the official rule for part-kilometres. Working assumption until confirmed: round up to the next whole km, so 4.2 km is billed as 5 km.]**
+2. **Billable distance.** Round the distance using the city's rule. **[FILL: the official rule for part-kilometres. Working assumption until confirmed: round to the nearest whole km, at least 1 km, so 4.2 km is billed as 4 km and 4.5 km as 5 km. This matches the rider report: 11.4 km billed as 11 km.]**
 3. **Extra km.** Extra km = billable distance minus 3. If that is below zero, use zero.
 4. **Rate.** If total passengers is 1, use the solo rate. Otherwise use the shared rate.
-5. **Per-person fare.** For each passenger type: first-3-km rate for that type + (extra km × ₱5.00).
+5. **Per-person fare.** For each passenger type: first-3-km rate for that type + (extra km × the per-km rate: ₱10.00 solo, ₱5.00 shared).
 6. **Total.** (Regular count × regular per-person fare) + (discounted count × discounted per-person fare).
 7. **Display.** Show amounts in pesos with two decimals. All arithmetic is done in whole centavos to avoid rounding errors.
 
@@ -110,13 +112,14 @@ These figures come from a 2025 study, not the ordinance. A 2026 draft ordinance 
 
 | Trip | Billable km | Passengers | Calculation | Total |
 |---|---|---|---|---|
-| 2.4 km | 3 | 1 regular | ₱20 | **₱20.00** |
-| 2.4 km | 3 | 1 discounted | ₱15 | **₱15.00** |
-| 4.2 km | 5 | 1 regular | ₱20 + 2 × ₱5 | **₱30.00** |
-| 4.2 km | 5 | 2 regular | 2 × (₱15 + 2 × ₱5) | **₱50.00** |
+| 2.4 km | 2 | 1 regular | ₱20 | **₱20.00** |
+| 2.4 km | 2 | 1 discounted | ₱15 | **₱15.00** |
+| 4.6 km | 5 | 1 regular | ₱20 + 2 × ₱10 | **₱40.00** |
+| 4.6 km | 5 | 2 regular | 2 × (₱15 + 2 × ₱5) | **₱50.00** |
 | 6.0 km | 6 | 1 regular + 1 discounted | (₱15 + 3 × ₱5) + (₱10 + 3 × ₱5) | **₱55.00** |
+| 11.4 km (rider report) | 11 | 1 regular | ₱20 + 8 × ₱10 | **₱100.00** |
 
-The 4.2 km rows depend on the part-km assumption in step 2.
+The 4.6 km rows depend on the part-km assumption in step 2, and the solo rows on the calibrated solo rate.
 
 ### 5.4 Not covered yet
 
@@ -147,7 +150,7 @@ The 4.2 km rows depend on the part-km assumption in step 2.
 | ! Not yet confirmed notice|                                      |
 | RESULT CARD               |                                      |
 |  ₱30.00  · Solo rate      |                                      |
-|  4.2 km road · billed 5 km|                                      |
+|  4.2 km road · billed 4 km|                                      |
 |  breakdown lines          |                                      |
 |  [Show the driver]        |                                      |
 | Basis line · last checked |                                      |

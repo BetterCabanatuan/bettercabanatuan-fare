@@ -4,6 +4,7 @@ import type { MapMouseEvent } from "maplibre-gl";
 import { useEffect, type Ref } from "react";
 
 import { MapHint } from "@/components/fare/map-hint";
+import { TerminalMarkers } from "@/components/fare/terminal-markers";
 import type { MapLine, Place, PointKey } from "@/components/fare/types";
 import { useDictionary } from "@/components/shared/dictionary-provider";
 import {
@@ -16,19 +17,35 @@ import {
   type MapRef,
 } from "@/components/ui/map";
 import type { LngLat } from "@/lib/geo";
+import type { JeepRoute } from "@/lib/jeep-routes";
 import { cn } from "@/lib/utils";
 
 const CABANATUAN_CENTER: LngLat = [120.9667, 15.4865];
 const ROUTE_BLUE = "#1B3F8B";
 const LINE_GREY = "#6B7280";
+// Preset jeep routes: a muted teal in the background, orange for the one the rider picked,
+// so neither reads as the blue A-to-B line.
+const PRESET_TEAL = "#0F766E";
+const PICKED_ORANGE = "#C2410C";
+
+const BOUNDARY_ID = "planner-boundary";
+// MapRoute names its layers "route-layer-<id>".
+const layerId = (id: string): string => `route-layer-${id}`;
+const lineId = (line: MapLine): string => `planner-${line.id}-${line.kind}`;
 
 type PlannerMapProps = {
+  mode: "tricycle" | "jeep";
   a?: Place;
   b?: Place;
   lines: MapLine[];
   boundary: LngLat[];
+  /** Jeep routes whose terminals get markers in jeep mode. */
+  routes: JeepRoute[];
+  highlightedRouteId: string | null;
+  onHighlightRoute: (routeId: string | null) => void;
   onMapClick: (position: LngLat) => void;
   onPinMove: (key: PointKey, position: LngLat) => void;
+  onPickPlace: (key: PointKey, place: Place) => void;
   onLocate: (position: LngLat) => void;
   loading?: boolean;
   className?: string;
@@ -36,12 +53,17 @@ type PlannerMapProps = {
 };
 
 export function PlannerMap({
+  mode,
   a,
   b,
   lines,
   boundary,
+  routes,
+  highlightedRouteId,
+  onHighlightRoute,
   onMapClick,
   onPinMove,
+  onPickPlace,
   onLocate,
   loading = false,
   className,
@@ -53,12 +75,15 @@ export function PlannerMap({
   ];
   // Same order as a map tap fills the points (FR-3).
   const nextPin: PointKey | null = !a ? "a" : !b ? "b" : null;
+  // The road line slides under the picked route, whichever of the two is drawn first.
+  const pickedLine = lines.find((line) => line.kind === "routeActive");
+  const belowPicked = pickedLine && layerId(`${lineId(pickedLine)}-casing`);
 
   return (
     // The muted backdrop reads as a map area while tiles are still loading.
     <Map ref={ref} theme="light" center={CABANATUAN_CENTER} zoom={13} className={cn("bg-muted", className)}>
       <MapRoute
-        id="planner-boundary"
+        id={BOUNDARY_ID}
         coordinates={boundary}
         color={LINE_GREY}
         width={1.5}
@@ -68,8 +93,17 @@ export function PlannerMap({
       />
 
       {lines.map((line) => (
-        <PlannerLine key={`${line.id}-${line.kind}`} line={line} />
+        <PlannerLine key={`${line.id}-${line.kind}`} line={line} belowPicked={belowPicked} />
       ))}
+
+      {mode === "jeep" && (
+        <TerminalMarkers
+          routes={routes}
+          highlightedRouteId={highlightedRouteId}
+          onHighlightRoute={onHighlightRoute}
+          onPickPlace={onPickPlace}
+        />
+      )}
 
       {pins.map(({ key, place }) =>
         place ? (
@@ -78,6 +112,8 @@ export function PlannerMap({
             longitude={place.position[0]}
             latitude={place.position[1]}
             draggable
+            // Keeps A and B above terminal markers that mount later.
+            className="z-10"
             onDragEnd={({ lng, lat }) => onPinMove(key, [lng, lat])}
           >
             <MarkerContent>
@@ -96,14 +132,28 @@ export function PlannerMap({
       <MapClickHandler onMapClick={onMapClick} />
       <FitToTrip a={a} b={b} lines={lines} />
       {loading && <LoadingBar />}
-      {nextPin && <MapHint pin={nextPin} />}
+      {nextPin && <MapHint pin={nextPin} mode={mode} />}
     </Map>
   );
 }
 
-function PlannerLine({ line }: { line: MapLine }) {
-  const id = `planner-${line.id}-${line.kind}`;
+function PlannerLine({ line, belowPicked }: { line: MapLine; belowPicked?: string }) {
+  const id = lineId(line);
 
+  if (line.kind === "route") {
+    return (
+      <MapRoute
+        id={id}
+        coordinates={line.line}
+        color={PRESET_TEAL}
+        width={3}
+        opacity={0.6}
+        // Under everything else, even lines that were already on the map.
+        beforeId={layerId(BOUNDARY_ID)}
+        interactive={false}
+      />
+    );
+  }
   if (line.kind === "faded") {
     return (
       <MapRoute
@@ -129,7 +179,30 @@ function PlannerLine({ line }: { line: MapLine }) {
       />
     );
   }
+  if (line.kind === "routeActive") {
+    return (
+      <>
+        <MapRoute
+          id={`${id}-casing`}
+          coordinates={line.line}
+          color="#FFFFFF"
+          width={8}
+          opacity={1}
+          interactive={false}
+        />
+        <MapRoute
+          id={id}
+          coordinates={line.line}
+          color={PICKED_ORANGE}
+          width={5}
+          opacity={1}
+          interactive={false}
+        />
+      </>
+    );
+  }
   // White casing first so the blue line sits on top and stays visible over busy tiles (spec §6.3).
+  const beforeId = line.kind === "road" ? belowPicked : undefined;
   return (
     <>
       <MapRoute
@@ -138,6 +211,7 @@ function PlannerLine({ line }: { line: MapLine }) {
         color="#FFFFFF"
         width={9}
         opacity={1}
+        beforeId={beforeId}
         interactive={false}
       />
       <MapRoute
@@ -146,6 +220,7 @@ function PlannerLine({ line }: { line: MapLine }) {
         color={ROUTE_BLUE}
         width={6}
         opacity={1}
+        beforeId={beforeId}
         interactive={false}
       />
     </>
@@ -179,9 +254,9 @@ function MapClickHandler({ onMapClick }: { onMapClick: (position: LngLat) => voi
   useEffect(() => {
     if (!map) return;
     const handleClick = (event: MapMouseEvent) => {
-      // MapLibre also reports clicks on markers as map clicks; those must not move a pin.
+      // MapLibre also reports clicks on markers and popups as map clicks; those must not move a pin.
       const target = event.originalEvent.target;
-      if (target instanceof Element && target.closest(".maplibregl-marker")) return;
+      if (target instanceof Element && target.closest(".maplibregl-marker, .maplibregl-popup")) return;
       onMapClick([event.lngLat.lng, event.lngLat.lat]);
     };
     map.on("click", handleClick);
@@ -196,8 +271,12 @@ function MapClickHandler({ onMapClick }: { onMapClick: (position: LngLat) => voi
 function FitToTrip({ a, b, lines }: { a?: Place; b?: Place; lines: MapLine[] }) {
   const { map } = useMap();
 
-  // Faded lines are background context (other jeep routes), not part of this trip.
-  const tripLines = lines.filter((line) => line.kind !== "faded");
+  // Background lines (faded, preset routes) are context, not part of this trip. With a ride
+  // drawn, the picked route's full line is context too, so the view frames the trip itself.
+  const hasRide = lines.some((line) => line.kind === "ride");
+  const tripLines = lines.filter(
+    (line) => line.kind !== "faded" && line.kind !== "route" && !(hasRide && line.kind === "routeActive"),
+  );
   const shouldFit = (a !== undefined && b !== undefined) || tripLines.length > 0;
   const points = [a?.position, b?.position, ...tripLines.flatMap((line) => line.line)].filter(
     (point): point is LngLat => point !== undefined,

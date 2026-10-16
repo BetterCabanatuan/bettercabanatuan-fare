@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { cityBoundary, jeepRoutes, jeepRules, landmarks, tricycleRules, tricycleSource } from "@/lib/data";
-import { isInsideRing } from "@/lib/geo";
+import { haversineKm, isInsideRing } from "@/lib/geo";
 
 describe("data files", () => {
   it("load the tricycle matrix in centavos", () => {
@@ -16,5 +16,39 @@ describe("data files", () => {
 
   it("place every landmark inside the city boundary", () => {
     expect(landmarks.every((landmark) => isInsideRing(landmark.position, cityBoundary))).toBe(true);
+  });
+});
+
+describe("approximate jeep route lines", () => {
+  const approximate = jeepRoutes.filter((route) => route.status === "approximate");
+
+  it("give every approximate route a terminal and two directions with a drawable line", () => {
+    expect(approximate.length).toBeGreaterThan(0);
+    for (const route of approximate) {
+      expect(route.terminalPosition, route.id).toBeDefined();
+      expect(route.directions, route.id).toHaveLength(2);
+      for (const direction of route.directions) expect(direction.line.length, `${route.id} ${direction.id}`).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it("keep every line point inside Central Luzon", () => {
+    for (const route of jeepRoutes) {
+      for (const direction of route.directions) {
+        for (const [lng, lat] of direction.line) {
+          expect(lng, `${route.id} ${direction.id}`).toBeGreaterThanOrEqual(120.4);
+          expect(lng, `${route.id} ${direction.id}`).toBeLessThanOrEqual(121.4);
+          expect(lat, `${route.id} ${direction.id}`).toBeGreaterThanOrEqual(14.7);
+          expect(lat, `${route.id} ${direction.id}`).toBeLessThanOrEqual(16.0);
+        }
+      }
+    }
+  });
+
+  it("start each outbound line at its terminal", () => {
+    for (const route of approximate) {
+      const outbound = route.directions.find((direction) => direction.id === "outbound");
+      expect(outbound, route.id).toBeDefined();
+      expect(haversineKm(outbound!.line[0], route.terminalPosition!), route.id).toBeLessThan(0.5);
+    }
   });
 });

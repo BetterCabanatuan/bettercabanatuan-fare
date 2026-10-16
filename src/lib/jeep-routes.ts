@@ -12,16 +12,28 @@ export type JeepRoute = {
   via: string;
   type: JeepType;
   terminal?: string;
+  /** Where the jeeps queue, when known. */
+  terminalPosition?: LngLat;
   source: string;
-  status: "active" | "suspended" | "unverified";
+  /**
+   * active: confirmed line and verification date. approximate: a preset line drawn along the
+   * main roads between the terminal and the towns the route names, not an official route line.
+   */
+  status: "active" | "approximate" | "suspended" | "unverified";
   verifiedOn?: string;
   directions: RouteDirection[];
   stops: JeepStop[];
 };
 
-/** Only routes with a confirmed line and a verification date are drawn or matched. */
+/** Routes with a confirmed line and a verification date. */
 export const isMapped = (route: JeepRoute): boolean =>
   route.status === "active" && route.directions.length > 0 && Boolean(route.verifiedOn);
+
+/** Routes that can be drawn and matched: confirmed ones plus approximate presets. */
+export const hasLine = (route: JeepRoute): boolean =>
+  isMapped(route) || (route.status === "approximate" && route.directions.length > 0);
+
+export const isApproximate = (route: JeepRoute): boolean => !isMapped(route);
 
 export type JeepTrip = {
   route: JeepRoute;
@@ -51,7 +63,7 @@ export function findTrips(
   b: LngLat,
   maxWalkKm: number,
 ): TripSearch {
-  const candidates = routes.filter(isMapped).flatMap((route) =>
+  const candidates = routes.filter(hasLine).flatMap((route) =>
     route.directions.map((direction) => {
       const board = projectOntoLine(a, direction.line);
       const alight = projectOntoLine(b, direction.line);

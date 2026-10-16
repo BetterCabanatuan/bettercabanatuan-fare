@@ -27,5 +27,9 @@ export type RouteStatus =
 export type MapLine = {
   id: string;
   line: LngLat[];
-  kind: "road" | "ride" | "faded" | "walk";
+  /**
+   * road: tricycle or jeep road route between A and B. ride/walk/faded: a matched jeep trip.
+   * route: a preset jeep route in the background. routeActive: the route the rider picked.
+   */
+  kind: "road" | "ride" | "faded" | "walk" | "route" | "routeActive";
 };
