@@ -7,7 +7,7 @@ export async function Footer() {
     <footer className="bg-foreground text-background">
       <div className="mx-auto flex max-w-5xl flex-col gap-2 px-4 py-8 text-sm sm:flex-row sm:items-center sm:justify-between">
         <p>
-          <span className="font-bold">Pamasahe Cabanatuan</span> · {dict.footer.about}
+          <span className="font-bold">Pamasahe Cabanatuan</span> · {dict.footer.about} {dict.footer.alpha}
         </p>
         <p>
           <a

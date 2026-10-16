@@ -21,5 +21,5 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   // Skip Next internals and files such as /sitemap.xml, /robots.txt and /favicon.ico.
-  matcher: ["/((?!_next/|.*\\..*).*)"],
+  matcher: ["/((?!api/|_next/|.*\\..*).*)"],
 };

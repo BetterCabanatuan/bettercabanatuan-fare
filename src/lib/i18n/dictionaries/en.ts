@@ -12,12 +12,19 @@ export const en = {
     city: "Cabanatuan City",
     tricycle: "Tricycle fare",
     jeep: "Jeep fare",
+    toda: "TODA",
     language: "Language",
     switchTo: "Basahin sa Tagalog",
   },
   footer: {
     about: "Community-made with BetterCabanatuan. Not an official city government site.",
     mapData: "Map data © OpenStreetMap contributors",
+    alpha: "Alpha version: fares are estimates and may differ from the actual rates.",
+  },
+  banner: {
+    label: "Alpha notice",
+    tag: "Alpha",
+    text: "Fares and routes here are estimates and may differ from the actual fare. Check the official fare matrix when in doubt.",
   },
   home: {
     tag: "Jeep fares updated {date}",

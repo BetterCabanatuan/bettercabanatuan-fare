@@ -30,13 +30,19 @@ describe("fill", () => {
 describe("dictionaries", () => {
   const placeholders = (text: string): string[] => [...text.matchAll(/\{(\w+)\}/g)].map((match) => match[1]).sort();
 
+  /** Every string in a dictionary, keyed by its dotted path (nested objects and lists included). */
+  const leaves = (value: unknown, path = ""): [string, string][] =>
+    typeof value === "string"
+      ? [[path, value]]
+      : Object.entries(value as Record<string, unknown>).flatMap(([key, child]) =>
+          leaves(child, path ? `${path}.${key}` : key),
+        );
+
   it("use the same placeholders in English and Tagalog", () => {
-    const sections = Object.keys(en) as (keyof typeof en)[];
-    sections.forEach((section) => {
-      Object.entries(en[section]).forEach(([key, text]) => {
-        const translated = (tl[section] as Record<string, string>)[key];
-        expect(placeholders(translated), `${section}.${key}`).toEqual(placeholders(text));
-      });
+    const translated = new Map(leaves(tl));
+    leaves(en).forEach(([path, text]) => {
+      expect(translated.has(path), path).toBe(true);
+      expect(placeholders(translated.get(path) ?? ""), path).toEqual(placeholders(text));
     });
   });
 });

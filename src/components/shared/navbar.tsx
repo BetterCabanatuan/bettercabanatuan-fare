@@ -38,6 +38,9 @@ export async function Navbar() {
             <li>
               <NavLink href={`${farePath}?mode=jeep`}>{dict.nav.jeep}</NavLink>
             </li>
+            <li>
+              <NavLink href={localizePath(locale, "/toda")}>{dict.nav.toda}</NavLink>
+            </li>
           </ul>
         </nav>
         <div className="order-2 sm:order-3">

@@ -15,12 +15,19 @@ export const tl: Dictionary = {
     city: "Lungsod ng Cabanatuan",
     tricycle: "Pamasahe sa tricycle",
     jeep: "Pamasahe sa jeep",
+    toda: "TODA",
     language: "Wika",
     switchTo: "Read in English",
   },
   footer: {
     about: "Gawa ng komunidad kasama ang BetterCabanatuan. Hindi ito opisyal na website ng pamahalaang lungsod.",
     mapData: "Datos ng mapa © mga contributor ng OpenStreetMap",
+    alpha: "Alpha version: tantiya lang ang mga pamasahe at maaaring iba sa aktuwal na singil.",
+  },
+  banner: {
+    label: "Paalala: alpha version",
+    tag: "Alpha",
+    text: "Tantiya lang ang mga pamasahe at ruta dito at maaaring iba sa aktuwal na pamasahe. Tingnan ang opisyal na fare matrix kung may duda.",
   },
   home: {
     tag: "Bagong pamasahe sa jeep mula {date}",

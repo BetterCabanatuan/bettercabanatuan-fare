@@ -6,11 +6,14 @@ import { siteUrl } from "@/lib/site";
 const absolute = (path: string): string => new URL(path, siteUrl).toString();
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return ["/", "/fare"].flatMap((path) => {
+  const localized = ["/", "/fare"].flatMap((path) => {
     const languages = Object.fromEntries(locales.map((locale) => [locale, absolute(localizePath(locale, path))]));
     return locales.map((locale) => ({
       url: absolute(localizePath(locale, path)),
       alternates: { languages },
     }));
   });
+  // The TODA pages are not translated yet, so only their English URLs are listed.
+  const englishOnly = ["/toda", "/toda/submit"].map((path) => ({ url: absolute(path) }));
+  return [...localized, ...englishOnly];
 }

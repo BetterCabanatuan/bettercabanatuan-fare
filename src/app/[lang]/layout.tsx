@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
 
+import { AlphaBanner } from "@/components/shared/alpha-banner";
 import { DictionaryProvider } from "@/components/shared/dictionary-provider";
 import { Footer } from "@/components/shared/footer";
 import { Navbar } from "@/components/shared/navbar";
@@ -44,6 +45,7 @@ export default async function RootLayout({ children }: LayoutProps<"/[lang]">) {
     <html lang={locale} className={cn("antialiased", manrope.variable)}>
       <body className="flex min-h-dvh flex-col">
         <DictionaryProvider locale={locale} dict={dict}>
+          <AlphaBanner />
           <Navbar />
           {children}
           <Footer />
