@@ -35,12 +35,31 @@ type Variant = "top" | "tabs";
  */
 export function MainNav({ items, variant }: { items: NavItem[]; variant: Variant }) {
   const path = stripLocale(usePathname());
-  const mode = useSearchParams().get("mode");
+  const searchParams = useSearchParams();
+  const onFare = path === "/fare";
 
-  const current: NavKey | undefined =
-    path === "/fare" ? (mode === "jeep" ? "jeep" : "tricycle") : path.startsWith("/toda") ? "toda" : undefined;
+  const current: NavKey | undefined = onFare
+    ? searchParams.get("mode") === "jeep"
+      ? "jeep"
+      : "tricycle"
+    : path.startsWith("/toda")
+      ? "toda"
+      : undefined;
 
-  return <MainNavLinks items={items} variant={variant} current={current} />;
+  // On the fare page, switching vehicle keeps the trip's points (?a=…&b=…).
+  const withTrip = onFare
+    ? items.map((item) => (item.key === "toda" ? item : { ...item, href: keepTrip(item, searchParams) }))
+    : items;
+
+  return <MainNavLinks items={withTrip} variant={variant} current={current} />;
+}
+
+function keepTrip(item: NavItem, current: URLSearchParams): string {
+  const params = new URLSearchParams(current);
+  if (item.key === "jeep") params.set("mode", "jeep");
+  else params.delete("mode");
+  const query = params.toString();
+  return `${item.href.split("?")[0]}${query ? `?${query}` : ""}`;
 }
 
 export function MainNavLinks({ items, variant, current }: { items: NavItem[]; variant: Variant; current?: NavKey }) {

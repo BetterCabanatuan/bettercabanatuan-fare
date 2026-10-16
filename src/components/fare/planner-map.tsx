@@ -298,7 +298,13 @@ function FitToTrip({ a, b, lines }: { a?: Place; b?: Place; lines: MapLine[] }) 
         [west, south],
         [east, north],
       ],
-      { padding: 64, maxZoom: 16, duration: reduceMotion ? 0 : 600 },
+      {
+        // The short phone map can't spare 64px a side: keep the top clear of the hint
+        // and the right clear of the zoom buttons, and tighten the rest.
+        padding: map.getContainer().clientHeight < 400 ? { top: 56, right: 60, bottom: 24, left: 24 } : 64,
+        maxZoom: 16,
+        duration: reduceMotion ? 0 : 600,
+      },
     );
   }, [map, shouldFit, west, south, east, north]);
 

@@ -251,6 +251,8 @@ export const tl: Dictionary = {
     routesFound: "Mga ruta ng jeep para sa biyaheng ito",
     routesFoundCount: "Mga ruta ng jeep para sa biyaheng ito ({count})",
     routeList: "Mga ruta ng jeep ({count})",
+    showAllRoutes: "Ipakita ang lahat ng {count} ruta",
+    showFewerRoutes: "Ipakita nang mas kaunti",
     routeListHint: "I-tap ang ruta para makita ito sa mapa. I-tap ulit para alisin.",
     approximate: "Tantiyang ruta",
     approximateNotice:

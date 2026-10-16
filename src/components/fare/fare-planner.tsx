@@ -101,6 +101,7 @@ export function FarePlanner({
   const [selectedTrip, setSelectedTrip] = useState<{ key: string; trip: JeepTrip } | null>(null);
   const [highlightedRouteId, setHighlightedRouteId] = useState<string | null>(null);
   const mapRef = useRef<MapRef>(null);
+  const mapBoxRef = useRef<HTMLDivElement>(null);
 
   const currentKey = pointsKey(points);
   const aPosition = points.a?.position;
@@ -219,6 +220,20 @@ export function FarePlanner({
     setHighlightedRouteId(next ? next.route.id : null);
   };
 
+  /**
+   * On phones the map sits above the panel, often scrolled out of view. When a tap in the
+   * panel changes what the map shows, bring the map back so the tap visibly does something.
+   * On wide screens the map is always in view and this does nothing.
+   */
+  const revealMap = (): void => {
+    const box = mapBoxRef.current?.getBoundingClientRect();
+    if (!box) return;
+    const visible = Math.min(box.bottom, window.innerHeight) - Math.max(box.top, 0);
+    if (visible >= box.height * 0.6) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    mapBoxRef.current?.scrollIntoView({ block: "start", behavior: reduceMotion ? "auto" : "smooth" });
+  };
+
   const swap = (): void => updatePoints({ a: points.b, b: points.a });
 
   const clear = (): void => {
@@ -235,13 +250,13 @@ export function FarePlanner({
     <main className="flex flex-1 flex-col lg:flex-row">
       <section
         aria-labelledby="planner-heading"
-        className="order-2 flex flex-col gap-5 bg-muted/40 p-4 sm:p-6 lg:order-1 lg:max-h-[calc(100dvh-4.5rem)] lg:w-[440px] lg:shrink-0 lg:overflow-y-auto lg:border-r"
+        className="order-2 flex flex-col gap-4 bg-muted/40 p-4 sm:gap-5 sm:p-6 lg:order-1 lg:max-h-[calc(100dvh-4.5rem)] lg:w-[440px] lg:shrink-0 lg:overflow-y-auto lg:border-r"
       >
         <div className="flex flex-col gap-1">
-          <h1 id="planner-heading" className="text-2xl font-extrabold tracking-tight">
+          <h1 id="planner-heading" className="text-xl font-extrabold tracking-tight sm:text-2xl">
             {dict.planner.heading}
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="hidden text-sm text-muted-foreground sm:block">
             {dict.planner.intro}
           </p>
         </div>
@@ -249,7 +264,8 @@ export function FarePlanner({
         <div
           role="group"
           aria-label={dict.planner.vehicle}
-          className="grid grid-cols-2 gap-1 rounded-xl border bg-card p-1"
+          // On phones the tab bar switches vehicle (and keeps the trip), so this would repeat it.
+          className="hidden grid-cols-2 gap-1 rounded-xl border bg-card p-1 sm:grid"
         >
           {(["tricycle", "jeep"] as const).map((option) => {
             const Icon = option === "tricycle" ? TricycleIcon : JeepIcon;
@@ -353,15 +369,21 @@ export function FarePlanner({
             route={route}
             hasBothPoints={Boolean(currentKey)}
             selectedTripKey={trip ? `${trip.route.id}:${trip.direction.id}` : null}
-            onSelectTrip={selectTrip}
+            onSelectTrip={(next) => {
+              selectTrip(next);
+              if (next) revealMap();
+            }}
             highlightedRouteId={highlightedRouteId}
-            onHighlightRoute={highlightRoute}
+            onHighlightRoute={(routeId) => {
+              highlightRoute(routeId);
+              if (routeId) revealMap();
+            }}
             onUseTricycle={() => switchMode("tricycle")}
           />
         )}
       </section>
 
-      <div className="order-1 h-[55dvh] lg:sticky lg:top-0 lg:order-2 lg:h-[calc(100dvh-4.5rem)] lg:flex-1">
+      <div ref={mapBoxRef} className="order-1 h-[clamp(13rem,34dvh,20rem)] scroll-mt-2 sm:h-[55dvh] lg:sticky lg:top-0 lg:order-2 lg:h-[calc(100dvh-4.5rem)] lg:flex-1">
         <PlannerMap
           ref={mapRef}
           mode={mode}

@@ -29,13 +29,13 @@ export function QuickPicks({ landmarks, pin, onPick }: QuickPicksProps) {
         <PinBadge pin={pin} className="size-5 text-[0.625rem]" />
         {dict.planner.popularPlaces}
       </p>
-      <ul className="flex flex-wrap gap-2">
+      <ul className="-mx-4 -my-1 flex snap-x scroll-px-4 gap-2 overflow-x-auto overscroll-x-contain px-4 py-1 [scrollbar-width:none] sm:mx-0 sm:my-0 sm:py-0 sm:flex-wrap sm:overflow-visible sm:px-0">
         {landmarks.map((landmark) => (
-          <li key={landmark.id}>
+          <li key={landmark.id} className="shrink-0 snap-start">
             <button
               type="button"
               onClick={() => onPick(landmarkToPlace(landmark))}
-              className="min-h-11 rounded-full border bg-background px-4 text-sm font-medium transition-colors outline-none hover:border-primary/40 hover:bg-primary/5 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="min-h-11 rounded-full border bg-background px-4 whitespace-nowrap text-sm font-medium transition-colors outline-none hover:border-primary/40 hover:bg-primary/5 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               {shortName(landmark.name)}
             </button>
