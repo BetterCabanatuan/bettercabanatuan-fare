@@ -13,6 +13,9 @@ export const en = {
     tricycle: "Tricycle fare",
     jeep: "Jeep fare",
     toda: "TODA",
+    tabTricycle: "Tricycle",
+    tabJeep: "Jeep",
+    tabToda: "TODA",
     language: "Language",
     switchTo: "Basahin sa Tagalog",
   },
@@ -247,6 +250,8 @@ export const en = {
     routesFound: "Jeep routes for this trip",
     routesFoundCount: "Jeep routes for this trip ({count})",
     routeList: "Jeepney routes ({count})",
+    showAllRoutes: "Show all {count} routes",
+    showFewerRoutes: "Show fewer routes",
     routeListHint: "Tap a route to show it on the map. Tap it again to clear.",
     approximate: "Approximate route",
     approximateNotice:

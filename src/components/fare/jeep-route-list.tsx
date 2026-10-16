@@ -1,12 +1,12 @@
 "use client";
 
-import { useId } from "react";
+import { useId, useState } from "react";
 import { ChevronDownIcon, InfoIcon, MapPinIcon, PlusIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 
 import { useDictionary } from "@/components/shared/dictionary-provider";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { formatPeso } from "@/lib/fare";
 import { fill, localizePath } from "@/lib/i18n/locales";
@@ -145,9 +145,14 @@ type JeepRouteListProps = {
   onHighlightRoute: (routeId: string | null) => void;
 };
 
+/** Routes shown on phones before "Show all", so the fare calculator isn't buried. */
+const PHONE_PREVIEW = 5;
+
 export function JeepRouteList({ routes, highlightedRouteId, onHighlightRoute }: JeepRouteListProps) {
   const { dict } = useDictionary();
   const headingId = useId();
+  const listId = useId();
+  const [expanded, setExpanded] = useState(false);
 
   return (
     <section aria-labelledby={headingId} className="flex flex-col gap-3">
@@ -165,11 +170,13 @@ export function JeepRouteList({ routes, highlightedRouteId, onHighlightRoute }: 
           {dict.jeep.routeListHint}
         </p>
       </div>
-      <ul className="flex flex-col gap-2">
-        {routes.map((route) => {
+      <ul id={listId} className="flex flex-col gap-2">
+        {routes.map((route, index) => {
           const pressed = route.id === highlightedRouteId;
+          // A route highlighted from the map stays listed even when it's past the preview.
+          const folded = !expanded && index >= PHONE_PREVIEW && !pressed;
           return (
-            <li key={route.id}>
+            <li key={route.id} className={cn(folded && "max-sm:hidden")}>
               <button
                 type="button"
                 aria-pressed={pressed}
@@ -195,6 +202,19 @@ export function JeepRouteList({ routes, highlightedRouteId, onHighlightRoute }: 
           );
         })}
       </ul>
+      {routes.length > PHONE_PREVIEW && (
+        <Button
+          variant="outline"
+          size="lg"
+          className="h-11 sm:hidden"
+          aria-controls={listId}
+          aria-expanded={expanded}
+          onClick={() => setExpanded((open) => !open)}
+        >
+          {expanded ? dict.jeep.showFewerRoutes : fill(dict.jeep.showAllRoutes, { count: routes.length })}
+          <ChevronDownIcon aria-hidden className={cn("size-4 transition-transform", expanded && "rotate-180")} />
+        </Button>
+      )}
       <SuggestRoute />
     </section>
   );

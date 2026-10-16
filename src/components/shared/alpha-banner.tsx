@@ -6,8 +6,8 @@ export async function AlphaBanner() {
 
   return (
     <div role="note" aria-label={dict.banner.label} className="border-b border-warning-border bg-warning text-warning-foreground">
-      <p className="mx-auto max-w-5xl px-4 py-2 text-sm">
-        <span className="mr-1.5 rounded bg-warning-foreground px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider text-warning">
+      <p className="mx-auto max-w-5xl px-4 py-1.5 text-xs leading-snug sm:py-2 sm:text-sm">
+        <span className="mr-1.5 rounded bg-warning-foreground px-1.5 py-0.5 text-[10px] font-bold sm:text-xs uppercase tracking-wider text-warning">
           {dict.banner.tag}
         </span>
         {dict.banner.text}
