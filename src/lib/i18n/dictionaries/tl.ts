@@ -19,7 +19,8 @@ const privacySections: LegalSection[] = [
     items: [
       "Sa paggamit ng mapa ng pamasahe: walang anumang nagpapakilala sa iyo. Ginagamit ang mga puntong itinakda mo (A at B) para sukatin ang layo sa daan at hanapin ang mga ruta ng jeep.",
       "Sa paghahanap ng lugar: ipinapadala ang tina-type mo sa serbisyo ng paghahanap ng lugar para makahanap ng tugma. Sa browser mo lang naka-save ang huling mga pinili mo, para mapili mo ulit.",
-      "Sa pagmungkahi ng ruta ng jeep o pagdagdag ng TODA: ang detalye ng ruta o TODA, na sinusuri ng admin at maaaring ilathala. Opsyonal ang pangalan at contact mo. Mga admin lang ang nakakakita nito, kung sakaling may itanong sila, at hindi ito kailanman ilalathala.",
+      "Sa pagmungkahi ng ruta ng jeep: nagsa-sign in ka gamit ang Google o Facebook. Itinatago namin ang detalye ng ruta, na sinusuri ng admin at maaaring ilathala, kasama ang pangalan at email address mo, kung alin sa dalawa ang ginamit mo, at kung ilan sa mga ruta mo ang naaprubahan, tinanggihan o naghihintay pa. Mga admin lang ang nakakakita ng pangalan at email mo, kung sakaling may itanong sila, at hindi ito kailanman ilalathala.",
+      "Sa pagdagdag ng TODA: ang detalye ng TODA, na sinusuri ng admin at maaaring ilathala. Opsyonal ang pangalan at contact mo. Mga admin lang ang nakakakita nito, kung sakaling may itanong sila, at hindi ito kailanman ilalathala.",
       "Sa pagpapadala ng feedback: ang pangalan at email address mo mula sa Google o Facebook, kung alin sa dalawa ang ginamit mo, ang paksa at mensahe mo, ang wikang binabasa mo, at ang pahinang pinanggalingan mo. Kung mula sa mapa ng pamasahe, kasama roon ang dalawang punto ng biyahe mo. Ginagamit ito ng mga admin para maintindihan ang feedback mo at para masagot ka.",
       "Sa pag-sign in: nagtatago ang Supabase, ang serbisyo namin sa pag-sign in, ng tala ng account mo (pangalan, email address, link ng profile picture at ID ng Google o Facebook account mo) at ng bawat pag-sign in, kasama ang IP address at browser mo.",
       "Mga admin: ang email address na ginagamit nila sa pag-sign in, at kung sinong admin ang sumuri sa bawat submission.",
@@ -92,7 +93,7 @@ const privacySections: LegalSection[] = [
     paragraphs: ["Para burahin ang account mo at lahat ng kaugnay nito:"],
     items: [
       "Mag-email sa {email} na may subject na \"Delete my data\", gamit ang email address na ipinang-sign in mo.",
-      "Buburahin namin ang account mo, lahat ng feedback mo, at ang pangalan at contact mo sa anumang submission na ipinadala mo.",
+      "Buburahin namin ang account mo, lahat ng feedback at mungkahing ruta ng jeep mo, at ang pangalan at contact mo sa anumang TODA na ipinadala mo. Mananatili sa mapa ang mga rutang nailathala na, nang wala ang pangalan mo.",
       "Mag-e-email kami kapag tapos na.",
       "Kung Facebook ang ginamit mo sa pag-sign in, puwede mo ring alisin ang Pamasahe Cabanatuan sa Facebook → Settings and privacy → Settings → Apps and websites. Pinipigilan nito ang Facebook na ibahagi ulit sa amin ang detalye mo; para burahin ang hawak na namin, mag-email sa amin gaya ng nasa itaas.",
     ],
@@ -109,7 +110,7 @@ const privacySections: LegalSection[] = [
     id: "children",
     heading: "Mga bata",
     paragraphs: [
-      "Para sa lahat ang mapa ng pamasahe. Para mag-sign in at magpadala ng feedback, dapat sapat na ang edad mo para magkaroon ng sariling Google o Facebook account (13 pataas). Kung wala ka pang 18, magpaalam muna sa magulang o tagapag-alaga.",
+      "Para sa lahat ang mapa ng pamasahe. Para mag-sign in at magpadala ng feedback o magmungkahi ng ruta ng jeep, dapat sapat na ang edad mo para magkaroon ng sariling Google o Facebook account (13 pataas). Kung wala ka pang 18, magpaalam muna sa magulang o tagapag-alaga.",
     ],
   },
   {
@@ -183,7 +184,7 @@ const termsSections: LegalSection[] = [
     id: "accounts",
     heading: "Pag-sign in",
     paragraphs: [
-      "Nagsa-sign in ka gamit ang Google o Facebook para magpadala ng feedback, at sakop din ng mga tuntunin nila ang account mo sa kanila. Para maiwasan ang spam, hanggang 5 mensahe kada oras ang kayang ipadala ng bawat account. Puwede kang tumigil sa paggamit ng site anumang oras at hilingin na burahin namin ang data mo, gaya ng paliwanag sa Privacy Policy.",
+      "Nagsa-sign in ka gamit ang Google o Facebook para magpadala ng feedback o magmungkahi ng ruta ng jeep, at sakop din ng mga tuntunin nila ang account mo sa kanila. Para maiwasan ang spam, hanggang 5 mensahe at 10 mungkahing ruta kada oras ang kayang ipadala ng bawat account. Puwede kang tumigil sa paggamit ng site anumang oras at hilingin na burahin namin ang data mo, gaya ng paliwanag sa Privacy Policy.",
     ],
   },
   {
@@ -593,13 +594,15 @@ export const tl: Dictionary = {
     notSure: "Hindi sigurado",
     farePaid: "Binayad na pamasahe sa piso (opsyonal)",
     farePaidHint: "Ang binayad mo mula sakayan hanggang babaan, isang regular na pasahero.",
-    aboutYou: "Tungkol sa iyo (opsyonal)",
-    aboutYouHint: "Para may matanungan kami kung may kulang; hindi kailanman ipapakita sa publiko.",
-    submitterName: "Pangalan mo",
-    submitterContact: "Mobile number o email",
     notes: "May iba ka pang gustong sabihin?",
     notesHint: "Hal. ang nakasulat sa karatula, gaano kadalas umalis, o anong araw ito bumibiyahe.",
-    privacy: "Ang ruta lang ang ipapakita sa publiko, at saka lang kapag nasuri na ng admin.",
+    privacy: "Mga admin lang ang nakakakita ng pangalan at email mo, kung sakaling may itanong sila tungkol sa ruta mo. Ang ruta lang ang ilalathala, at saka lang kapag nasuri na ng admin.",
+    signInHeading: "Mag-sign in para magmungkahi ng ruta",
+    signInWhy:
+      "Sa pag-sign in, naiiwasan ang spam at may matatanungan kami tungkol sa ruta mo. Pangalan at email address mo lang ang natatanggap namin.",
+    signedOutBody: "Mag-sign in ulit, saka ipadala ang ruta mo. I-reload ang pahina para makita ang mga paraan ng pag-sign in.",
+    tooManyTitle: "Masyadong maraming ruta nang sabay-sabay",
+    tooManyBody: "Nakapagpadala ka na ng 10 ruta sa nakaraang oras. Maghintay muna bago magpadala ulit.",
     submit: "Ipadala para suriin",
     sending: "Ipinapadala…",
     failedTitle: "Hindi naipadala",
@@ -621,8 +624,6 @@ export const tl: Dictionary = {
       via: "Hanggang 120 karakter lang ito.",
       jeepType: "Pumili ng uri ng jeep.",
       farePaid: "Maglagay ng pamasaheng ₱1 hanggang ₱500, o iwanang blangko.",
-      submitterName: "Hanggang 80 karakter lang ang pangalan.",
-      submitterContact: "Hanggang 100 karakter lang ang contact.",
       notes: "Hanggang 1000 karakter lang ang notes.",
       invalid: "Pakitingnan ang sagot na ito.",
     },
@@ -699,7 +700,7 @@ export const tl: Dictionary = {
     description:
       "Ano ang kinokolekta ng Pamasahe Cabanatuan, bakit, sino pa ang tumatanggap nito, at paano makita, itama o burahin ang impormasyon mo.",
     intro:
-      "Puwede mong alamin ang pamasahe nang hindi nagbibigay ng anumang impormasyon tungkol sa iyo. Hinihingi lang namin ang pangalan at email mo kapag nagpadala ka ng feedback, at hindi namin kailanman ibinebenta ang impormasyon mo o nagpapakita ng ads. Narito ang mga detalye.",
+      "Puwede mong alamin ang pamasahe nang hindi nagbibigay ng anumang impormasyon tungkol sa iyo. Hinihingi lang namin ang pangalan at email mo kapag nagpadala ka ng feedback o nagmungkahi ng ruta ng jeep, at hindi namin kailanman ibinebenta ang impormasyon mo o nagpapakita ng ads. Narito ang mga detalye.",
     sections: privacySections,
   },
   terms: {

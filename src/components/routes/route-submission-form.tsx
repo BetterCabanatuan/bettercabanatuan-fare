@@ -125,6 +125,18 @@ function SubmissionRound({ boundary, onSuggestAnother }: { boundary: LngLat[]; o
           <AlertDescription>{t.failedBody}</AlertDescription>
         </Alert>
       )}
+      {state.status === "signedOut" && (
+        <Alert variant="destructive">
+          <AlertTitle>{dict.feedback.signedOutTitle}</AlertTitle>
+          <AlertDescription>{t.signedOutBody}</AlertDescription>
+        </Alert>
+      )}
+      {state.status === "tooMany" && (
+        <Alert variant="destructive">
+          <AlertTitle>{t.tooManyTitle}</AlertTitle>
+          <AlertDescription>{t.tooManyBody}</AlertDescription>
+        </Alert>
+      )}
       {Object.keys(errors).length > 0 && (
         <Alert variant="destructive" aria-live="polite">
           <AlertTitle>{t.checkFields}</AlertTitle>
@@ -212,20 +224,6 @@ function SubmissionRound({ boundary, onSuggestAnother }: { boundary: LngLat[]; o
             step={0.25}
             error={errors.farePaid}
           />
-        </FieldGroup>
-      </FieldSet>
-
-      <FieldSet>
-        <FieldLegend>{t.aboutYou}</FieldLegend>
-        <FieldDescription>{t.aboutYouHint}</FieldDescription>
-        <FieldGroup>
-          <TextField name="submitterName" label={t.submitterName} autoComplete="name" error={errors.submitterName} />
-          <TextField
-            name="submitterContact"
-            label={t.submitterContact}
-            autoComplete="email"
-            error={errors.submitterContact}
-          />
           <TextAreaField
             name="notes"
             label={t.notes}
@@ -235,14 +233,6 @@ function SubmissionRound({ boundary, onSuggestAnother }: { boundary: LngLat[]; o
           />
         </FieldGroup>
       </FieldSet>
-
-      {/* Honeypot for bots; hidden from people and assistive tech. */}
-      <div aria-hidden="true" className="absolute -left-[9999px] h-0 overflow-hidden">
-        <label>
-          Website
-          <input type="text" name="website" tabIndex={-1} autoComplete="off" defaultValue="" />
-        </label>
-      </div>
 
       <div className="flex flex-col gap-3 border-t pt-6 sm:flex-row sm:items-center">
         <Button type="submit" size="lg" className="h-11 px-5 text-base font-bold" disabled={isPending}>

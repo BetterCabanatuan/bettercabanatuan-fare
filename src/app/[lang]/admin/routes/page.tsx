@@ -9,7 +9,7 @@ import { SignOutButton } from "@/components/admin/sign-out-button";
 import { Badge } from "@/components/ui/badge";
 import type { JeepType, SubmissionStatus } from "@/lib/db";
 import { formatPeso } from "@/lib/fare";
-import { countRouteSubmissions, listRouteSubmissions, routeSlug } from "@/lib/routes/queries";
+import { countRouteSubmissions, listRouteSubmissions, routeSlug, type SenderRecord } from "@/lib/routes/queries";
 import { requireAdmin, type Admin } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Review jeepney route submissions" };
@@ -134,7 +134,7 @@ async function ReviewQueue({
                     {submission.farePaid === null ? "Not given" : formatPeso(submission.farePaid)}
                   </Detail>
                   <Detail label="Sent by (private)">
-                    {[submission.submitterName, submission.submitterContact].filter(Boolean).join(" · ") || "Anonymous"}
+                    <Sender submission={submission} />
                   </Detail>
                   {submission.notes && <Detail label="Notes">{submission.notes}</Detail>}
                 </dl>
@@ -181,6 +181,38 @@ function Detail({ label, children }: { label: string; children: React.ReactNode 
       <dt className="font-semibold text-muted-foreground">{label}</dt>
       <dd className="break-words">{children}</dd>
     </div>
+  );
+}
+
+const PROVIDER_LABEL: Record<string, string> = { google: "Google", facebook: "Facebook" };
+
+type SenderProps = {
+  submission: {
+    userId: string | null;
+    provider: string | null;
+    submitterName: string | null;
+    submitterContact: string | null;
+    senderRecord?: SenderRecord;
+  };
+};
+
+/** Who sent a suggestion and how their earlier ones went. */
+function Sender({ submission }: SenderProps) {
+  const details = [submission.submitterName, submission.submitterContact].filter(Boolean).join(" · ");
+  if (!submission.userId) {
+    return <>{details ? `${details} (typed in; sent before sign-in was required)` : "Anonymous (sent before sign-in was required)"}</>;
+  }
+  const provider = submission.provider ? (PROVIDER_LABEL[submission.provider] ?? submission.provider) : null;
+  const record = submission.senderRecord;
+  return (
+    <>
+      {[details || "Signed in, no name or email shared", provider].filter(Boolean).join(" · ")}
+      {record && (
+        <span className="block text-muted-foreground">
+          {record.VERIFIED} approved · {record.REJECTED} rejected · {record.PENDING} pending
+        </span>
+      )}
+    </>
   );
 }
 

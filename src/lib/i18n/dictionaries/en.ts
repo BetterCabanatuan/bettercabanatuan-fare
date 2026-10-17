@@ -18,7 +18,8 @@ const privacySections: LegalSection[] = [
     items: [
       "Using the fare map: nothing that identifies you. The points you set (A and B) are used to measure the road distance and find jeep routes.",
       "Searching for a place: the text you type is sent to the place search service to find matches. Your last few picks are saved only in your browser, so you can pick them again.",
-      "Suggesting a jeep route or adding a TODA: the details of the route or TODA, which an admin checks and may publish. Your name and contact are optional. Only admins see them, in case they need to ask you something, and they are never published.",
+      "Suggesting a jeep route: you sign in with Google or Facebook. We keep the route's details, which an admin checks and may publish, with your name and email address, which of the two you used, and how many of your routes were approved, rejected or still waiting. Only admins see your name and email, in case they need to ask you something, and they are never published.",
+      "Adding a TODA: the details of the TODA, which an admin checks and may publish. Your name and contact are optional. Only admins see them, in case they need to ask you something, and they are never published.",
       "Sending feedback: your name and email address from Google or Facebook, which of the two you used, your topic and message, the language you were reading in, and the page you came from. For the fare map, that page includes the two points of your trip. Admins use these to understand your feedback and to reply to you.",
       "Signing in: Supabase, our sign-in service, keeps a record of your account (name, email address, profile picture link and your Google or Facebook account ID) and of each sign-in, including your IP address and browser.",
       "Admins: the email address they sign in with, and which admin reviewed each submission.",
@@ -91,7 +92,7 @@ const privacySections: LegalSection[] = [
     paragraphs: ["To delete your account and everything linked to it:"],
     items: [
       "Email {email} with the subject \"Delete my data\", from the email address you used to sign in.",
-      "We delete your account, all your feedback, and your name and contact on any submission you sent.",
+      "We delete your account, all your feedback and jeep route suggestions, and your name and contact on any TODA you sent. Routes already published stay on the map, without your name.",
       "We email you when it's done.",
       "If you signed in with Facebook, you can also remove Pamasahe Cabanatuan under Facebook → Settings and privacy → Settings → Apps and websites. That stops Facebook from sharing your details with us again; to delete what we already hold, email us as above.",
     ],
@@ -108,7 +109,7 @@ const privacySections: LegalSection[] = [
     id: "children",
     heading: "Children",
     paragraphs: [
-      "The fare map is for everyone. To sign in and send feedback, you must be old enough to have your own Google or Facebook account (13 or older). If you are under 18, ask a parent or guardian first.",
+      "The fare map is for everyone. To sign in and send feedback or suggest a jeep route, you must be old enough to have your own Google or Facebook account (13 or older). If you are under 18, ask a parent or guardian first.",
     ],
   },
   {
@@ -182,7 +183,7 @@ const termsSections: LegalSection[] = [
     id: "accounts",
     heading: "Signing in",
     paragraphs: [
-      "You sign in with Google or Facebook to send feedback, and their terms also apply to your account with them. To prevent spam, each account can send up to 5 messages an hour. You can stop using the site at any time and ask us to delete your data, as the Privacy Policy explains.",
+      "You sign in with Google or Facebook to send feedback or suggest a jeep route, and their terms also apply to your account with them. To prevent spam, each account can send up to 5 messages and 10 route suggestions an hour. You can stop using the site at any time and ask us to delete your data, as the Privacy Policy explains.",
     ],
   },
   {
@@ -589,13 +590,15 @@ export const en = {
     notSure: "Not sure",
     farePaid: "Fare paid in pesos (optional)",
     farePaidHint: "What you paid end to end, one regular passenger.",
-    aboutYou: "About you (optional)",
-    aboutYouHint: "So we can ask follow-up questions; never published.",
-    submitterName: "Your name",
-    submitterContact: "Mobile number or email",
     notes: "Anything else?",
     notesHint: "E.g. what the signboard says, how often it leaves, or which days it runs.",
-    privacy: "Only the route itself is published after an admin checks it.",
+    privacy: "Only admins see your name and email, in case they need to ask about your route. The route itself is published after an admin checks it.",
+    signInHeading: "Sign in to suggest a route",
+    signInWhy:
+      "Signing in keeps out spam and lets us ask you about your route. We only receive your name and email address.",
+    signedOutBody: "Sign in again, then send your route. Reload the page to see the sign-in options.",
+    tooManyTitle: "Too many routes at once",
+    tooManyBody: "You've sent 10 routes in the last hour. Please wait a while before sending more.",
     submit: "Send for review",
     sending: "Sending…",
     failedTitle: "Not sent",
@@ -617,8 +620,6 @@ export const en = {
       via: "Keep this to 120 characters.",
       jeepType: "Choose a jeep type.",
       farePaid: "Enter a fare between ₱1 and ₱500, or leave it blank.",
-      submitterName: "Keep your name to 80 characters.",
-      submitterContact: "Keep your contact to 100 characters.",
       notes: "Keep the notes to 1000 characters.",
       invalid: "Check this answer.",
     },
@@ -691,7 +692,7 @@ export const en = {
     description:
       "What Pamasahe Cabanatuan collects, why, who else receives it, and how to see, correct or delete your information.",
     intro:
-      "You can check fares without telling us anything about yourself. We ask for your name and email only when you send feedback, and we never sell your information or show ads. This page explains the details.",
+      "You can check fares without telling us anything about yourself. We ask for your name and email only when you send feedback or suggest a jeep route, and we never sell your information or show ads. This page explains the details.",
     sections: privacySections,
   },
   terms: {

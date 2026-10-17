@@ -84,15 +84,34 @@ export async function listRouteSubmissions(status: SubmissionStatus) {
   ]);
   if (submissions.error) throw submissions.error;
   if (routes.error) throw routes.error;
+  const records = await senderRecords(submissions.data.flatMap((submission) => submission.userId ?? []));
   return {
     submissions: submissions.data.map((submission) => ({
       ...submission,
       stops: toStops(submission.id, submission.waypoints),
+      senderRecord: submission.userId ? records.get(submission.userId) : undefined,
       createdAt: new Date(submission.createdAt),
       reviewedAt: submission.reviewedAt === null ? null : new Date(submission.reviewedAt),
     })),
     existingIds: new Set(routes.data.map((route) => route.id)),
   };
+}
+
+export type SenderRecord = Record<SubmissionStatus, number>;
+
+/** How each sender's route suggestions went so far, so admins can weigh a new one. */
+async function senderRecords(userIds: string[]): Promise<Map<string, SenderRecord>> {
+  if (userIds.length === 0) return new Map();
+  const { data, error } = await getDb()
+    .from("route_submission")
+    .select("userId, status")
+    .in("userId", [...new Set(userIds)]);
+  if (error) throw error;
+  return data.reduce((records, { userId, status }) => {
+    if (!userId) return records;
+    const record = records.get(userId) ?? { PENDING: 0, VERIFIED: 0, REJECTED: 0 };
+    return records.set(userId, { ...record, [status]: record[status] + 1 });
+  }, new Map<string, SenderRecord>());
 }
 
 /**

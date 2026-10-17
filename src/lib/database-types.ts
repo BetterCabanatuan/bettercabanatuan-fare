@@ -116,6 +116,7 @@ export type Database = {
           jeepType: Database["public"]["Enums"]["JeepType"];
           name: string;
           notes: string | null;
+          provider: string | null;
           rejectionReason: string | null;
           reviewedAt: string | null;
           reviewedByEmail: string | null;
@@ -127,6 +128,7 @@ export type Database = {
           toLng: number;
           toName: string;
           updatedAt: string;
+          userId: string | null;
           via: string | null;
           waypoints: Json;
         };
@@ -140,6 +142,7 @@ export type Database = {
           jeepType?: Database["public"]["Enums"]["JeepType"];
           name: string;
           notes?: string | null;
+          provider?: string | null;
           rejectionReason?: string | null;
           reviewedAt?: string | null;
           reviewedByEmail?: string | null;
@@ -151,6 +154,7 @@ export type Database = {
           toLng: number;
           toName: string;
           updatedAt?: string;
+          userId?: string | null;
           via?: string | null;
           waypoints?: Json;
         };
@@ -164,6 +168,7 @@ export type Database = {
           jeepType?: Database["public"]["Enums"]["JeepType"];
           name?: string;
           notes?: string | null;
+          provider?: string | null;
           rejectionReason?: string | null;
           reviewedAt?: string | null;
           reviewedByEmail?: string | null;
@@ -175,6 +180,7 @@ export type Database = {
           toLng?: number;
           toName?: string;
           updatedAt?: string;
+          userId?: string | null;
           via?: string | null;
           waypoints?: Json;
         };

@@ -13,6 +13,8 @@ export const SUBMISSION_LIMITS = {
   via: 120,
   notes: 1000,
   farePesos: 500,
+  // Enough for a rider sending a day's rides at once; stops one account from flooding the admins.
+  perHour: 10,
   waypoints: 12,
   // San Jose City, the farthest town a Cabanatuan jeep is known to reach, is about 45 km out.
   waypointKm: 60,
@@ -33,8 +35,6 @@ const ERROR_KEYS = [
   "via",
   "jeepType",
   "farePaid",
-  "submitterName",
-  "submitterContact",
   "notes",
   "invalid",
 ] as const;
@@ -84,8 +84,6 @@ export const submissionSchema = z.object({
     .max(SUBMISSION_LIMITS.farePesos, "farePaid")
     .transform(toCentavos)
     .optional(),
-  submitterName: optionalText(80, "submitterName"),
-  submitterContact: optionalText(100, "submitterContact"),
   notes: optionalText(SUBMISSION_LIMITS.notes, "notes"),
 });
 
@@ -119,8 +117,6 @@ export function formDataToInput(formData: FormData): SubmissionInput {
     via: text("via"),
     jeepType: jeepType === "" ? undefined : (jeepType as JeepTypeInput),
     farePaid: number("farePaid"),
-    submitterName: text("submitterName"),
-    submitterContact: text("submitterContact"),
     notes: text("notes"),
   };
 }
