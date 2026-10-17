@@ -1,7 +1,7 @@
 // Cloudflare Workers config for the OpenNext build. Setup: docs/deploy/cloudflare.md
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "pamasahe-cabanatuan",
+  "name": "bettercabanatuan-fare",
   // Both paths are written by `opennextjs-cloudflare build`; don't change them.
   "main": ".open-next/worker.js",
   "assets": {

@@ -50,7 +50,7 @@ npm run deploy
 
 ## 4. Add the custom domain
 
-In the Cloudflare dashboard, open **Workers & Pages → pamasahe-cabanatuan → Settings → Domains & Routes → Add → Custom domain**, then enter the domain. The domain's DNS must be on Cloudflare. The site keeps answering on `pamasahe-cabanatuan.<account>.workers.dev` too.
+In the Cloudflare dashboard, open **Workers & Pages → bettercabanatuan-fare → Settings → Domains & Routes → Add → Custom domain**, then enter the domain. The domain's DNS must be on Cloudflare. The site keeps answering on `bettercabanatuan-fare.<account>.workers.dev` too.
 
 Rebuild after the domain is final, because `NEXT_PUBLIC_SITE_URL` (canonical URLs, sitemap, Open Graph) is inlined at build time.
 
@@ -71,7 +71,7 @@ In the GitHub repository, open **Settings → Secrets and variables → Actions*
 
 `SUPABASE_SECRET_KEY` and `ADMIN_EMAILS` stay Worker secrets (step 2). The workflow doesn't touch them.
 
-**Alternative: Workers Builds.** Cloudflare can build from the repository itself (**Workers & Pages → pamasahe-cabanatuan → Settings → Builds → Connect**). Set the build command to `npx opennextjs-cloudflare build` and the deploy command to `npx opennextjs-cloudflare deploy`. Put the `NEXT_PUBLIC_*` values under **Build variables and secrets**. Workers Builds doesn't run migrations, so you would run `npm run db:deploy` by hand before each release that adds one. That's why this repository ships the GitHub Actions workflow instead. Don't enable both, or every push deploys twice.
+**Alternative: Workers Builds.** Cloudflare can build from the repository itself (**Workers & Pages → bettercabanatuan-fare → Settings → Builds → Connect**). Set the build command to `npx opennextjs-cloudflare build` and the deploy command to `npx opennextjs-cloudflare deploy`. Put the `NEXT_PUBLIC_*` values under **Build variables and secrets**. Workers Builds doesn't run migrations, so you would run `npm run db:deploy` by hand before each release that adds one. That's why this repository ships the GitHub Actions workflow instead. Don't enable both, or every push deploys twice.
 
 ## Local development and preview
 
@@ -95,4 +95,4 @@ Then open <http://localhost:8787>. Local secrets for the Worker (`SUPABASE_SECRE
 - **The Worker bundle suddenly includes many `.wasm` files**: `next.config.ts` leaves dev-tool `.wasm` files out of the server trace (`outputFileTracingExcludes`). A new dev dependency that ships `.wasm` may need adding to that list.
 - **`SUPABASE_SECRET_KEY is not set`** in the logs: set the Worker secret (step 2), or add it to `.env` or `.dev.vars` locally.
 - **The site shows old `NEXT_PUBLIC_*` values**: they're fixed at build time. Change the GitHub variable and re-run the workflow.
-- **Logs**: `npx wrangler tail` streams production logs. Observability is enabled in `wrangler.jsonc`, so they also show in the dashboard under **Workers & Pages → pamasahe-cabanatuan → Logs**.
+- **Logs**: `npx wrangler tail` streams production logs. Observability is enabled in `wrangler.jsonc`, so they also show in the dashboard under **Workers & Pages → bettercabanatuan-fare → Logs**.
