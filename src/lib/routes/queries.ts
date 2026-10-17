@@ -1,16 +1,12 @@
 import "server-only";
 
-import { cacheLife, cacheTag } from "next/cache";
 import { z } from "zod";
 
-import type { CommunityJeepRoute, SubmissionStatus } from "@/generated/prisma/client";
-import { db } from "@/lib/db";
+import type { Tables } from "@/lib/database-types";
+import { getDb, type SubmissionStatus } from "@/lib/db";
 import type { LngLat } from "@/lib/geo";
 import type { JeepRoute } from "@/lib/jeep-routes";
 import { todaSlug } from "@/lib/toda/submission";
-
-/** Cache tag for the public route list; admin approvals expire it. */
-export const ROUTE_LIST_TAG = "jeep-routes";
 
 /** Prefix that keeps community ids apart from the preset ids in data/jeepney/routes.json. */
 export const COMMUNITY_ROUTE_ID_PREFIX = "community-";
@@ -23,36 +19,29 @@ const lineSchema = z.array(z.tuple([z.number(), z.number()])).min(2);
 
 /**
  * Verified community routes, in the same shape as the presets so the planner and map
- * treat them alike. Returns [] when the database is unreachable so /fare still renders.
+ * treat them alike. Read on every request so an approval shows at once. Returns [] when
+ * the database is unreachable so /fare still renders.
  */
 export async function listVerifiedRoutes(): Promise<JeepRoute[]> {
   try {
-    return await cachedVerifiedRoutes();
+    const { data: rows, error } = await getDb().from("community_jeep_route").select().order("name");
+    if (error) throw error;
+    return rows.flatMap((row) => {
+      const parsed = lineSchema.safeParse(row.line);
+      if (!parsed.success) {
+        console.error(`Community route ${row.id} has a malformed line; skipping it`);
+        return [];
+      }
+      return [toJeepRoute(row, parsed.data)];
+    });
   } catch (error) {
-    // Caught outside the cached function so an outage is retried on the next request
-    // instead of being cached as an empty list for hours.
+    // Also catches a missing key, which getDb() throws before any request is made.
     console.error("Could not load community jeepney routes", error);
     return [];
   }
 }
 
-async function cachedVerifiedRoutes(): Promise<JeepRoute[]> {
-  "use cache";
-  cacheTag(ROUTE_LIST_TAG);
-  cacheLife("hours");
-
-  const rows = await db.communityJeepRoute.findMany({ orderBy: { name: "asc" } });
-  return rows.flatMap((row) => {
-    const parsed = lineSchema.safeParse(row.line);
-    if (!parsed.success) {
-      console.error(`Community route ${row.id} has a malformed line; skipping it`);
-      return [];
-    }
-    return [toJeepRoute(row, parsed.data)];
-  });
-}
-
-function toJeepRoute(row: CommunityJeepRoute, line: LngLat[]): JeepRoute {
+function toJeepRoute(row: Tables<"community_jeep_route">, line: LngLat[]): JeepRoute {
   const start = line[0];
   const end = line[line.length - 1];
   return {
@@ -67,7 +56,7 @@ function toJeepRoute(row: CommunityJeepRoute, line: LngLat[]): JeepRoute {
     source: "Resident submission, verified by an admin",
     origin: "community",
     status: "approximate",
-    verifiedOn: row.verifiedOn.toISOString().slice(0, 10),
+    verifiedOn: new Date(row.verifiedOn).toISOString().slice(0, 10),
     reportedFare: row.farePaid ?? undefined,
     directions: [
       { id: "outbound", label: `To ${row.toName}`, line },
@@ -82,21 +71,37 @@ function toJeepRoute(row: CommunityJeepRoute, line: LngLat[]): JeepRoute {
 
 /** Review queue for admins. Not cached: admins need to see new submissions at once. */
 export async function listRouteSubmissions(status: SubmissionStatus) {
-  const submissions = await db.routeSubmission.findMany({
-    where: { status },
-    orderBy: { createdAt: status === "PENDING" ? "asc" : "desc" },
-    take: 100,
-    include: { reviewedBy: { select: { email: true } } },
-  });
-  const existingIds = new Set(
-    (await db.communityJeepRoute.findMany({ select: { id: true } })).map((route) => route.id),
-  );
-  return { submissions, existingIds };
+  const db = getDb();
+  const [submissions, routes] = await Promise.all([
+    db
+      .from("route_submission")
+      .select()
+      .eq("status", status)
+      .order("createdAt", { ascending: status === "PENDING" })
+      .limit(100),
+    db.from("community_jeep_route").select("id"),
+  ]);
+  if (submissions.error) throw submissions.error;
+  if (routes.error) throw routes.error;
+  return {
+    submissions: submissions.data.map((submission) => ({
+      ...submission,
+      createdAt: new Date(submission.createdAt),
+      reviewedAt: submission.reviewedAt === null ? null : new Date(submission.reviewedAt),
+    })),
+    existingIds: new Set(routes.data.map((route) => route.id)),
+  };
 }
 
-export async function countRouteSubmissions() {
-  const groups = await db.routeSubmission.groupBy({ by: ["status"], _count: true });
-  const counts: Record<SubmissionStatus, number> = { PENDING: 0, VERIFIED: 0, REJECTED: 0 };
-  for (const group of groups) counts[group.status] = group._count;
-  return counts;
+export async function countRouteSubmissions(): Promise<Record<SubmissionStatus, number>> {
+  const count = async (status: SubmissionStatus) => {
+    const { count, error } = await getDb()
+      .from("route_submission")
+      .select("*", { count: "exact", head: true })
+      .eq("status", status);
+    if (error) throw error;
+    return count ?? 0;
+  };
+  const [PENDING, VERIFIED, REJECTED] = await Promise.all([count("PENDING"), count("VERIFIED"), count("REJECTED")]);
+  return { PENDING, VERIFIED, REJECTED };
 }

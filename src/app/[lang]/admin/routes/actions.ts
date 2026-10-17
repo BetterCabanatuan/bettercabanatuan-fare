@@ -1,11 +1,11 @@
 "use server";
 
-import { refresh, updateTag } from "next/cache";
+import { refresh } from "next/cache";
 import { z } from "zod";
 
-import { db } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import type { LngLat } from "@/lib/geo";
-import { ROUTE_LIST_TAG, routeSlug } from "@/lib/routes/queries";
+import { routeSlug } from "@/lib/routes/queries";
 import { getAdmin } from "@/lib/session";
 import { rejectionSchema } from "@/lib/toda/submission";
 
@@ -14,18 +14,25 @@ export type ReviewResult = { ok: true } | { ok: false; message: string };
 const ALREADY_REVIEWED = "Another admin already reviewed this submission. The list has been refreshed.";
 
 /**
- * Marks a pending submission VERIFIED and publishes it as a community route in the
- * same transaction. The road line between A and B is fetched from OSRM first: a
- * route without one is never stored, since a straight line would mislead riders. A
- * submission whose name matches a published route updates that route, so
- * corrections flow through the same review.
+ * Marks a pending submission VERIFIED and publishes it as a community route in one
+ * database transaction (approve_route_submission in supabase/migrations). The road line
+ * between A and B is fetched from OSRM first: a route without one is never stored, since
+ * a straight line would mislead riders. A submission whose name matches a published
+ * route updates that route, so corrections flow through the same review.
  */
 export async function approveRouteSubmission(id: string): Promise<ReviewResult> {
   const admin = await getAdmin();
   if (!admin) return { ok: false, message: "Your session ended. Sign in again." };
 
-  const submission = await db.routeSubmission.findUnique({ where: { id } });
-  if (!submission || submission.status !== "PENDING") {
+  const db = getDb();
+  const { data: submission, error } = await db
+    .from("route_submission")
+    .select("name, fromLat, fromLng, toLat, toLng")
+    .eq("id", id)
+    .eq("status", "PENDING")
+    .maybeSingle();
+  if (error) throw error;
+  if (!submission) {
     refresh();
     return { ok: false, message: ALREADY_REVIEWED };
   }
@@ -33,51 +40,22 @@ export async function approveRouteSubmission(id: string): Promise<ReviewResult> 
   const slug = routeSlug(submission.name);
   if (!slug) return { ok: false, message: "This name has no letters or numbers to file it under. Reject it instead." };
 
-  // Fetched before the transaction so a slow routing server never holds a DB transaction open.
+  // Fetched before the transaction so a slow routing server never holds one open.
   const road = await fetchRoadLine([submission.fromLng, submission.fromLat], [submission.toLng, submission.toLat]);
   if (!road.ok) return { ok: false, message: road.message };
 
-  const outcome = await db.$transaction(async (tx) => {
-    const entry = {
-      name: submission.name,
-      fromName: submission.fromName,
-      toName: submission.toName,
-      via: submission.via,
-      jeepType: submission.jeepType,
-      line: road.line,
-      distanceKm: road.distanceKm,
-      farePaid: submission.farePaid,
-      verifiedOn: new Date(),
-    };
-    // A correction only replaces what it supplies; blank optional fields keep the published values.
-    await tx.communityJeepRoute.upsert({
-      where: { id: slug },
-      create: { id: slug, ...entry },
-      update: {
-        ...entry,
-        via: entry.via ?? undefined,
-        jeepType: entry.jeepType === "UNKNOWN" ? undefined : entry.jeepType,
-        farePaid: entry.farePaid ?? undefined,
-      },
-    });
-
-    // Conditional update so two admins approving at once can't both win.
-    const { count } = await tx.routeSubmission.updateMany({
-      where: { id, status: "PENDING" },
-      data: { status: "VERIFIED", reviewedAt: new Date(), reviewedById: admin.id, routeId: slug },
-    });
-    if (count !== 1) throw new StaleReview();
-    return "verified" as const;
-  }).catch((error: unknown) => {
-    if (error instanceof StaleReview) return "stale" as const;
-    throw error;
+  // Returns false when another admin reviewed it while the road line was loading.
+  const { data: verified, error: approveError } = await db.rpc("approve_route_submission", {
+    submission_id: id,
+    route_id: slug,
+    road_line: road.line,
+    distance_km: road.distanceKm,
+    reviewer_email: admin.email,
   });
+  if (approveError) throw approveError;
 
   refresh();
-  if (outcome === "stale") return { ok: false, message: ALREADY_REVIEWED };
-
-  updateTag(ROUTE_LIST_TAG);
-  return { ok: true };
+  return verified ? { ok: true } : { ok: false, message: ALREADY_REVIEWED };
 }
 
 export async function rejectRouteSubmission(id: string, reason: string): Promise<ReviewResult> {
@@ -87,16 +65,24 @@ export async function rejectRouteSubmission(id: string, reason: string): Promise
   const parsed = rejectionSchema.safeParse(reason);
   if (!parsed.success) return { ok: false, message: parsed.error.issues[0].message };
 
-  const { count } = await db.routeSubmission.updateMany({
-    where: { id, status: "PENDING" },
-    data: { status: "REJECTED", rejectionReason: parsed.data, reviewedAt: new Date(), reviewedById: admin.id },
-  });
+  // Conditional on PENDING so two admins reviewing at once can't both win.
+  const { data, error } = await getDb()
+    .from("route_submission")
+    .update({
+      status: "REJECTED",
+      rejectionReason: parsed.data,
+      reviewedAt: new Date().toISOString(),
+      reviewedByEmail: admin.email,
+    })
+    .eq("id", id)
+    .eq("status", "PENDING")
+    .select("id");
+  if (error) throw error;
 
   refresh();
-  return count === 1 ? { ok: true } : { ok: false, message: ALREADY_REVIEWED };
+  return data.length === 1 ? { ok: true } : { ok: false, message: ALREADY_REVIEWED };
 }
 
-class StaleReview extends Error {}
 
 // ── Road line from OSRM ──────────────────────────────────────────────────────
 

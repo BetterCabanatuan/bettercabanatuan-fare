@@ -67,15 +67,14 @@ Your name and contact details are optional. Only admins see them, so they can as
 - [Next.js](https://nextjs.org) 16 (App Router) with React 19 and TypeScript
 - Tailwind CSS 4 and [shadcn/ui](https://ui.shadcn.com)
 - [MapLibre GL](https://maplibre.org) with OpenStreetMap data, [OSRM](https://project-osrm.org) for road routing and [Photon](https://photon.komoot.io) for place search
-- PostgreSQL on [Supabase](https://supabase.com) through [Prisma](https://www.prisma.io), for resident submissions and admin sign-ins only
-- [Better Auth](https://www.better-auth.com) magic-link sign-in for admins, with email sent through [Resend](https://resend.com)
+- [Supabase](https://supabase.com) for resident submissions (Postgres, read through its Data API from the server only) and magic-link sign-in for admins (Supabase Auth)
 - [Vitest](https://vitest.dev) for unit tests
 
 Fare data lives in JSON files under `data/`. The fare pages are prerendered and all fare math runs in the browser, so the calculators don't need the database.
 
 ## Getting started
 
-You need Node.js 24 and a PostgreSQL database: either a Supabase project or a local Postgres.
+You need Node.js 24 and a Supabase project ([`docs/deploy/supabase.md`](docs/deploy/supabase.md)).
 
 ```bash
 git clone https://github.com/BetterCabanatuan/bettercabanatuan-fare.git
@@ -88,18 +87,18 @@ Fill in `.env`:
 
 | Variable | What it is |
 |---|---|
-| `DATABASE_URL` | Postgres connection string. For Supabase, use the Session pooler string (port 5432); for local work, a local Postgres such as `postgresql://you@localhost:5432/pamasahe`. |
-| `BETTER_AUTH_SECRET` | Random secret for sign-in sessions. Generate one with `openssl rand -base64 32`. |
-| `BETTER_AUTH_URL` | Address of the app, `http://localhost:3000` in development. |
+| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL. |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | The project's publishable key, used for admin sign-in. |
+| `SUPABASE_SECRET_KEY` | The project's secret key. The server reads and writes the database with it; never expose it to the browser. |
 | `ADMIN_EMAILS` | Comma-separated email addresses allowed to sign in to `/admin`. |
-| `RESEND_API_KEY` | Optional in development. Without it, the sign-in link is printed to the server console. Required in production. |
-| `EMAIL_FROM` | Sender of the sign-in email. |
 | `NEXT_PUBLIC_SITE_URL` | Public address of the site, used for metadata, the sitemap and Open Graph images. |
 
-Create the database tables, then start the dev server:
+Link the Supabase project, create the database tables, then start the dev server:
 
 ```bash
-npm run db:migrate
+npx supabase login
+npx supabase link --project-ref your-project-ref
+npm run db:deploy
 npm run dev
 ```
 
@@ -110,24 +109,25 @@ Open <http://localhost:3000>.
 | Command | What it does |
 |---|---|
 | `npm run dev` | Starts the development server. |
-| `npm run build` | Generates the Prisma client and builds for production. |
+| `npm run build` | Builds for production. |
 | `npm start` | Runs the production build. |
 | `npm test` | Runs the unit tests once. |
 | `npm run lint` | Runs ESLint. |
-| `npm run db:migrate` | Creates and applies migrations in development. |
-| `npm run db:deploy` | Applies pending migrations in production. |
+| `npm run db:new -- name` | Creates an empty migration in `supabase/migrations`. |
+| `npm run db:deploy` | Applies pending migrations to the linked Supabase project. |
+| `npm run db:types` | Regenerates `src/lib/database-types.ts` from the linked project. |
 
 ## Project structure
 
 ```text
 data/            Fare rules, routes, terminals, TODAs and map data (JSON)
 docs/            Product specs, research notes and brand guide
-prisma/          Database schema and migrations
 public/          Logo and app icons
 scripts/         Data tools, such as generating jeep route lines
 src/app/[lang]/  Pages; every page exists in English and Tagalog
 src/components/  UI components; shadcn/ui primitives are in components/ui
 src/lib/         Fare math (fare.ts), data loading, auth and i18n
+supabase/        Database migrations and Supabase CLI config
 ```
 
 ## How fares are computed
@@ -152,9 +152,9 @@ The `/sources` page in the app lists where each figure comes from.
 
 ## Deployment
 
-The database runs on Supabase. Prisma owns the schema, so every change is a migration in `prisma/migrations`, applied with `npm run db:deploy`. Every table has row level security turned on, so Supabase's public Data API can't read submitters' contact details. [`docs/deploy/supabase.md`](docs/deploy/supabase.md) covers creating the project, connecting, and making schema changes.
+The database and admin sign-in run on Supabase. Every schema change is a migration in `supabase/migrations`, applied with `npm run db:deploy`. Every table has row level security turned on with no policies, so only the server's secret key can read submitters' contact details. [`docs/deploy/supabase.md`](docs/deploy/supabase.md) covers creating the project, connecting, and making schema changes.
 
-The app is moving to Cloudflare Workers through [OpenNext](https://opennext.js.org/cloudflare). Its deployment notes will follow. `NEXT_PUBLIC_SITE_URL` is baked into the build, so rebuild after changing it.
+The app deploys to Cloudflare Workers through [OpenNext](https://opennext.js.org/cloudflare); see [`docs/deploy/cloudflare.md`](docs/deploy/cloudflare.md). `NEXT_PUBLIC_SITE_URL` is baked into the build, so rebuild after changing it.
 
 ## Contributing
 

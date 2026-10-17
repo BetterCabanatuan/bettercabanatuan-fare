@@ -5,8 +5,8 @@ import { Suspense } from "react";
 import { ReviewActions } from "@/components/admin/review-actions";
 import { SignOutButton } from "@/components/admin/sign-out-button";
 import { Badge } from "@/components/ui/badge";
-import type { SubmissionStatus } from "@/generated/prisma/client";
-import { requireAdmin } from "@/lib/session";
+import type { SubmissionStatus } from "@/lib/db";
+import { requireAdmin, type Admin } from "@/lib/session";
 import { countSubmissions, listSubmissions } from "@/lib/toda/queries";
 import { todaSlug } from "@/lib/toda/submission";
 
@@ -24,7 +24,11 @@ const dateTime = new Intl.DateTimeFormat("en-PH", {
   timeZone: "Asia/Manila",
 });
 
-export default function AdminTodasPage({ searchParams }: PageProps<"/[lang]/admin/todas">) {
+export default async function AdminTodasPage({ searchParams }: PageProps<"/[lang]/admin/todas">) {
+  // Checked before anything streams, so a signed-out visitor gets a real 307 to the
+  // sign-in page instead of a redirect sent mid-stream with a 200.
+  const admin = await requireAdmin();
+
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -38,16 +42,17 @@ export default function AdminTodasPage({ searchParams }: PageProps<"/[lang]/admi
           </Link>
         </nav>
       </div>
-      {/* Everything below reads the session or the query, so it renders per request. */}
       <Suspense fallback={<p className="text-muted-foreground">Loading submissions…</p>}>
-        <ReviewQueue searchParams={searchParams} />
+        <ReviewQueue admin={admin} searchParams={searchParams} />
       </Suspense>
     </main>
   );
 }
 
-async function ReviewQueue({ searchParams }: Pick<PageProps<"/[lang]/admin/todas">, "searchParams">) {
-  const admin = await requireAdmin();
+async function ReviewQueue({
+  admin,
+  searchParams,
+}: { admin: Admin } & Pick<PageProps<"/[lang]/admin/todas">, "searchParams">) {
   const { status: rawStatus } = await searchParams;
   const status = TABS.find((tab) => tab.status === rawStatus)?.status ?? "PENDING";
   const [{ submissions, existingIds }, counts] = await Promise.all([listSubmissions(status), countSubmissions()]);
@@ -132,7 +137,7 @@ async function ReviewQueue({ searchParams }: Pick<PageProps<"/[lang]/admin/todas
                 ) : (
                   <p className="border-t pt-3 text-sm text-muted-foreground">
                     {status === "VERIFIED" ? "Verified" : "Rejected"}
-                    {submission.reviewedBy && ` by ${submission.reviewedBy.email}`}
+                    {submission.reviewedByEmail && ` by ${submission.reviewedByEmail}`}
                     {submission.reviewedAt && ` on ${dateTime.format(submission.reviewedAt)}`}
                     {submission.rejectionReason && (
                       <>

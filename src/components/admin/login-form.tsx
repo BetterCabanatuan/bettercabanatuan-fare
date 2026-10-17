@@ -6,8 +6,8 @@ import { useState, useTransition, type FormEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { sendSignInLink } from "@/app/[lang]/admin/login/actions";
 import { useHydrated } from "@/hooks/use-hydrated";
-import { authClient } from "@/lib/auth-client";
 
 /** `notice` is the server-rendered "link expired" message, if any. */
 export function LoginForm({ notice }: { notice?: ReactNode }) {
@@ -26,17 +26,9 @@ export function LoginForm({ notice }: { notice?: ReactNode }) {
     }
     setError(null);
     startTransition(async () => {
-      const { error: signInError } = await authClient.signIn.magicLink({
-        email,
-        callbackURL: "/admin/todas",
-        errorCallbackURL: "/admin/login?error=link",
-      });
-      if (signInError) {
-        setError(
-          signInError.status === 429
-            ? "Too many tries. Wait a minute, then try again."
-            : "We couldn't send the link. Try again in a moment.",
-        );
+      const result = await sendSignInLink(email);
+      if (!result.ok) {
+        setError(result.message);
         return;
       }
       setSentTo(email);

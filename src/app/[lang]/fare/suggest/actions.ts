@@ -1,7 +1,7 @@
 "use server";
 
 import { cityBoundary } from "@/lib/data";
-import { db } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { formDataToInput, parseSubmission, routeName, type FieldErrors } from "@/lib/routes/submission";
 
 export type SubmitState =
@@ -19,8 +19,9 @@ export async function submitRoute(_previous: SubmitState, formData: FormData): P
 
   const { data } = parsed;
   try {
-    const submission = await db.routeSubmission.create({
-      data: {
+    const { data: submission, error } = await getDb()
+      .from("route_submission")
+      .insert({
         name: routeName(data.fromName, data.toName),
         fromName: data.fromName,
         fromLat: data.fromLat,
@@ -34,9 +35,10 @@ export async function submitRoute(_previous: SubmitState, formData: FormData): P
         submitterName: data.submitterName ?? null,
         submitterContact: data.submitterContact ?? null,
         notes: data.notes ?? null,
-      },
-      select: { id: true },
-    });
+      })
+      .select("id")
+      .single();
+    if (error) throw error;
     return { status: "received", reference: submission.id.slice(-6).toUpperCase() };
   } catch (error) {
     console.error("[routes] Could not save suggestion", error);

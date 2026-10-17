@@ -5,10 +5,10 @@ import { Suspense } from "react";
 import { RouteReviewActions } from "@/components/admin/route-review-actions";
 import { SignOutButton } from "@/components/admin/sign-out-button";
 import { Badge } from "@/components/ui/badge";
-import type { JeepType, SubmissionStatus } from "@/generated/prisma/client";
+import type { JeepType, SubmissionStatus } from "@/lib/db";
 import { formatPeso } from "@/lib/fare";
 import { countRouteSubmissions, listRouteSubmissions, routeSlug } from "@/lib/routes/queries";
-import { requireAdmin } from "@/lib/session";
+import { requireAdmin, type Admin } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Review jeepney route submissions" };
 
@@ -30,7 +30,11 @@ const dateTime = new Intl.DateTimeFormat("en-PH", {
   timeZone: "Asia/Manila",
 });
 
-export default function AdminRoutesPage({ searchParams }: PageProps<"/[lang]/admin/routes">) {
+export default async function AdminRoutesPage({ searchParams }: PageProps<"/[lang]/admin/routes">) {
+  // Checked before anything streams, so a signed-out visitor gets a real 307 to the
+  // sign-in page instead of a redirect sent mid-stream with a 200.
+  const admin = await requireAdmin();
+
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -44,16 +48,17 @@ export default function AdminRoutesPage({ searchParams }: PageProps<"/[lang]/adm
           </span>
         </nav>
       </div>
-      {/* Everything below reads the session or the query, so it renders per request. */}
       <Suspense fallback={<p className="text-muted-foreground">Loading submissions…</p>}>
-        <ReviewQueue searchParams={searchParams} />
+        <ReviewQueue admin={admin} searchParams={searchParams} />
       </Suspense>
     </main>
   );
 }
 
-async function ReviewQueue({ searchParams }: Pick<PageProps<"/[lang]/admin/routes">, "searchParams">) {
-  const admin = await requireAdmin();
+async function ReviewQueue({
+  admin,
+  searchParams,
+}: { admin: Admin } & Pick<PageProps<"/[lang]/admin/routes">, "searchParams">) {
   const { status: rawStatus } = await searchParams;
   const status = TABS.find((tab) => tab.status === rawStatus)?.status ?? "PENDING";
   const [{ submissions, existingIds }, counts] = await Promise.all([
@@ -131,7 +136,7 @@ async function ReviewQueue({ searchParams }: Pick<PageProps<"/[lang]/admin/route
                 ) : (
                   <p className="border-t pt-3 text-sm text-muted-foreground">
                     {status === "VERIFIED" ? "Verified" : "Rejected"}
-                    {submission.reviewedBy && ` by ${submission.reviewedBy.email}`}
+                    {submission.reviewedByEmail && ` by ${submission.reviewedByEmail}`}
                     {submission.reviewedAt && ` on ${dateTime.format(submission.reviewedAt)}`}
                     {submission.routeId && (
                       <>

@@ -41,9 +41,8 @@ export default function FarePage() {
 }
 
 async function Planner() {
-  // Verified resident routes are read per request, not at build time, so the image builds
-  // without a database. The query is cached, so this hits the database at most hourly
-  // or after an admin approves a route.
+  // Verified resident routes are read per request, not at build time, so the build needs
+  // no database and an approved route shows at once.
   await connection();
   const communityRoutes = await listVerifiedRoutes();
 

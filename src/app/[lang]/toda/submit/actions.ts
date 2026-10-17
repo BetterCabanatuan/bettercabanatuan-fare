@@ -1,7 +1,7 @@
 "use server";
 
 import { cityBoundary } from "@/lib/data";
-import { db } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { formDataToInput, parseSubmission, type FieldErrors } from "@/lib/toda/submission";
 
 export type SubmitState =
@@ -19,8 +19,9 @@ export async function submitToda(_previous: SubmitState, formData: FormData): Pr
 
   const { data } = parsed;
   try {
-    const submission = await db.todaSubmission.create({
-      data: {
+    const { data: submission, error } = await getDb()
+      .from("toda_submission")
+      .insert({
         name: data.name,
         terminalDescription: data.terminalDescription,
         barangay: data.barangay,
@@ -32,9 +33,10 @@ export async function submitToda(_previous: SubmitState, formData: FormData): Pr
         submitterName: data.submitterName ?? null,
         submitterContact: data.submitterContact ?? null,
         notes: data.notes ?? null,
-      },
-      select: { id: true },
-    });
+      })
+      .select("id")
+      .single();
+    if (error) throw error;
     return { status: "received", reference: submission.id.slice(-6).toUpperCase() };
   } catch (error) {
     console.error("[toda] Could not save submission", error);

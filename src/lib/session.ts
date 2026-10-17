@@ -1,18 +1,20 @@
 import "server-only";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { isAdminEmail } from "@/lib/admins";
-import { auth } from "@/lib/auth";
+import { createAuthClient } from "@/lib/auth";
 
-export type Admin = { id: string; email: string; name: string };
+export type Admin = { id: string; email: string };
 
 /** The signed-in admin, or null. Re-checks ADMIN_EMAILS on every call. */
 export async function getAdmin(): Promise<Admin | null> {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session || !isAdminEmail(session.user.email)) return null;
-  return { id: session.user.id, email: session.user.email, name: session.user.name };
+  const supabase = await createAuthClient();
+  // getClaims verifies the session token's signature; getSession would trust the cookie.
+  const { data } = await supabase.auth.getClaims();
+  const email = data?.claims.email;
+  if (!data || !email || !isAdminEmail(email)) return null;
+  return { id: data.claims.sub, email };
 }
 
 /** For admin pages and actions: sends anyone else to the sign-in page. */

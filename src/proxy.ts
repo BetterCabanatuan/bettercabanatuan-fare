@@ -1,11 +1,10 @@
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 // English keeps the short, existing URLs (/fare); Tagalog lives under /tl (/tl/fare).
 // Both are served from app/[lang], so unprefixed paths are rewritten to /en internally.
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
-
-  if (pathname === "/tl" || pathname.startsWith("/tl/")) return NextResponse.next();
 
   if (pathname === "/en" || pathname.startsWith("/en/")) {
     // One public URL per page: send /en/... to the unprefixed address.
@@ -14,9 +13,42 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(url, 308);
   }
 
+  const isTagalog = pathname === "/tl" || pathname.startsWith("/tl/");
   const url = request.nextUrl.clone();
   url.pathname = `/en${pathname === "/" ? "" : pathname}`;
-  return NextResponse.rewrite(url);
+  // Passing `request` forwards cookies a session refresh rewrote, so the page sees them.
+  const respond = () => (isTagalog ? NextResponse.next({ request }) : NextResponse.rewrite(url, { request }));
+
+  const isAdmin = /^(\/tl)?\/admin(\/|$)/.test(pathname);
+  return isAdmin ? refreshSession(request, respond) : respond();
+}
+
+/**
+ * Refreshes the admin's Supabase session and saves the new tokens as cookies. Server
+ * Components can't write cookies, so without this an admin would be signed out once the
+ * access token expires. Public pages skip it and stay free of auth round trips.
+ */
+async function refreshSession(request: NextRequest, respond: () => NextResponse): Promise<NextResponse> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  if (!supabaseUrl || !publishableKey) return respond();
+
+  // Reassigned when Supabase writes cookies, because the response must be built after
+  // the request cookies change.
+  let response = respond();
+  const supabase = createServerClient(supabaseUrl, publishableKey, {
+    cookies: {
+      getAll: () => request.cookies.getAll(),
+      setAll: (cookiesToSet, headers) => {
+        for (const { name, value } of cookiesToSet) request.cookies.set(name, value);
+        response = respond();
+        for (const { name, value, options } of cookiesToSet) response.cookies.set(name, value, options);
+        for (const [key, value] of Object.entries(headers)) response.headers.set(key, value);
+      },
+    },
+  });
+  await supabase.auth.getClaims();
+  return response;
 }
 
 export const config = {

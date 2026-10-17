@@ -1,38 +1,34 @@
 import "server-only";
 
-import { betterAuth } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
-import { nextCookies } from "better-auth/next-js";
-import { magicLink } from "better-auth/plugins/magic-link";
+import { createServerClient } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { cookies } from "next/headers";
 
-import { isAdminEmail } from "@/lib/admins";
-import { db } from "@/lib/db";
-import { sendMagicLinkEmail } from "@/lib/email";
+import { supabaseUrl } from "@/lib/db";
 
-export const auth = betterAuth({
-  database: prismaAdapter(db, { provider: "postgresql" }),
-  // Magic link is the only way in; no passwords, no social providers.
-  emailAndPassword: { enabled: false },
-  databaseHooks: {
-    user: {
-      create: {
-        // Second gate behind sendMagicLink: no account is ever created for a non-admin.
-        before: async (user) => (isAdminEmail(user.email) ? { data: user } : false),
+/**
+ * Supabase Auth for the current request, reading and writing the session cookies. Used
+ * only for auth: data goes through `getDb()`. Server Components can't set cookies, so a
+ * token refresh there isn't saved; `src/proxy.ts` refreshes the session on /admin pages.
+ */
+export async function createAuthClient(): Promise<SupabaseClient> {
+  const cookieStore = await cookies();
+  return createServerClient(supabaseUrl(), publishableKey(), {
+    cookies: {
+      getAll: () => cookieStore.getAll(),
+      setAll: (cookiesToSet) => {
+        try {
+          for (const { name, value, options } of cookiesToSet) cookieStore.set(name, value, options);
+        } catch {
+          // Called from a Server Component; the proxy has already refreshed the session.
+        }
       },
     },
-  },
-  plugins: [
-    magicLink({
-      expiresIn: 60 * 10,
-      storeToken: "hashed",
-      sendMagicLink: async ({ email, url }) => {
-        // Non-admins get the same "check your email" response but nothing is sent,
-        // so the form doesn't reveal which addresses are admins.
-        if (!isAdminEmail(email)) return;
-        await sendMagicLinkEmail({ email, url });
-      },
-    }),
-    // Must be last: lets server actions set the session cookie.
-    nextCookies(),
-  ],
-});
+  });
+}
+
+export function publishableKey(): string {
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  if (!key) throw new Error("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY is not set.");
+  return key;
+}

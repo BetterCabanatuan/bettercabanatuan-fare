@@ -1,12 +1,6 @@
 import "server-only";
 
-import { cacheLife, cacheTag } from "next/cache";
-
-import type { SubmissionStatus } from "@/generated/prisma/client";
-import { db } from "@/lib/db";
-
-/** Cache tag for the public list; admin approvals expire it. */
-export const TODA_LIST_TAG = "todas";
+import { getDb, type SubmissionStatus } from "@/lib/db";
 
 export type TodaListItem = {
   id: string;
@@ -23,52 +17,63 @@ export type TodaListItem = {
 };
 
 /**
- * Verified TODAs for the public directory. Returns [] when the database is unreachable
- * so /toda renders its empty state instead of an error page.
+ * Verified TODAs for the public directory, read on every request so an approval shows at
+ * once. Returns [] when the database is unreachable so /toda renders its empty state
+ * instead of an error page.
  */
 export async function listVerifiedTodas(): Promise<TodaListItem[]> {
   try {
-    return await cachedVerifiedTodas();
+    const { data, error } = await getDb()
+      .from("toda")
+      .select("id, name, terminalDescription, barangay, lat, lng, barangaysServed, units, officialContact, source, lastVerified")
+      .order("name");
+    if (error) throw error;
+    return data.map(({ lastVerified, barangaysServed, ...toda }) => ({
+      ...toda,
+      barangaysServed: barangaysServed ?? [],
+      lastVerified: new Date(lastVerified).toISOString().slice(0, 10),
+    }));
   } catch (error) {
-    // Caught outside the cached function so an outage is retried on the next request
-    // instead of being cached as an empty list for hours.
+    // Also catches a missing key, which getDb() throws before any request is made.
     console.error("Could not load the TODA directory", error);
     return [];
   }
 }
 
-async function cachedVerifiedTodas(): Promise<TodaListItem[]> {
-  "use cache";
-  cacheTag(TODA_LIST_TAG);
-  cacheLife("hours");
-
-  const rows = await db.toda.findMany({
-    orderBy: { name: "asc" },
-    omit: { createdAt: true, updatedAt: true },
-  });
-  return rows.map(({ lastVerified, ...toda }) => ({
-    ...toda,
-    lastVerified: lastVerified.toISOString().slice(0, 10),
-  }));
-}
-
 /** Review queue for admins. Not cached: admins need to see new submissions at once. */
 export async function listSubmissions(status: SubmissionStatus) {
-  const submissions = await db.todaSubmission.findMany({
-    where: { status },
-    orderBy: { createdAt: status === "PENDING" ? "asc" : "desc" },
-    take: 100,
-    include: { reviewedBy: { select: { email: true } } },
-  });
-  const existingIds = new Set(
-    (await db.toda.findMany({ select: { id: true } })).map((toda) => toda.id),
-  );
-  return { submissions, existingIds };
+  const db = getDb();
+  const [submissions, todas] = await Promise.all([
+    db
+      .from("toda_submission")
+      .select()
+      .eq("status", status)
+      .order("createdAt", { ascending: status === "PENDING" })
+      .limit(100),
+    db.from("toda").select("id"),
+  ]);
+  if (submissions.error) throw submissions.error;
+  if (todas.error) throw todas.error;
+  return {
+    submissions: submissions.data.map((submission) => ({
+      ...submission,
+      barangaysServed: submission.barangaysServed ?? [],
+      createdAt: new Date(submission.createdAt),
+      reviewedAt: submission.reviewedAt === null ? null : new Date(submission.reviewedAt),
+    })),
+    existingIds: new Set(todas.data.map((toda) => toda.id)),
+  };
 }
 
-export async function countSubmissions() {
-  const groups = await db.todaSubmission.groupBy({ by: ["status"], _count: true });
-  const counts: Record<SubmissionStatus, number> = { PENDING: 0, VERIFIED: 0, REJECTED: 0 };
-  for (const group of groups) counts[group.status] = group._count;
-  return counts;
+export async function countSubmissions(): Promise<Record<SubmissionStatus, number>> {
+  const count = async (status: SubmissionStatus) => {
+    const { count, error } = await getDb()
+      .from("toda_submission")
+      .select("*", { count: "exact", head: true })
+      .eq("status", status);
+    if (error) throw error;
+    return count ?? 0;
+  };
+  const [PENDING, VERIFIED, REJECTED] = await Promise.all([count("PENDING"), count("VERIFIED"), count("REJECTED")]);
+  return { PENDING, VERIFIED, REJECTED };
 }
