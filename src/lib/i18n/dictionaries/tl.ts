@@ -136,6 +136,7 @@ const termsSections: LegalSection[] = [
     heading: "Ano ang site na ito",
     paragraphs: [
       "Ang Pamasahe Cabanatuan ay libreng proyekto ng komunidad kasama ang BetterCabanatuan. Hindi ito opisyal na website ng pamahalaang Lungsod ng Cabanatuan, ng LTFRB o ng anumang grupo ng transportasyon, at hindi ito nagsasalita para sa kanila.",
+      "Pinalalago rin ito ng komunidad: ang mga residente ang nagmumungkahi ng ruta ng jeep, nagdadagdag ng TODA at nag-uulat ng maling pamasahe, at sinusuri ng admin ang bawat mungkahi bago ito lumabas. Galing sa mga inilathalang patakaran ng LTFRB at ng lungsod ang mga rate ng pamasahe; may label ang rate na galing sa iniuulat na bayad ng mga pasahero.",
       "Nasa alpha pa ang site: sinusuri pa ang mga feature at datos at maaari pang magbago.",
     ],
   },
@@ -241,7 +242,7 @@ export const tl: Dictionary = {
     switchTo: "Read in English",
   },
   footer: {
-    about: "Gawa ng komunidad kasama ang BetterCabanatuan. Hindi ito opisyal na website ng pamahalaang lungsod.",
+    about: "Proyekto ng komunidad kasama ang BetterCabanatuan. Hindi ito opisyal na website ng pamahalaang lungsod.",
     mapData: "Datos ng mapa © mga contributor ng OpenStreetMap",
     sources: "Mga pinagkunan",
     alpha: "Alpha version: tantiya lang ang mga pamasahe at maaaring iba sa aktuwal na singil.",

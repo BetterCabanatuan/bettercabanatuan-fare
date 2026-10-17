@@ -135,6 +135,7 @@ const termsSections: LegalSection[] = [
     heading: "What this site is",
     paragraphs: [
       "Pamasahe Cabanatuan is a free community project made by the BetterCabanatuan team. It is not an official website of the Cabanatuan City government, the LTFRB or any transport group, and it does not speak for them.",
+      "It is also community-driven: residents suggest jeep routes, add TODAs and report wrong fares, and an admin checks every suggestion before it appears. Fare rates come from published LTFRB and city sources; a rate that comes from what riders report paying is labelled as such.",
       "The site is in alpha: features and data are still being checked and may change.",
     ],
   },
@@ -239,7 +240,7 @@ export const en = {
     switchTo: "Basahin sa Tagalog",
   },
   footer: {
-    about: "Community-made with BetterCabanatuan. Not an official city government site.",
+    about: "A community project made with BetterCabanatuan. Not an official city government site.",
     mapData: "Map data © OpenStreetMap contributors",
     sources: "Sources",
     alpha: "Alpha version: fares are estimates and may differ from the actual rates.",

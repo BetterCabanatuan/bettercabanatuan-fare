@@ -2,7 +2,7 @@
 
 Check the legal jeep and tricycle fare in Cabanatuan City before you pay.
 
-Pamasahe Cabanatuan is a fare calculator for commuters in Cabanatuan City, Nueva Ecija. Set where you start and where you're going, and it shows the fare, how the fare adds up, and the source and date of the rate it used. It is a companion app to [BetterCabanatuan](https://bettercabanatuan.org), made by the community. It is not an official city government site.
+Pamasahe Cabanatuan is a fare calculator for commuters in Cabanatuan City, Nueva Ecija. Set where you start and where you're going, and it shows the fare, how the fare adds up, and the source and date of the rate it used. It is a community project, made with [BetterCabanatuan](https://bettercabanatuan.org) as a companion app to the city portal, and it is community-driven: residents suggest jeep routes, add TODAs and report wrong fares, and an admin checks every suggestion before it goes live. Fare rates come from published LTFRB and city sources; a rate that comes from what riders report paying is labelled as such. It is not an official city government site.
 
 > **Alpha.** Fares and routes are estimates and may differ from the actual fare. The tricycle fare matrix is not yet confirmed with the city. See [Data status](#data-status).
 
@@ -20,7 +20,7 @@ Every fare names its source and the date the rate took effect. A rate that isn't
 
 ## Help add TODAs and routes
 
-The city has no public list of TODAs, and many jeep routes aren't mapped yet. Residents fill these gaps through two forms in the app. You don't need an account, and you don't need GitHub.
+The city has no public list of TODAs, and many jeep routes aren't mapped yet. Residents fill these gaps through two forms in the app. You don't need GitHub. Adding a TODA needs no account; suggesting a jeep route asks you to sign in with Google or Facebook, which keeps out spam and lets an admin ask you about the route.
 
 The site's public address isn't decided yet, so the pages below are given as paths. Add `/tl` in front for Tagalog, for example `/tl/toda`.
 
