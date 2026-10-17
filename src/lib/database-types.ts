@@ -219,6 +219,7 @@ export type Database = {
         Row: {
           barangay: string;
           barangaysServed: string[] | null;
+          connectedTerminals: Json;
           createdAt: string;
           id: string;
           lastVerified: string;
@@ -234,6 +235,7 @@ export type Database = {
         Insert: {
           barangay: string;
           barangaysServed?: string[] | null;
+          connectedTerminals?: Json;
           createdAt?: string;
           id: string;
           lastVerified: string;
@@ -249,6 +251,7 @@ export type Database = {
         Update: {
           barangay?: string;
           barangaysServed?: string[] | null;
+          connectedTerminals?: Json;
           createdAt?: string;
           id?: string;
           lastVerified?: string;
@@ -267,6 +270,7 @@ export type Database = {
         Row: {
           barangay: string;
           barangaysServed: string[] | null;
+          connectedTerminal: boolean;
           createdAt: string;
           id: string;
           lat: number | null;
@@ -288,6 +292,7 @@ export type Database = {
         Insert: {
           barangay: string;
           barangaysServed?: string[] | null;
+          connectedTerminal?: boolean;
           createdAt?: string;
           id?: string;
           lat?: number | null;
@@ -309,6 +314,7 @@ export type Database = {
         Update: {
           barangay?: string;
           barangaysServed?: string[] | null;
+          connectedTerminal?: boolean;
           createdAt?: string;
           id?: string;
           lat?: number | null;

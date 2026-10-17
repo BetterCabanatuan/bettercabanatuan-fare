@@ -3,6 +3,7 @@
 import { z } from "zod";
 
 import { isInsideRing, type LngLat } from "@/lib/geo";
+import { terminalBarangaySchema, terminalDescriptionSchema } from "@/lib/toda/terminals";
 
 export const SUBMISSION_LIMITS = {
   barangaysServed: 20,
@@ -34,16 +35,8 @@ export const submissionSchema = z
       .trim()
       .min(3, "Enter the TODA's name, e.g. Sumacab Este TODA.")
       .max(80, "The name must be 80 characters or fewer."),
-    terminalDescription: z
-      .string()
-      .trim()
-      .min(5, "Describe where the terminal or waiting area is.")
-      .max(200, "Keep the terminal description to 200 characters."),
-    barangay: z
-      .string()
-      .trim()
-      .min(2, "Enter the barangay where the terminal is.")
-      .max(60, "Barangay names must be 60 characters or fewer."),
+    terminalDescription: terminalDescriptionSchema,
+    barangay: terminalBarangaySchema,
     lat: z.number().min(-90).max(90).optional(),
     lng: z.number().min(-180).max(180).optional(),
     barangaysServed: z
@@ -58,9 +51,16 @@ export const submissionSchema = z
     submitterName: optionalText(80, "Your name"),
     submitterContact: optionalText(100, "Your contact"),
     notes: optionalText(SUBMISSION_LIMITS.notes, "Notes"),
+    // True when this is another terminal of a listed TODA rather than its main one.
+    connectedTerminal: z.boolean().default(false),
   })
   .refine((value) => (value.lat === undefined) === (value.lng === undefined), {
     message: "Pin the terminal on the map again.",
+    path: ["lat"],
+  })
+  // Connected terminals are positions, so each needs its own pin.
+  .refine((value) => !value.connectedTerminal || value.lat !== undefined, {
+    message: "Pin this terminal on the map. Another terminal needs its own pin.",
     path: ["lat"],
   });
 
@@ -92,6 +92,7 @@ export function formDataToInput(formData: FormData): SubmissionInput {
     submitterName: text("submitterName"),
     submitterContact: text("submitterContact"),
     notes: text("notes"),
+    connectedTerminal: text("connectedTerminal") === "true",
   };
 }
 

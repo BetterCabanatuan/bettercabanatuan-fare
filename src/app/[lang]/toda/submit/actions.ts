@@ -33,6 +33,7 @@ export async function submitToda(_previous: SubmitState, formData: FormData): Pr
         submitterName: data.submitterName ?? null,
         submitterContact: data.submitterContact ?? null,
         notes: data.notes ?? null,
+        connectedTerminal: data.connectedTerminal,
       })
       .select("id")
       .single();

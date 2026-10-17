@@ -19,9 +19,10 @@ import {
   FieldSet,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import type { LngLat } from "@/lib/geo";
-import { localizePath } from "@/lib/i18n/locales";
+import { fill, localizePath } from "@/lib/i18n/locales";
 import {
   SUBMISSION_LIMITS,
   formDataToInput,
@@ -34,13 +35,21 @@ type BarangayRow = { key: number; value: string };
 
 const initialState: SubmitState = { status: "idle" };
 
-export function SubmissionForm({ boundary }: { boundary: LngLat[] }) {
+type SubmissionFormProps = {
+  boundary: LngLat[];
+  /** A listed TODA the resident is suggesting a position for; its name is fixed. */
+  todaName?: string;
+};
+
+export function SubmissionForm({ boundary, todaName }: SubmissionFormProps) {
   // A new key remounts the form, which clears every field and the action state.
   const [round, setRound] = useState(0);
-  return <SubmissionRound key={round} boundary={boundary} onAddAnother={() => setRound((r) => r + 1)} />;
+  return (
+    <SubmissionRound key={round} boundary={boundary} todaName={todaName} onAddAnother={() => setRound((r) => r + 1)} />
+  );
 }
 
-function SubmissionRound({ boundary, onAddAnother }: { boundary: LngLat[]; onAddAnother: () => void }) {
+function SubmissionRound({ boundary, todaName, onAddAnother }: SubmissionFormProps & { onAddAnother: () => void }) {
   const { locale, dict } = useDictionary();
   const [state, dispatch] = useActionState(submitToda, initialState);
   const [isPending, startTransition] = useTransition();
@@ -118,15 +127,26 @@ function SubmissionRound({ boundary, onAddAnother }: { boundary: LngLat[]; onAdd
         </Alert>
       )}
 
+      {todaName && (
+        <Alert>
+          <MapPin aria-hidden="true" />
+          <AlertTitle>{fill(dict.toda.positionFor, { name: todaName })}</AlertTitle>
+          <AlertDescription>{dict.toda.positionForHint}</AlertDescription>
+        </Alert>
+      )}
+
       <FieldSet>
         <FieldLegend>The TODA</FieldLegend>
         <FieldGroup>
+          {/* Read-only when suggesting a position: the name is how approval finds the listing. */}
           <TextField
             name="name"
             label="TODA name"
             description="As written on the tricycles or terminal sign, e.g. Sumacab Este TODA."
             required
             autoComplete="off"
+            defaultValue={todaName}
+            readOnly={todaName !== undefined}
             error={errors.name}
           />
           <TextField
@@ -153,6 +173,7 @@ function SubmissionRound({ boundary, onAddAnother }: { boundary: LngLat[]; onAdd
       <FieldSet>
         <FieldLegend>Where the terminal is</FieldLegend>
         <FieldGroup>
+          {todaName && <PositionChoice />}
           <TextField
             name="barangay"
             label="Barangay of the terminal"
@@ -310,6 +331,32 @@ function Received({ reference, onAddAnother }: { reference: string; onAddAnother
         </Button>
       </div>
     </div>
+  );
+}
+
+/** Whether a suggested position replaces the listed main terminal or joins it. */
+function PositionChoice() {
+  const { dict } = useDictionary();
+  const id = useId();
+  const options = [
+    { value: "false", label: dict.toda.positionMove, hint: dict.toda.positionMoveHint },
+    { value: "true", label: dict.toda.positionConnected, hint: dict.toda.positionConnectedHint },
+  ] as const;
+  return (
+    <FieldSet>
+      <FieldLegend variant="label">{dict.toda.positionLegend}</FieldLegend>
+      <RadioGroup name="connectedTerminal" defaultValue="false" className="gap-2">
+        {options.map((option) => (
+          <FieldLabel key={option.value} htmlFor={`${id}-${option.value}`} className="min-h-11 items-start font-normal">
+            <RadioGroupItem id={`${id}-${option.value}`} value={option.value} className="mt-0.5" />
+            <span className="flex flex-col">
+              <span className="font-semibold">{option.label}</span>
+              <span className="text-muted-foreground">{option.hint}</span>
+            </span>
+          </FieldLabel>
+        ))}
+      </RadioGroup>
+    </FieldSet>
   );
 }
 

@@ -73,6 +73,17 @@ describe("parseSubmission", () => {
   it("rejects non-whole unit counts", () => {
     expect(parseSubmission({ ...valid, units: 12.5 }).success).toBe(false);
   });
+
+  it("treats a submission as the main terminal unless it says otherwise", () => {
+    const result = parseSubmission(valid);
+    expect(result.success && result.data.connectedTerminal).toBe(false);
+  });
+
+  it("needs a pin for another terminal of a listed TODA", () => {
+    const unpinned = parseSubmission({ ...valid, connectedTerminal: true });
+    expect(!unpinned.success && unpinned.fieldErrors.lat).toMatch(/needs its own pin/);
+    expect(parseSubmission({ ...valid, connectedTerminal: true, lat: 15.48, lng: 120.97 }).success).toBe(true);
+  });
 });
 
 describe("formDataToInput", () => {
@@ -90,7 +101,14 @@ describe("formDataToInput", () => {
       units: undefined,
       lat: 15.5,
       lng: undefined,
+      connectedTerminal: false,
     });
+  });
+
+  it("reads the position choice", () => {
+    const form = new FormData();
+    form.set("connectedTerminal", "true");
+    expect(formDataToInput(form).connectedTerminal).toBe(true);
   });
 });
 

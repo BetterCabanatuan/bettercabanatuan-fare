@@ -8,15 +8,16 @@ import { SignOutButton } from "@/components/admin/sign-out-button";
 import { Badge } from "@/components/ui/badge";
 import type { SubmissionStatus } from "@/lib/db";
 import { requireAdmin, type Admin } from "@/lib/session";
-import { countSubmissions, listSubmissions } from "@/lib/toda/queries";
+import { countAdminTabs, listSubmissions, listVerifiedTodas, type AdminTodaTab } from "@/lib/toda/queries";
 import { todaSlug } from "@/lib/toda/submission";
 
 export const metadata: Metadata = { title: "Review TODA submissions" };
 
-const TABS: { status: SubmissionStatus; label: string }[] = [
+const TABS: { status: AdminTodaTab; label: string }[] = [
   { status: "PENDING", label: "Pending" },
   { status: "VERIFIED", label: "Verified" },
   { status: "REJECTED", label: "Rejected" },
+  { status: "PUBLISHED", label: "Published" },
 ];
 
 const dateTime = new Intl.DateTimeFormat("en-PH", {
@@ -49,7 +50,7 @@ async function ReviewQueue({
 }: { admin: Admin } & Pick<PageProps<"/[lang]/admin/todas">, "searchParams">) {
   const { status: rawStatus } = await searchParams;
   const status = TABS.find((tab) => tab.status === rawStatus)?.status ?? "PENDING";
-  const [{ submissions, existingIds }, counts] = await Promise.all([listSubmissions(status), countSubmissions()]);
+  const counts = await countAdminTabs();
 
   return (
     <>
@@ -75,6 +76,42 @@ async function ReviewQueue({
         </ul>
       </nav>
 
+      {status === "PUBLISHED" ? <PublishedTodas /> : <SubmissionList status={status} />}
+    </>
+  );
+}
+
+async function PublishedTodas() {
+  const todas = await listVerifiedTodas();
+  return todas.length === 0 ? (
+    <p className="rounded-xl border border-dashed p-6 text-muted-foreground">No TODAs are listed yet.</p>
+  ) : (
+    <ul className="flex flex-col gap-2">
+      {todas.map((toda) => (
+        <li key={toda.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border bg-card p-4">
+          <div className="flex flex-col gap-0.5">
+            <h2 className="font-bold">{toda.name}</h2>
+            <p className="text-sm text-muted-foreground">
+              {toda.terminalDescription}, {toda.barangay}
+              {toda.connectedTerminals.length > 0 && ` · +${toda.connectedTerminals.length} more`}
+            </p>
+          </div>
+          <Link
+            href={`/admin/todas/${toda.id}`}
+            className="inline-flex min-h-11 items-center text-sm font-semibold text-primary underline-offset-4 hover:underline"
+          >
+            Edit positions
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+async function SubmissionList({ status }: { status: SubmissionStatus }) {
+  const { submissions, existingIds } = await listSubmissions(status);
+  return (
+    <>
       {submissions.length === 0 ? (
         <p className="rounded-xl border border-dashed p-6 text-muted-foreground">
           {status === "PENDING" ? "Nothing to review. New submissions will show up here." : "None yet."}
@@ -94,12 +131,16 @@ async function ReviewQueue({
                     </p>
                   </div>
                   {status === "PENDING" && updatesExisting && (
-                    <Badge variant="secondary">Same name as a listed TODA: verifying updates it</Badge>
+                    <Badge variant="secondary">
+                      {submission.connectedTerminal
+                        ? "Another terminal for a listed TODA: verifying adds it"
+                        : "Same name as a listed TODA: verifying updates it"}
+                    </Badge>
                   )}
                 </div>
 
                 <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
-                  <Detail label="Terminal">
+                  <Detail label={submission.connectedTerminal ? "Another terminal" : "Terminal"}>
                     {submission.terminalDescription}, {submission.barangay}
                     {submission.lat !== null && submission.lng !== null && (
                       <>

@@ -2,9 +2,11 @@
 
 import { refresh } from "next/cache";
 
+import { cityBoundary } from "@/lib/data";
 import { getDb } from "@/lib/db";
 import { getAdmin } from "@/lib/session";
 import { rejectionSchema, todaSlug } from "@/lib/toda/submission";
+import { formDataToTerminals, parseTerminals } from "@/lib/toda/terminals";
 
 export type ReviewResult = { ok: true } | { ok: false; message: string };
 
@@ -68,4 +70,26 @@ export async function rejectSubmission(id: string, reason: string): Promise<Revi
 
   refresh();
   return data.length === 1 ? { ok: true } : { ok: false, message: ALREADY_REVIEWED };
+}
+
+/**
+ * Replaces every position of a listed TODA: the first posted terminal becomes the main
+ * one, the rest its connected terminals. One UPDATE, so a half-saved edit can't happen.
+ */
+export async function saveTerminals(id: string, formData: FormData): Promise<ReviewResult> {
+  const admin = await getAdmin();
+  if (!admin) return { ok: false, message: "Your session ended. Sign in again." };
+
+  const parsed = parseTerminals(formDataToTerminals(formData), cityBoundary);
+  if (!parsed.success) return { ok: false, message: `Terminal ${parsed.index + 1}: ${parsed.message}` };
+
+  const { data, error } = await getDb()
+    .from("toda")
+    .update({ ...parsed.main, connectedTerminals: parsed.connected })
+    .eq("id", id)
+    .select("id");
+  if (error) throw error;
+
+  refresh();
+  return data.length === 1 ? { ok: true } : { ok: false, message: "This TODA is no longer listed." };
 }
