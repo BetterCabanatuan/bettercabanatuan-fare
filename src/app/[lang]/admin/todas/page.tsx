@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
-import { ReviewActions } from "@/components/admin/review-actions";
 import { AdminNav } from "@/components/admin/admin-nav";
+import { PublishedTodaTable } from "@/components/admin/published-toda-table";
 import { SignOutButton } from "@/components/admin/sign-out-button";
-import { Badge } from "@/components/ui/badge";
+import { TodaSubmissionTable } from "@/components/admin/toda-submission-table";
 import type { SubmissionStatus } from "@/lib/db";
 import { requireAdmin, type Admin } from "@/lib/session";
 import { countAdminTabs, listSubmissions, listVerifiedTodas, type AdminTodaTab } from "@/lib/toda/queries";
@@ -83,119 +83,26 @@ async function ReviewQueue({
 
 async function PublishedTodas() {
   const todas = await listVerifiedTodas();
-  return todas.length === 0 ? (
-    <p className="rounded-xl border border-dashed p-6 text-muted-foreground">No TODAs are listed yet.</p>
-  ) : (
-    <ul className="flex flex-col gap-2">
-      {todas.map((toda) => (
-        <li key={toda.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border bg-card p-4">
-          <div className="flex flex-col gap-0.5">
-            <h2 className="font-bold">{toda.name}</h2>
-            <p className="text-sm text-muted-foreground">
-              {toda.terminalDescription}, {toda.barangay}
-              {toda.connectedTerminals.length > 0 && ` · +${toda.connectedTerminals.length} more`}
-            </p>
-          </div>
-          <Link
-            href={`/admin/todas/${toda.id}`}
-            className="inline-flex min-h-11 items-center text-sm font-semibold text-primary underline-offset-4 hover:underline"
-          >
-            Edit positions
-          </Link>
-        </li>
-      ))}
-    </ul>
-  );
+  const rows = todas.map(({ id, name, terminalDescription, barangay, connectedTerminals }) => ({
+    id,
+    name,
+    terminalDescription,
+    barangay,
+    otherTerminals: connectedTerminals.length,
+  }));
+  return <PublishedTodaTable rows={rows} />;
 }
 
 async function SubmissionList({ status }: { status: SubmissionStatus }) {
   const { submissions, existingIds } = await listSubmissions(status);
-  return (
-    <>
-      {submissions.length === 0 ? (
-        <p className="rounded-xl border border-dashed p-6 text-muted-foreground">
-          {status === "PENDING" ? "Nothing to review. New submissions will show up here." : "None yet."}
-        </p>
-      ) : (
-        <ul className="flex flex-col gap-4">
-          {submissions.map((submission) => {
-            const updatesExisting = existingIds.has(todaSlug(submission.name));
-            return (
-              <li key={submission.id} className="flex flex-col gap-4 rounded-xl border bg-card p-5 text-card-foreground">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div className="flex flex-col gap-1">
-                    <h2 className="text-lg font-bold">{submission.name}</h2>
-                    <p className="text-xs text-muted-foreground">
-                      Ref <span className="font-mono">{submission.id.slice(-6).toUpperCase()}</span> · sent{" "}
-                      {dateTime.format(submission.createdAt)}
-                    </p>
-                  </div>
-                  {status === "PENDING" && updatesExisting && (
-                    <Badge variant="secondary">
-                      {submission.connectedTerminal
-                        ? "Another terminal for a listed TODA: verifying adds it"
-                        : "Same name as a listed TODA: verifying updates it"}
-                    </Badge>
-                  )}
-                </div>
-
-                <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
-                  <Detail label={submission.connectedTerminal ? "Another terminal" : "Terminal"}>
-                    {submission.terminalDescription}, {submission.barangay}
-                    {submission.lat !== null && submission.lng !== null && (
-                      <>
-                        {" · "}
-                        <a
-                          href={`https://www.openstreetmap.org/?mlat=${submission.lat}&mlon=${submission.lng}#map=18/${submission.lat}/${submission.lng}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="font-semibold text-primary underline-offset-4 hover:underline"
-                        >
-                          View pin
-                        </a>
-                      </>
-                    )}
-                  </Detail>
-                  <Detail label="Barangays served">
-                    {submission.barangaysServed.length ? submission.barangaysServed.join(", ") : "Not given"}
-                  </Detail>
-                  <Detail label="Official contact">{submission.officialContact ?? "Not given"}</Detail>
-                  <Detail label="Tricycles">{submission.units ?? "Not given"}</Detail>
-                  <Detail label="Sent by (private)">
-                    {[submission.submitterName, submission.submitterContact].filter(Boolean).join(" · ") || "Anonymous"}
-                  </Detail>
-                  {submission.notes && <Detail label="Notes">{submission.notes}</Detail>}
-                </dl>
-
-                {status === "PENDING" ? (
-                  <ReviewActions id={submission.id} updatesExisting={updatesExisting} />
-                ) : (
-                  <p className="border-t pt-3 text-sm text-muted-foreground">
-                    {status === "VERIFIED" ? "Verified" : "Rejected"}
-                    {submission.reviewedByEmail && ` by ${submission.reviewedByEmail}`}
-                    {submission.reviewedAt && ` on ${dateTime.format(submission.reviewedAt)}`}
-                    {submission.rejectionReason && (
-                      <>
-                        {". Reason: "}
-                        <span className="text-foreground">{submission.rejectionReason}</span>
-                      </>
-                    )}
-                  </p>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </>
-  );
-}
-
-function Detail({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <dt className="font-semibold text-muted-foreground">{label}</dt>
-      <dd className="break-words">{children}</dd>
-    </div>
-  );
+  // The table is a Client Component, so rows go over as plain values: dates as ISO
+  // strings for sorting, plus the text to show.
+  const rows = submissions.map(({ createdAt, reviewedAt, ...submission }) => ({
+    ...submission,
+    createdAt: createdAt.toISOString(),
+    sent: dateTime.format(createdAt),
+    reviewed: reviewedAt && dateTime.format(reviewedAt),
+    updatesExisting: existingIds.has(todaSlug(submission.name)),
+  }));
+  return <TodaSubmissionTable status={status} rows={rows} />;
 }

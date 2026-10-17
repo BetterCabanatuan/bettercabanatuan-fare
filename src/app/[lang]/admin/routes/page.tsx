@@ -2,16 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
-import { clearPublicName } from "@/app/[lang]/admin/routes/actions";
-import { RouteReviewActions } from "@/components/admin/route-review-actions";
-import { RouteRoadPreview } from "@/components/admin/route-road-preview";
 import { AdminNav } from "@/components/admin/admin-nav";
+import { RouteSubmissionTable } from "@/components/admin/route-submission-table";
 import { SignOutButton } from "@/components/admin/sign-out-button";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import type { JeepType, SubmissionStatus } from "@/lib/db";
-import { formatPeso } from "@/lib/fare";
-import { countRouteSubmissions, listRouteSubmissions, routeSlug, type SenderRecord } from "@/lib/routes/queries";
+import type { SubmissionStatus } from "@/lib/db";
+import { countRouteSubmissions, listRouteSubmissions, routeSlug } from "@/lib/routes/queries";
 import { requireAdmin, type Admin } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Review jeepney route submissions" };
@@ -21,12 +16,6 @@ const TABS: { status: SubmissionStatus; label: string }[] = [
   { status: "VERIFIED", label: "Verified" },
   { status: "REJECTED", label: "Rejected" },
 ];
-
-const JEEP_TYPE_LABEL: Record<JeepType, string> = {
-  TRADITIONAL: "Traditional",
-  MODERN: "Modern",
-  UNKNOWN: "Not given (priced as traditional)",
-};
 
 const dateTime = new Intl.DateTimeFormat("en-PH", {
   dateStyle: "medium",
@@ -62,6 +51,15 @@ async function ReviewQueue({
     listRouteSubmissions(status),
     countRouteSubmissions(),
   ]);
+  // The table is a Client Component, so rows go over as plain values: dates as ISO
+  // strings for sorting, plus the text to show.
+  const rows = submissions.map(({ createdAt, reviewedAt, ...submission }) => ({
+    ...submission,
+    createdAt: createdAt.toISOString(),
+    sent: dateTime.format(createdAt),
+    reviewed: reviewedAt && dateTime.format(reviewedAt),
+    updatesExisting: existingIds.has(routeSlug(submission.name)),
+  }));
 
   return (
     <>
@@ -87,163 +85,7 @@ async function ReviewQueue({
         </ul>
       </nav>
 
-      {submissions.length === 0 ? (
-        <p className="rounded-xl border border-dashed p-6 text-muted-foreground">
-          {status === "PENDING" ? "Nothing to review. New submissions will show up here." : "None yet."}
-        </p>
-      ) : (
-        <ul className="flex flex-col gap-4">
-          {submissions.map((submission) => {
-            const updatesExisting = existingIds.has(routeSlug(submission.name));
-            return (
-              <li key={submission.id} className="flex flex-col gap-4 rounded-xl border bg-card p-5 text-card-foreground">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div className="flex flex-col gap-1">
-                    <h2 className="text-lg font-bold">{submission.name}</h2>
-                    <p className="text-xs text-muted-foreground">
-                      Ref <span className="font-mono">{submission.id.slice(-6).toUpperCase()}</span> · sent{" "}
-                      {dateTime.format(submission.createdAt)}
-                    </p>
-                  </div>
-                  {status === "PENDING" && updatesExisting && (
-                    <Badge variant="secondary">Same name as a published route: verifying updates it</Badge>
-                  )}
-                </div>
-
-                <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
-                  <Detail label="From (A)">
-                    <Pin name={submission.fromName} lat={submission.fromLat} lng={submission.fromLng} />
-                  </Detail>
-                  <Detail label="To (B)">
-                    <Pin name={submission.toName} lat={submission.toLat} lng={submission.toLng} />
-                  </Detail>
-                  <Detail label="Stops along the road">
-                    {submission.stops.length === 0 ? (
-                      "None; the road is the shortest one from A to B"
-                    ) : (
-                      <ol className="flex flex-col gap-0.5">
-                        {submission.stops.map((stop, index) => (
-                          <li key={stop.id}>
-                            <Pin name={`Stop ${index + 1}`} lat={stop.position[1]} lng={stop.position[0]} />
-                          </li>
-                        ))}
-                      </ol>
-                    )}
-                  </Detail>
-                  <Detail label="Via">{submission.via ?? "Not given"}</Detail>
-                  <Detail label="Jeep type">{JEEP_TYPE_LABEL[submission.jeepType]}</Detail>
-                  <Detail label="Fare paid, end to end">
-                    {submission.farePaid === null ? "Not given" : formatPeso(submission.farePaid)}
-                  </Detail>
-                  <Detail label="Sent by (private)">
-                    <Sender submission={submission} />
-                  </Detail>
-                  {submission.notes && <Detail label="Notes">{submission.notes}</Detail>}
-                </dl>
-
-                <RouteRoadPreview
-                  a={[submission.fromLng, submission.fromLat]}
-                  b={[submission.toLng, submission.toLat]}
-                  stops={submission.stops}
-                />
-
-                {status === "PENDING" ? (
-                  <RouteReviewActions id={submission.id} updatesExisting={updatesExisting} />
-                ) : (
-                  <p className="border-t pt-3 text-sm text-muted-foreground">
-                    {status === "VERIFIED" ? "Verified" : "Rejected"}
-                    {submission.reviewedByEmail && ` by ${submission.reviewedByEmail}`}
-                    {submission.reviewedAt && ` on ${dateTime.format(submission.reviewedAt)}`}
-                    {submission.routeId && (
-                      <>
-                        {" · published as "}
-                        <span className="font-mono text-foreground">{submission.routeId}</span>
-                      </>
-                    )}
-                    {submission.rejectionReason && (
-                      <>
-                        {". Reason: "}
-                        <span className="text-foreground">{submission.rejectionReason}</span>
-                      </>
-                    )}
-                  </p>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </>
-  );
-}
-
-function Detail({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <dt className="font-semibold text-muted-foreground">{label}</dt>
-      <dd className="break-words">{children}</dd>
-    </div>
-  );
-}
-
-const PROVIDER_LABEL: Record<string, string> = { google: "Google", facebook: "Facebook" };
-
-type SenderProps = {
-  submission: {
-    userId: string | null;
-    provider: string | null;
-    submitterName: string | null;
-    submitterContact: string | null;
-    senderRecord?: SenderRecord;
-    publicName: string | null;
-  };
-};
-
-/** Who sent a suggestion and how their earlier ones went. */
-function Sender({ submission }: SenderProps) {
-  const details = [submission.submitterName, submission.submitterContact].filter(Boolean).join(" · ");
-  if (!submission.userId) {
-    return <>{details ? `${details} (typed in; sent before sign-in was required)` : "Anonymous (sent before sign-in was required)"}</>;
-  }
-  const provider = submission.provider ? (PROVIDER_LABEL[submission.provider] ?? submission.provider) : null;
-  const record = submission.senderRecord;
-  return (
-    <>
-      {[details || "Signed in, no name or email shared", provider].filter(Boolean).join(" · ")}
-      {record && (
-        <span className="block text-muted-foreground">
-          {record.VERIFIED} approved · {record.REJECTED} rejected · {record.PENDING} pending
-        </span>
-      )}
-      {submission.publicName && (
-        <form action={clearPublicName} className="flex flex-wrap items-center gap-2">
-          <span>
-            Board name: <span className="font-semibold">“{submission.publicName}”</span>
-          </span>
-          <input type="hidden" name="userId" value={submission.userId} />
-          <Button type="submit" variant="outline" size="sm">
-            Clear public name
-          </Button>
-        </form>
-      )}
-    </>
-  );
-}
-
-/** A named point with its coordinates linked to OpenStreetMap, so admins can eyeball the pin. */
-function Pin({ name, lat, lng }: { name: string; lat: number; lng: number }) {
-  return (
-    <>
-      {name}
-      {" · "}
-      <a
-        href={`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=16/${lat}/${lng}`}
-        target="_blank"
-        rel="noreferrer"
-        className="font-mono text-xs font-semibold text-primary underline-offset-4 hover:underline"
-      >
-        {lat.toFixed(5)}, {lng.toFixed(5)}
-      </a>
+      <RouteSubmissionTable status={status} rows={rows} />
     </>
   );
 }
