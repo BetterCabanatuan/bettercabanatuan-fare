@@ -27,6 +27,12 @@ export const tl: Dictionary = {
     mapData: "Datos ng mapa © mga contributor ng OpenStreetMap",
     sources: "Mga pinagkunan",
     alpha: "Alpha version: tantiya lang ang mga pamasahe at maaaring iba sa aktuwal na singil.",
+    portalHeading: "Iba pa mula sa BetterCabanatuan",
+    portalHome: "Home ng BetterCabanatuan",
+    portalHotlines: "Mga emergency hotline",
+    portalMtop: "MTOP clearance para sa tricycle",
+    portalAbout: "Tungkol sa amin",
+    portalContact: "Makipag-ugnayan",
   },
   banner: {
     label: "Paalala: alpha version",

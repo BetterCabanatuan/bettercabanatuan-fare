@@ -24,6 +24,12 @@ export const en = {
     mapData: "Map data © OpenStreetMap contributors",
     sources: "Sources",
     alpha: "Alpha version: fares are estimates and may differ from the actual rates.",
+    portalHeading: "More from BetterCabanatuan",
+    portalHome: "BetterCabanatuan home",
+    portalHotlines: "Emergency hotlines",
+    portalMtop: "Tricycle MTOP clearance",
+    portalAbout: "About",
+    portalContact: "Contact",
   },
   banner: {
     label: "Alpha notice",
