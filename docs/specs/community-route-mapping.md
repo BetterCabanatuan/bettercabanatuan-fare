@@ -170,7 +170,7 @@ Each phase ships on its own and leaves the site consistent, including the legal 
 
 - **FR-36** `submitRoute` calls `getRider()` first. No session returns `{ status: "signedOut" }`; the form shows "You were signed out. Sign in again, then send your route." What the rider entered stays in the form.
 - **FR-37** Rate limit: at most **10 route suggestions per account per hour** (decision 3). Over the limit returns `{ status: "tooMany" }` with "You've sent several routes in the last hour. Please wait a while before sending more."
-- **FR-38** The row stores `userId` (the Supabase Auth user id), `submitterName` (account name, or null), `submitterContact` (account email, or null).
+- **FR-38** The row stores `userId` (the Supabase Auth user id), `provider` (`google` or `facebook`), `submitterName` (account name, or null), `submitterContact` (account email, or null).
 
 ### 7.4 Admin: who sent it
 
@@ -235,8 +235,10 @@ The app validates each pair (§6.3). The CHECK only stops a bypassed check from 
 -- Route suggestions need sign-in from now on. Older rows stay anonymous (NULL).
 -- Deleting the Supabase Auth user (a data deletion request) deletes their suggestions;
 -- routes already published stay, since community_jeep_route holds no personal data.
+-- "provider" (google / facebook) is shown to admins next to the sender (FR-39).
 ALTER TABLE "route_submission"
-  ADD COLUMN "userId" UUID REFERENCES auth.users ("id") ON DELETE CASCADE;
+  ADD COLUMN "userId" UUID REFERENCES auth.users ("id") ON DELETE CASCADE,
+  ADD COLUMN "provider" TEXT;
 
 -- Per-account rate limit, and the admin page's per-sender record.
 CREATE INDEX "route_submission_userId_createdAt_idx" ON "route_submission" ("userId", "createdAt");
