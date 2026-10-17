@@ -349,6 +349,11 @@ export const en = {
     routeEndMarker: "End of route: {name}",
     routeEndRoutes: "Jeeps that end here",
     stopAtKm: "{name} · {km} km",
+    mapLayers: "Map layers",
+    layerRoutes: "Jeep routes",
+    layerTerminals: "Terminals and stops",
+    layerRouteEnds: "Route ends",
+    layersNote: "Your A and B points and the route you picked always stay on the map.",
   },
   search: {
     placeholder: "Search a place or landmark",

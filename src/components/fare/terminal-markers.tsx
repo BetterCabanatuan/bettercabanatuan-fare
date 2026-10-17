@@ -28,6 +28,8 @@ type Terminal = {
 type TerminalMarkersProps = {
   terminals: JeepTerminal[];
   routes: JeepRoute[];
+  /** When false, only the terminals of the highlighted route show. */
+  showAll: boolean;
   highlightedRouteId: string | null;
   onHighlightRoute: (routeId: string | null) => void;
   onPickPlace: (key: PointKey, place: Place) => void;
@@ -75,6 +77,7 @@ function groupTerminals(terminals: JeepTerminal[], routes: JeepRoute[]): Termina
 export function TerminalMarkers({
   terminals: listed,
   routes,
+  showAll,
   highlightedRouteId,
   onHighlightRoute,
   onPickPlace,
@@ -83,7 +86,9 @@ export function TerminalMarkers({
   const idPrefix = useId();
   const [openKey, setOpenKey] = useState<string | null>(null);
 
-  const terminals = groupTerminals(listed, routes);
+  const terminals = groupTerminals(listed, routes).filter(
+    (terminal) => showAll || terminal.routes.some((route) => route.id === highlightedRouteId),
+  );
   const open = terminals.find((terminal) => terminal.key === openKey);
   const markerId = (index: number): string => `${idPrefix}-terminal-${index}`;
   const kindLabel = (kind: TerminalKind): string =>

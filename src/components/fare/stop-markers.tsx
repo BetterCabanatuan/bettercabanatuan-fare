@@ -20,6 +20,8 @@ type RouteEnd = {
 
 type RouteEndMarkersProps = {
   routes: JeepRoute[];
+  /** When false, only the far end of the highlighted route shows. */
+  showAll: boolean;
   highlightedRouteId: string | null;
   onHighlightRoute: (routeId: string | null) => void;
   onPickPlace: (key: PointKey, place: Place) => void;
@@ -45,6 +47,7 @@ function groupEnds(routes: JeepRoute[]): RouteEnd[] {
 /** The far end of every drawn route: the town where the jeep turns around. */
 export function RouteEndMarkers({
   routes,
+  showAll,
   highlightedRouteId,
   onHighlightRoute,
   onPickPlace,
@@ -53,7 +56,9 @@ export function RouteEndMarkers({
   const idPrefix = useId();
   const [openKey, setOpenKey] = useState<string | null>(null);
 
-  const ends = groupEnds(routes);
+  const ends = groupEnds(routes).filter(
+    (end) => showAll || end.routes.some((route) => route.id === highlightedRouteId),
+  );
   const open = ends.find((end) => end.key === openKey);
   const markerId = (index: number): string => `${idPrefix}-route-end-${index}`;
 

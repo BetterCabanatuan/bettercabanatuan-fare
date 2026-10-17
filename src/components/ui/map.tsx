@@ -814,6 +814,8 @@ type MapControlsProps = {
   onLocate?: (coords: { longitude: number; latitude: number }) => void;
   /** Callback when the browser can't or won't give a location */
   onLocateError?: (error: GeolocationPositionError) => void;
+  /** Extra controls, stacked above the built-in ones */
+  children?: React.ReactNode;
 };
 
 const positionClasses = {
@@ -870,6 +872,7 @@ function MapControls({
   className,
   onLocate,
   onLocateError,
+  children,
 }: MapControlsProps) {
   const { map } = useMap();
   const [waitingForLocation, setWaitingForLocation] = useState(false);
@@ -933,6 +936,7 @@ function MapControls({
         className,
       )}
     >
+      {children}
       {showZoom && (
         <ControlGroup>
           <ControlButton onClick={handleZoomIn} label="Zoom in">

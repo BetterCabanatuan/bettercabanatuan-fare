@@ -351,6 +351,11 @@ export const tl: Dictionary = {
     routeEndMarker: "Dulo ng ruta: {name}",
     routeEndRoutes: "Mga jeep na hanggang dito",
     stopAtKm: "{name} · {km} km",
+    mapLayers: "Mga layer ng mapa",
+    layerRoutes: "Mga ruta ng jeep",
+    layerTerminals: "Mga terminal at sakayan",
+    layerRouteEnds: "Mga dulo ng ruta",
+    layersNote: "Laging nasa mapa ang A at B mo at ang rutang pinili mo.",
   },
   search: {
     placeholder: "Maghanap ng lugar o palatandaan",

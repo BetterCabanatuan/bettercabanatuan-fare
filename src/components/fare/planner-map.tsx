@@ -1,9 +1,10 @@
 "use client";
 
 import type { MapMouseEvent } from "maplibre-gl";
-import { useEffect, type Ref } from "react";
+import { useEffect, useState, type Ref } from "react";
 
 import { MapHint } from "@/components/fare/map-hint";
+import { ALL_LAYERS, MapLayersControl, type MapLayers } from "@/components/fare/map-layers";
 import { RouteEndMarkers, StopDots } from "@/components/fare/stop-markers";
 import { TerminalMarkers } from "@/components/fare/terminal-markers";
 import { roadSummary } from "@/components/fare/road-options";
@@ -97,6 +98,9 @@ export function PlannerMap({
   // The road line slides under the picked route, whichever of the two is drawn first.
   const pickedLine = lines.find((line) => line.kind === "routeActive");
   const belowPicked = pickedLine && layerId(`${lineId(pickedLine)}-casing`);
+  // Only jeep mode has layers to hide. The picked route is "routeActive", not "route", so it stays.
+  const [layers, setLayers] = useState<MapLayers>(ALL_LAYERS);
+  const shownLines = layers.routes ? lines : lines.filter((line) => line.kind !== "route");
 
   return (
     // The muted backdrop reads as a map area while tiles are still loading.
@@ -111,7 +115,7 @@ export function PlannerMap({
         interactive={false}
       />
 
-      {lines.map((line) => (
+      {shownLines.map((line) => (
         <PlannerLine key={`${line.id}-${line.kind}`} line={line} belowPicked={belowPicked} />
       ))}
 
@@ -124,12 +128,14 @@ export function PlannerMap({
           <TerminalMarkers
             terminals={terminals}
             routes={routes}
+            showAll={layers.terminals}
             highlightedRouteId={highlightedRouteId}
             onHighlightRoute={onHighlightRoute}
             onPickPlace={onPickPlace}
           />
           <RouteEndMarkers
             routes={routes}
+            showAll={layers.routeEnds}
             highlightedRouteId={highlightedRouteId}
             onHighlightRoute={onHighlightRoute}
             onPickPlace={onPickPlace}
@@ -162,7 +168,9 @@ export function PlannerMap({
         showLocate
         onLocate={({ longitude, latitude }) => onLocate([longitude, latitude])}
         onLocateError={onLocateError}
-      />
+      >
+        {mode === "jeep" && <MapLayersControl layers={layers} onChange={setLayers} />}
+      </MapControls>
       <MapClickHandler onMapClick={onMapClick} />
       <FitToTrip a={a} b={b} lines={lines} roads={roadChoices?.roads ?? []} />
       {loading && <LoadingBar />}
