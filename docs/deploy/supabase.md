@@ -48,7 +48,7 @@ Admins sign in with a one-time email link. Only addresses in `ADMIN_EMAILS` get 
 1. **Authentication → URL Configuration**: set **Site URL** to the production address, and add these under **Redirect URLs**:
    - `http://localhost:3000/api/auth/confirm`
    - `https://[FILL: PRODUCTION_DOMAIN]/api/auth/confirm`
-2. **Authentication → Emails → Templates → Magic link**: replace the link so it works on any device, not only in the browser that asked for it:
+2. **Authentication → Emails → Templates**: in both **Magic link** and **Confirm signup**, replace the link so it works on any device, not only in the browser that asked for it. An admin's very first sign-in creates their user, so Supabase sends **Confirm signup** that time and **Magic link** after:
 
    ```html
    <h2>Pamasahe Cabanatuan admin sign-in</h2>
@@ -59,7 +59,7 @@ Admins sign in with a one-time email link. Only addresses in `ADMIN_EMAILS` get 
 
    `{{ .RedirectTo }}` is the app's `/api/auth/confirm?next=/admin/todas` address, so the same template works from localhost and production. With the default template the link still works, but only in the same browser.
 3. **Authentication → Providers → Email**: set **Email OTP Expiration** to `600` seconds, so the link expires in 10 minutes as the sign-in page says.
-4. **Authentication → Emails → SMTP Settings**: Supabase's built-in mailer sends only a few emails an hour and only to team members. For production, add a custom SMTP server, such as Resend (`smtp.resend.com`, port `465`, user `resend`, password: a Resend API key).
+4. **Authentication → Emails → SMTP Settings**: Supabase's built-in mailer sends only a few emails an hour and only to team members. For production, add a custom SMTP server, such as Resend (`smtp.resend.com`, port `465`, user `resend`, password: a Resend API key). The **Sender email** must be on a domain verified in Resend; `onboarding@resend.dev` only delivers to the Resend account's own address.
 
 Removing an address from `ADMIN_EMAILS` revokes access on the next request, even for a signed-in admin.
 
@@ -96,6 +96,7 @@ The dashboard's Security Advisor flags any table that was missed.
 
 - **`SUPABASE_SECRET_KEY is not set`** in the server log, and the TODA list or community routes are empty: add the secret key to `.env` (or `npx wrangler secret put SUPABASE_SECRET_KEY` in production).
 - **Admin sign-in link lands on "That sign-in link has expired"**: the link was already used, is older than 10 minutes, or (with the default email template) was opened in a different browser. Use the template in step 4.
+- **`Error sending confirmation email`** (status 500) in the server log: Supabase reached your SMTP server and it refused. **Authentication → Logs** shows the server's reason. Usually the sender address isn't on a verified domain, or the SMTP password (API key) is wrong or revoked.
 - **No sign-in email arrives**: the address isn't in `ADMIN_EMAILS`, or the built-in mailer's limit was hit. Check **Authentication → Logs**, and set up custom SMTP.
 - **`supabase db push` fails on an existing table**: the database was set up by Prisma. Mark the old migrations applied (step 3).
 - **`permission denied for table`** from the server: the table is missing its grant to `service_role`. See the `GRANT` lines at the end of `20261017043500_supabase_data_api_and_auth.sql`.
