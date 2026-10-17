@@ -120,24 +120,6 @@ function RouteStops({ route }: { route: JeepRoute }) {
   );
 }
 
-function SuggestRoute() {
-  const { dict, locale } = useDictionary();
-
-  return (
-    <div className="flex flex-col gap-2 rounded-lg border border-dashed p-3">
-      <p className="text-sm font-semibold text-balance">{dict.jeep.suggestTitle}</p>
-      <p className="text-xs text-pretty text-muted-foreground">{dict.jeep.suggestBody}</p>
-      <Link
-        href={localizePath(locale, "/fare/suggest")}
-        className={cn(buttonVariants({ variant: "outline", size: "lg" }), "h-11 self-start")}
-      >
-        <PlusIcon aria-hidden />
-        {dict.jeep.suggestCta}
-      </Link>
-    </div>
-  );
-}
-
 type JeepRouteListProps = {
   /** Routes with a line on the map. */
   routes: JeepRoute[];
@@ -149,7 +131,7 @@ type JeepRouteListProps = {
 const PHONE_PREVIEW = 5;
 
 export function JeepRouteList({ routes, highlightedRouteId, onHighlightRoute }: JeepRouteListProps) {
-  const { dict } = useDictionary();
+  const { dict, locale } = useDictionary();
   const headingId = useId();
   const listId = useId();
   const [expanded, setExpanded] = useState(false);
@@ -163,9 +145,20 @@ export function JeepRouteList({ routes, highlightedRouteId, onHighlightRoute }: 
         </p>
       )}
       <div className="flex flex-col gap-1">
-        <h2 id={headingId} className="text-base font-bold tracking-tight">
-          {fill(dict.jeep.routeList, { count: routes.length })}
-        </h2>
+        {/* The suggest link sits by the heading, not after the list, so phone riders see it
+            without scrolling past every route. */}
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+          <h2 id={headingId} className="text-base font-bold tracking-tight">
+            {fill(dict.jeep.routeList, { count: routes.length })}
+          </h2>
+          <Link
+            href={localizePath(locale, "/fare/suggest")}
+            className={cn(buttonVariants({ variant: "outline" }), "h-11")}
+          >
+            <PlusIcon aria-hidden />
+            {dict.jeep.suggestCta}
+          </Link>
+        </div>
         <p className="text-xs text-muted-foreground">
           {dict.jeep.routeListHint}
         </p>
@@ -215,7 +208,6 @@ export function JeepRouteList({ routes, highlightedRouteId, onHighlightRoute }: 
           <ChevronDownIcon aria-hidden className={cn("size-4 transition-transform", expanded && "rotate-180")} />
         </Button>
       )}
-      <SuggestRoute />
     </section>
   );
 }

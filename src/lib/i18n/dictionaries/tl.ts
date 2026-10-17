@@ -528,8 +528,6 @@ export const tl: Dictionary = {
     stopTerminal: "Terminal",
     stopEnd: "Huling babaan",
     stopKm: "{km} km",
-    suggestTitle: "May alam kang ruta ng jeep na wala pa rito?",
-    suggestBody: "Sabihin mo kung saan ito dumadaan at magkano ang bayad. Sinusuri namin ang bawat isa bago ilagay sa mapa.",
     suggestCta: "Magmungkahi ng ruta",
   },
   sources: {

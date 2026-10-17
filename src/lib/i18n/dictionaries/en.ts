@@ -524,8 +524,6 @@ export const en = {
     stopTerminal: "Terminal",
     stopEnd: "Last stop",
     stopKm: "{km} km",
-    suggestTitle: "Know a jeep route we're missing?",
-    suggestBody: "Tell us where it goes and what you paid. We check each one before it goes on the map.",
     suggestCta: "Suggest a route",
   },
   sources: {
