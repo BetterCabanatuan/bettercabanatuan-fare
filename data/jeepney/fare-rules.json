@@ -1,6 +1,6 @@
 {
-  "_status": "VERIFIED against news reports; confirm against the official LTFRB fare matrix PDF before launch",
-  "lastChecked": "2026-10-16",
+  "_status": "Traditional rates VERIFIED against the official LTFRB PUJ General Fare Guide (effective 2026-09-28, first source below). Modern rates are from news reports only; confirm against the LTFRB modern PUJ fare guide before launch",
+  "lastChecked": "2026-10-18",
   "effectiveDate": "2026-09-28",
   "authority": "LTFRB, approved by DOTr (memorandum dated 2026-09-25, lifting the March 2026 suspension)",
   "types": {
@@ -22,8 +22,8 @@
     "pwd": 0.2,
     "student": 0.2
   },
-  "discountNotes": "Student discount applies on school days per the LTFRB conditions.",
-  "rounding": "TODO: copy the exact rounding used in the official LTFRB matrix",
+  "discountNotes": "Students get the discount every day, including Saturdays, Sundays and holidays, per LTFRB MC 2017-024 (stated on the LTFRB PUJ General Fare Guide).",
+  "rounding": "Fares are rounded off to the nearest 25 centavos, per the LTFRB PUJ General Fare Guide (e.g. 5 km discounted: 12.80 is shown as 12.75).",
   "previous": {
     "traditional": {
       "baseFare": 13.0,
@@ -35,6 +35,7 @@
     }
   },
   "sources": [
+    "https://drive.google.com/file/d/15IcGdAKFdlSAqaCy8SHh759e6OP8mIZF/view",
     "https://cebudailynews.inquirer.net/769811/dotr-oks-jeepney-fare-increase-effective-monday",
     "https://mb.com.ph/2026/09/25/dotr-approves-delayed-jeepney-fare-hike-to-cushion-rising-fuel-costs",
     "https://www.rappler.com/philippines/fare-hikes-guide-jeepney-bus-taxi-uv-express-september-28-2026/",

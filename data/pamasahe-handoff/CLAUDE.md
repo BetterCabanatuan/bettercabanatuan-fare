@@ -27,7 +27,7 @@ Plus, everywhere: a "Report overcharging" page (plate number + city office/hotli
 - **Phase 3**: map view and community corrections.
 
 ## Data status (see each file's `_status` field)
-- `data/jeepney/fare-rules.json`: **ready**. Effective 2026-09-28. Traditional P14 first 4 km + P2/km; modern P17 first 4 km + P2.40/km; 20% off for seniors, PWDs, and students (students on school days). TODO: match rounding to the official LTFRB fare matrix PDF.
+- `data/jeepney/fare-rules.json`: **ready**. Effective 2026-09-28. Traditional P14 first 4 km + P2/km; modern P17 first 4 km + P2.40/km; 20% off for seniors, PWDs, and students (students every day, per MC 2017-024). Traditional rates confirmed by the official LTFRB PUJ General Fare Guide (https://drive.google.com/file/d/15IcGdAKFdlSAqaCy8SHh759e6OP8mIZF/view), which rounds fares to the nearest 25 centavos. Modern rates still need the LTFRB modern PUJ guide.
 - `data/jeepney/routes.json`: 15 routes with names, via, and sources; **stops and km markers still empty**. Authoritative list = the city's LPTRP (Local Public Transport Route Plan) / LTFRB Region III franchises. `reportedFare` values are old third-party snapshots, sanity check only.
 - `data/tricycle/fare-matrix.json`: **unconfirmed**. Current matrix (last adjusted Nov 2018) per a 2025 research paper: first 3 km, single passenger P20 regular / P15 discounted; 2+ passengers P15 / P10 each; +P5 per passenger per km beyond 3 km. A 2026 draft ordinance had a public hearing 2026-03-31; approval status unknown.
 - `data/toda/todas.json`: **empty schema**. No public TODA list exists online. Publish only official TODA contacts, not personal phone numbers, unless the person consents.
