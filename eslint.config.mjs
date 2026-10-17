@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Throwaway Node scripts that rendered the demo video; not part of the app.
+    "demo-video/**",
   ]),
 ]);
 
