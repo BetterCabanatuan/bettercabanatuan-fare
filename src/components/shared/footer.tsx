@@ -24,6 +24,9 @@ export async function Footer() {
             <span className="font-bold">Pamasahe Cabanatuan</span> · {dict.footer.about} {dict.footer.alpha}
           </p>
           <p className="flex shrink-0 flex-wrap gap-x-4">
+            <Link href={localizePath(locale, "/feedback")} className={linkClass}>
+              {dict.feedback.footerLink}
+            </Link>
             <Link href={localizePath(locale, "/sources")} className={linkClass}>
               {dict.footer.sources}
             </Link>

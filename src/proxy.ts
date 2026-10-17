@@ -19,14 +19,15 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   // Passing `request` forwards cookies a session refresh rewrote, so the page sees them.
   const respond = () => (isTagalog ? NextResponse.next({ request }) : NextResponse.rewrite(url, { request }));
 
-  const isAdmin = /^(\/tl)?\/admin(\/|$)/.test(pathname);
-  return isAdmin ? refreshSession(request, respond) : respond();
+  // Admin pages and the feedback page read the Supabase session; other pages never do.
+  const readsSession = /^(\/tl)?\/(admin|feedback)(\/|$)/.test(pathname);
+  return readsSession ? refreshSession(request, respond) : respond();
 }
 
 /**
- * Refreshes the admin's Supabase session and saves the new tokens as cookies. Server
- * Components can't write cookies, so without this an admin would be signed out once the
- * access token expires. Public pages skip it and stay free of auth round trips.
+ * Refreshes the admin's or rider's Supabase session and saves the new tokens as cookies.
+ * Server Components can't write cookies, so without this they would be signed out once
+ * the access token expires. Other pages skip it and stay free of auth round trips.
  */
 async function refreshSession(request: NextRequest, respond: () => NextResponse): Promise<NextResponse> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isAdminEmail, parseAdminEmails } from "@/lib/admins";
+import { isAdminEmail, parseAdminEmails, startedWithOAuth } from "@/lib/admins";
 
 describe("parseAdminEmails", () => {
   it("splits, trims, lowercases and drops blanks", () => {
@@ -26,5 +26,18 @@ describe("isAdminEmail", () => {
   it("rejects everyone when no admins are configured", () => {
     expect(isAdminEmail("admin@cabanatuan.gov.ph", "")).toBe(false);
     expect(isAdminEmail(null, list)).toBe(false);
+  });
+});
+
+describe("startedWithOAuth", () => {
+  it("spots a Google or Facebook sign-in in either amr format", () => {
+    expect(startedWithOAuth([{ method: "oauth" }])).toBe(true);
+    expect(startedWithOAuth(["oauth"])).toBe(true);
+  });
+
+  it("lets the emailed admin link through", () => {
+    expect(startedWithOAuth([{ method: "otp" }])).toBe(false);
+    expect(startedWithOAuth([{ method: "magiclink" }])).toBe(false);
+    expect(startedWithOAuth(undefined)).toBe(false);
   });
 });

@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowDownUp, LocateFixed, X } from "lucide-react";
+import { ArrowDownUp, LocateFixed, MessageSquareWarning, X } from "lucide-react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -20,6 +21,8 @@ import type { JeepFareRules, TricycleFareRules } from "@/lib/fare";
 import { isInsideRing, sliceLine, type LngLat } from "@/lib/geo";
 import { hasLine, type JeepRoute, type JeepTerminal, type JeepTrip } from "@/lib/jeep-routes";
 import { fetchRoadRoutes, reversePlace } from "@/lib/map-services";
+import { feedbackPath } from "@/lib/feedback/submission";
+import { localizePath } from "@/lib/i18n/locales";
 import { cn } from "@/lib/utils";
 
 type Mode = "tricycle" | "jeep";
@@ -52,13 +55,17 @@ const placeFromUrl = (value: string | null, label: string): Place | undefined =>
 const pointsKey = ({ a, b }: Points): string =>
   a && b ? `${formatPosition(a.position)};${formatPosition(b.position)}` : "";
 
-/** Keeps mode and points in the address so a trip can be shared or bookmarked. */
-function writeUrl(mode: Mode, { a, b }: Points): void {
+function tripQuery(mode: Mode, { a, b }: Points): string {
   const params = new URLSearchParams();
   if (mode === "jeep") params.set("mode", "jeep");
   if (a) params.set("a", formatPosition(a.position));
   if (b) params.set("b", formatPosition(b.position));
-  const query = params.toString();
+  return params.toString();
+}
+
+/** Keeps mode and points in the address so a trip can be shared or bookmarked. */
+function writeUrl(mode: Mode, points: Points): void {
+  const query = tripQuery(mode, points);
   window.history.replaceState(null, "", query ? `?${query}` : window.location.pathname);
 }
 
@@ -87,7 +94,7 @@ export function FarePlanner({
   landmarks,
   boundary,
 }: FarePlannerProps) {
-  const { dict } = useDictionary();
+  const { locale, dict } = useDictionary();
   const searchParams = useSearchParams();
   const mode: Mode = searchParams.get("mode") === "jeep" ? "jeep" : "tricycle";
 
@@ -401,6 +408,15 @@ export function FarePlanner({
             onSelectRoad={selectRoad}
           />
         )}
+
+        <Link
+          // Carries the trip, so an admin reading the feedback can open the same fare.
+          href={feedbackPath(locale, [localizePath(locale, "/fare"), tripQuery(mode, points)].filter(Boolean).join("?"))}
+          className="inline-flex min-h-11 items-center gap-2 self-start text-sm font-semibold text-primary underline-offset-4 hover:underline"
+        >
+          <MessageSquareWarning aria-hidden className="size-4" />
+          {dict.feedback.plannerLink}
+        </Link>
       </section>
 
       <div ref={mapBoxRef} className="order-1 h-[clamp(13rem,34dvh,20rem)] scroll-mt-2 sm:h-[55dvh] lg:sticky lg:top-0 lg:order-2 lg:h-[calc(100dvh-4.5rem)] lg:flex-1">

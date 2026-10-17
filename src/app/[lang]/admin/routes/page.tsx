@@ -46,6 +46,9 @@ export default async function AdminRoutesPage({ searchParams }: PageProps<"/[lan
           <span aria-current="page" className="text-muted-foreground">
             Routes
           </span>
+          <Link href="/admin/feedback" className="text-primary underline-offset-4 hover:underline">
+            Feedback
+          </Link>
         </nav>
       </div>
       <Suspense fallback={<p className="text-muted-foreground">Loading submissions…</p>}>

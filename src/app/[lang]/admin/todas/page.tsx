@@ -40,6 +40,9 @@ export default async function AdminTodasPage({ searchParams }: PageProps<"/[lang
           <Link href="/admin/routes" className="text-primary underline-offset-4 hover:underline">
             Routes
           </Link>
+          <Link href="/admin/feedback" className="text-primary underline-offset-4 hover:underline">
+            Feedback
+          </Link>
         </nav>
       </div>
       <Suspense fallback={<p className="text-muted-foreground">Loading submissions…</p>}>

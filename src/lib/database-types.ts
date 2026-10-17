@@ -54,6 +54,57 @@ export type Database = {
         };
         Relationships: [];
       };
+      feedback: {
+        Row: {
+          createdAt: string;
+          id: string;
+          locale: string;
+          message: string;
+          pagePath: string | null;
+          provider: string;
+          resolvedAt: string | null;
+          resolvedByEmail: string | null;
+          status: Database["public"]["Enums"]["FeedbackStatus"];
+          topic: Database["public"]["Enums"]["FeedbackTopic"];
+          updatedAt: string;
+          userEmail: string | null;
+          userId: string;
+          userName: string | null;
+        };
+        Insert: {
+          createdAt?: string;
+          id?: string;
+          locale: string;
+          message: string;
+          pagePath?: string | null;
+          provider: string;
+          resolvedAt?: string | null;
+          resolvedByEmail?: string | null;
+          status?: Database["public"]["Enums"]["FeedbackStatus"];
+          topic: Database["public"]["Enums"]["FeedbackTopic"];
+          updatedAt?: string;
+          userEmail?: string | null;
+          userId: string;
+          userName?: string | null;
+        };
+        Update: {
+          createdAt?: string;
+          id?: string;
+          locale?: string;
+          message?: string;
+          pagePath?: string | null;
+          provider?: string;
+          resolvedAt?: string | null;
+          resolvedByEmail?: string | null;
+          status?: Database["public"]["Enums"]["FeedbackStatus"];
+          topic?: Database["public"]["Enums"]["FeedbackTopic"];
+          updatedAt?: string;
+          userEmail?: string | null;
+          userId?: string;
+          userName?: string | null;
+        };
+        Relationships: [];
+      };
       route_submission: {
         Row: {
           createdAt: string;
@@ -277,6 +328,8 @@ export type Database = {
       };
     };
     Enums: {
+      FeedbackStatus: "NEW" | "RESOLVED";
+      FeedbackTopic: "WRONG_FARE" | "WRONG_ROUTE" | "APP_PROBLEM" | "SUGGESTION" | "OTHER";
       JeepType: "TRADITIONAL" | "MODERN" | "UNKNOWN";
       SubmissionStatus: "PENDING" | "VERIFIED" | "REJECTED";
     };
