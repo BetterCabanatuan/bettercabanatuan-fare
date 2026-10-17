@@ -1,49 +1,40 @@
 {
-  "_status": "UNCONFIRMED. Figures come from a 2025 research paper, not the ordinance itself. Get the ordinance number and a scanned copy from the City Legalization Division before launch. The solo per-km rate (perSucceedingKmSolo) is calibrated from a rider report, not the ordinance.",
+  "_status": "UNCONFIRMED. Rates are read from a certified true copy of Ordinance No. 050-2026 shared by a student council, not a copy published by the city. Still unknown: the legal effective date (Sec. 15: 15 days after newspaper publication), whether the city has switched on a fuel-price provisional rate (Sec. 5), and which rate the 2026-10-19 stickers show. Mark confirmed once someone photographs a sticker or the TMLU confirms. See docs/research/tricycle-fares-and-tariffs.md.",
   "confirmed": false,
-  "lastChecked": "2026-10-16",
+  "lastChecked": "2026-10-18",
   "current": {
-    "label": "Cabanatuan tricycle fare matrix last adjusted November 2018 (stickers issued 2019)",
-    "ordinanceNo": "TODO: ask City Legalization Division",
-    "effectiveDate": "TODO",
+    "label": "2026 Tricycle Fare Matrix Ordinance of Cabanatuan City",
+    "ordinanceNo": "050-2026",
+    "effectiveDate": "TODO: 15 days after newspaper publication (Sec. 15); publication not found. Stickers launch 2026-10-19.",
+    "passedBySangguniangPanlungsod": "2026-04-14",
+    "approvedByMayor": "2026-04-28",
+    "approvedBySangguniangPanlalawigan": "2026-08-18",
+    "stickerRollout": "2026-10-19",
     "baseKm": 3,
-    "fares": {
-      "regular": {
-        "single": 20.0,
-        "perPassengerIfTwoOrMore": 15.0
-      },
-      "discounted": {
-        "single": 15.0,
-        "perPassengerIfTwoOrMore": 10.0
-      }
+    "baseFare": {
+      "regular": 35.0,
+      "discounted": 28.0
     },
+    "perSucceedingKm": {
+      "regular": 5.0,
+      "discounted": 4.0
+    },
+    "partKmRule": "Each succeeding 0.01 to 1.00 km is charged as a full km (Sec. 3, Sec. 4.1).",
     "discountedCovers": [
       "student",
       "senior",
       "pwd"
     ],
-    "perSucceedingKmPerPassenger": 5.0,
-    "perSucceedingKmSolo": 10.0,
-    "soloRateNote": "UNOFFICIAL. Calibrated from one rider-reported fare: a solo regular ride from the Kalikid Norte / Patalac area (Bangad-Fort Magsaysay Road) to Jollibee Crossing, 11.4 km by road, paid PHP 100 (reported 2026-10-17). PHP 20 for the first 3 km + PHP 10 per km x 8 km (11.4 km billed as 11) = PHP 100. Replace with the official solo rule from the 2026 fare matrix sticker.",
-    "specialTrip": "TODO: not found in any public source",
-    "sources": [
-      "https://www.slideshare.net/slideshow/economic-suitability-of-electronic-fare-meters-for-tricycle-drivers-in-cabanatuan-city/276068065",
-      "https://www.researchgate.net/publication/389360461_Economic_Suitability_of_Electronic_Fare_Meters_for_Tricycle_Drivers_in_Cabanatuan_City"
-    ]
-  },
-  "pending": {
-    "label": "New 2026 tricycle fare matrix (approved ordinance)",
-    "status": "Approved. Public hearing held 2026-03-31. Passed by the Sangguniang Panlungsod 2026-04-14, approved by the Sangguniang Panlalawigan 2026-08-18. Fare matrix stickers roll out 2026-10-19. The LGU post gives no fare amounts.",
-    "ordinanceNo": "TODO: ask the Public Transport Regulation Division or CBLIPO",
-    "publicHearing": "2026-03-31",
-    "approvedBySangguniangPanlungsod": "2026-04-14",
-    "approvedBySangguniangPanlalawigan": "2026-08-18",
-    "stickerRollout": "2026-10-19",
-    "fares": "TODO: copy from the new fare matrix sticker or the ordinance text",
+    "maxPassengers": 3,
+    "specialTripMultiplier": 2,
+    "specialTrip": "Allowed only when the passenger requests it: one passenger hires the whole tricycle so it leaves the City Supermarket TODA terminal without waiting, and pays two passenger fares (Sec. 2d). The ordinance does not say whether this applies to street pick-ups.",
+    "fuelPriceAdjustment": "Not modelled. The rates above are the base band for gasoline at PHP 50.00-59.99/L. For every PHP 10/L rise the Tricycle Franchising and Regulatory Board may set a provisional rate of +PHP 2.50 base and +PHP 0.50 per km, for up to 60 days (Sec. 5).",
+    "barangayTable": "Not modelled. Sec. 4 also lists fixed fares from the City Supermarket TODA terminal to 89 barangays; above about 6.5 km they are lower than the per-km formula.",
     "complaintsHotline": "0998-500-2726",
     "sources": [
+      "https://drive.google.com/file/d/14QDtG_-Q6CjbAoXCFQQ3emCDIAClyaX1/view",
       "https://www.facebook.com/lgucabanatuan/posts/pfbid0ArUeMyUy87U4dAfXG5Y8XeZmcJeYvEnkXmfW3Ya1DGtSX3mU91YH1F3ot6HRwH4yl",
-      "https://www.rappler.com/newsbreak/fact-check/new-cabanatuan-city-fare-matrix-ordinance-draft-not-yet-in-force/"
+      "https://www.facebook.com/aucscofficial/posts/1614432447370285"
     ]
   },
   "history": [
@@ -56,6 +47,15 @@
       "year": 2018,
       "summary": "Before the Nov 2018 update: P14 first 2 km, +P2 per extra km, P10 each for multiple passengers",
       "source": "https://tempo.mb.com.ph/2018/02/23/cabanatuan-as-tricycle-city/"
+    },
+    {
+      "year": 2018,
+      "summary": "Matrix last adjusted November 2018 (stickers issued 2019), in force until Ordinance No. 050-2026. First 3 km: P20 solo / P15 each for 2 or more; discounted P15 / P10; +P5 per passenger per km after 3 km. Ordinance number not found; figures from a 2025 study.",
+      "sources": [
+        "https://www.slideshare.net/slideshow/economic-suitability-of-electronic-fare-meters-for-tricycle-drivers-in-cabanatuan-city/276068065",
+        "https://www.researchgate.net/publication/389360461_Economic_Suitability_of_Electronic_Fare_Meters_for_Tricycle_Drivers_in_Cabanatuan_City",
+        "https://www.rappler.com/newsbreak/fact-check/new-cabanatuan-city-fare-matrix-ordinance-draft-not-yet-in-force/"
+      ]
     }
   ]
 }
