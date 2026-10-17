@@ -143,7 +143,7 @@ Each phase ships on its own and leaves the site consistent, including the legal 
 
 ### 6.4 Admin review and approval
 
-- **FR-22** Each submission card shows a small read-only map with A, numbered stops, B and the road line through them, fetched in the browser as in FR-11. Below it, each stop is listed with its coordinates linked to OpenStreetMap, like A and B today.
+- **FR-22** Each submission card has a **Show the road on a map** button. It opens a small read-only map with A, numbered stops, B and the road line through them, fetched in the browser as in FR-11. Maps open one card at a time, on request, so a long queue never sends every route to the free OSRM server at once. Each stop is also listed with its coordinates linked to OpenStreetMap, like A and B.
 - **FR-23** Cards with no stops show "No stops; the road is the shortest one from A to B."
 - **FR-24** On **Verify and publish**, the server fetches the OSRM road through A → stops → B in one request (`overview=full&geometries=geojson`) and passes it to `approve_route_submission` as today. The database function does not change.
 - **FR-25** An OSRM `NoRoute` answer shows: "OpenStreetMap has no drivable road through these points. Check the pins, or reject it." Nothing is published.
