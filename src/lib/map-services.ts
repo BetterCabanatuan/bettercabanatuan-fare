@@ -23,7 +23,7 @@ type OsrmResponse = {
     distance: number;
     duration: number;
     geometry: { coordinates: LngLat[] };
-    legs?: { steps?: OsrmStep[] }[];
+    legs?: { distance: number; steps?: OsrmStep[] }[];
   }[];
 };
 
@@ -47,10 +47,19 @@ async function getJson<T>(url: string, signal?: AbortSignal): Promise<T> {
   return (await response.json()) as T;
 }
 
+type RoadOptions = { alternatives: boolean; turnAtStops?: boolean };
+
 /** One OSRM request through the given points; [] when OSRM finds no road. */
-async function requestRoads(points: LngLat[], alternatives: boolean, signal?: AbortSignal): Promise<RoadRoute[]> {
+async function requestRoads(points: LngLat[], options: RoadOptions, signal?: AbortSignal): Promise<RoadRoute[]> {
   const coordinates = points.map(([lng, lat]) => `${lng},${lat}`).join(";");
-  const url = `${OSRM_URL}/${coordinates}?overview=full&geometries=geojson&steps=true&alternatives=${alternatives}`;
+  const params = new URLSearchParams({
+    overview: "full",
+    geometries: "geojson",
+    steps: "true",
+    alternatives: String(options.alternatives),
+    ...(options.turnAtStops && { continue_straight: "false" }),
+  });
+  const url = `${OSRM_URL}/${coordinates}?${params}`;
   const response = await fetch(url, { signal });
   // OSRM answers "no route" with a 400 and a JSON body, so read the body before
   // treating the status as a failure.
@@ -64,6 +73,7 @@ async function requestRoads(points: LngLat[], alternatives: boolean, signal?: Ab
     return {
       line: route.geometry.coordinates,
       distanceKm: route.distance / 1000,
+      legsKm: route.legs?.map((leg) => leg.distance / 1000) ?? [],
       durationMin: route.duration / 60,
       nationalRoad: national ? national.name || national.ref || null : null,
     };
@@ -76,15 +86,18 @@ async function requestRoads(points: LngLat[], alternatives: boolean, signal?: Ab
  */
 export async function fetchRoadRoutes(a: LngLat, b: LngLat, signal?: AbortSignal): Promise<RoadRoute[]> {
   const detourRequests = detourVias(a, b).map((via) =>
-    requestRoads([a, via, b], false, signal).catch((): RoadRoute[] => []),
+    requestRoads([a, via, b], { alternatives: false }, signal).catch((): RoadRoute[] => []),
   );
-  const [direct, ...detours] = await Promise.all([requestRoads([a, b], true, signal), ...detourRequests]);
+  const [direct, ...detours] = await Promise.all([requestRoads([a, b], { alternatives: true }, signal), ...detourRequests]);
   return direct.length === 0 ? [] : pickRoadOptions(direct, detours.flat());
 }
 
 /** One road through every point in order, for a suggested jeep route; null when OSRM finds none. */
 export async function fetchRoadThrough(points: LngLat[], signal?: AbortSignal): Promise<RoadRoute | null> {
-  const [road] = await requestRoads(points, false, signal);
+  // OSRM's car profile won't turn at a stop by default, so a stop tapped just past a
+  // junction sends the line around the block. Stops only shape the line; they are not
+  // where the jeep turns. The admin action asks OSRM the same way so it publishes this line.
+  const [road] = await requestRoads(points, { alternatives: false, turnAtStops: true }, signal);
   return road ?? null;
 }
 

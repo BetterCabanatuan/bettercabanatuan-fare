@@ -575,6 +575,8 @@ export const en = {
       "If the jeep doesn't take the road shown, tap a point on the road it does take. Add as few stops as you need, and drag a stop to move it.",
     roadLoading: "Finding the road…",
     roadLength: "About {km} km by road",
+    roadLoops:
+      "The line goes around a block near stop {number}. If the jeep doesn't, drag stop {number} onto the road it takes, or remove it.",
     roadNone: "We couldn't find a road through these points. Check that each one is on a road.",
     roadUnreachable: "The road preview isn't available right now. You can still send your route.",
     noStops: "No stops yet, so the road is the shortest one from A to B.",

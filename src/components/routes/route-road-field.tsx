@@ -1,15 +1,17 @@
 "use client";
 
+import { TriangleAlert } from "lucide-react";
 import { useId, useRef, useState } from "react";
 
 import { RouteRoadMap, useRoadLine, type RoadLine } from "@/components/routes/route-road-map";
 import { useDictionary } from "@/components/shared/dictionary-provider";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { FieldDescription, FieldError, FieldLegend, FieldSet } from "@/components/ui/field";
 import type { LngLat } from "@/lib/geo";
 import { fill } from "@/lib/i18n/locales";
 import { SUBMISSION_LIMITS } from "@/lib/routes/submission";
-import { stopIndex, type RouteStop } from "@/lib/routes/waypoints";
+import { loopingStop, stopIndex, type RouteStop } from "@/lib/routes/waypoints";
 
 type RouteRoadFieldProps = {
   a: LngLat | null;
@@ -30,7 +32,9 @@ export function RouteRoadField({ a, b, error, onEdit }: RouteRoadFieldProps) {
   const [stops, setStops] = useState<RouteStop[]>([]);
   const nextId = useRef(0);
   const positions = stops.map((stop) => stop.position);
-  const line = useRoadLine(a && b ? [a, ...positions, b] : null);
+  const points = a && b ? [a, ...positions, b] : null;
+  const line = useRoadLine(points);
+  const loop = points && line?.status === "ready" ? loopingStop(points, line.road.legsKm) : null;
   const full = stops.length >= SUBMISSION_LIMITS.waypoints;
 
   const update = (next: RouteStop[]) => {
@@ -76,6 +80,13 @@ export function RouteRoadField({ a, b, error, onEdit }: RouteRoadFieldProps) {
             <p aria-live="polite" className="text-sm text-muted-foreground">
               <RoadStatus line={line} />
             </p>
+            {loop !== null && (
+              // A hint, not an error: some roads really do loop, so "status" rather than "alert".
+              <Alert role="status" className="border-warning-border bg-warning text-warning-foreground">
+                <TriangleAlert aria-hidden />
+                <AlertDescription className="text-warning-foreground">{fill(t.roadLoops, { number: loop })}</AlertDescription>
+              </Alert>
+            )}
           </>
         )}
 

@@ -14,6 +14,8 @@ export type Place = {
 export type RoadRoute = {
   line: LngLat[];
   distanceKm: number;
+  /** Road distance between each pair of consecutive points asked for. */
+  legsKm: number[];
   /** Driving time at car speeds, from OSRM. */
   durationMin: number;
   /** Name of a national road on the route (tricycles may be restricted there), or null. */

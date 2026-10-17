@@ -579,6 +579,8 @@ export const tl: Dictionary = {
       "Kung hindi ito ang daang dinadaanan ng jeep, i-tap ang isang punto sa tamang daan. Magdagdag lang ng kasing-kaunting hintuan na kailangan, at i-drag ang hintuan para ilipat ito.",
     roadLoading: "Hinahanap ang daan…",
     roadLength: "Mga {km} km sa daan",
+    roadLoops:
+      "Umiikot ang linya sa isang block malapit sa hintuan {number}. Kung hindi ganito ang jeep, i-drag ang hintuan {number} sa daang dinadaanan nito, o alisin ito.",
     roadNone: "Wala kaming makitang daan na dumaraan sa mga puntong ito. Tiyaking nasa daan ang bawat isa.",
     roadUnreachable: "Hindi pa makita ang daan ngayon. Puwede mo pa ring ipadala ang ruta mo.",
     noStops: "Wala pang hintuan, kaya ang pinakamaikling daan mula A hanggang B ang ipinapakita.",

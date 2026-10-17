@@ -134,7 +134,8 @@ type RoadLine = { ok: true; line: LngLat[]; distanceKm: number } | { ok: false; 
 /** The road through every point in order: A, the rider's stops, then B. */
 async function fetchRoadLine(points: LngLat[]): Promise<RoadLine> {
   const coordinates = points.map(([lng, lat]) => `${lng},${lat}`).join(";");
-  const url = `${OSRM_URL}/${coordinates}?overview=full&geometries=geojson`;
+  // continue_straight=false matches fetchRoadThrough, so the published line is the one the rider saw.
+  const url = `${OSRM_URL}/${coordinates}?overview=full&geometries=geojson&continue_straight=false`;
   const failed = (reason: string): RoadLine => ({
     ok: false,
     message: `The road line could not be fetched from OpenStreetMap routing (${reason}). Nothing was published; try again in a moment.`,
