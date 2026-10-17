@@ -10,6 +10,7 @@ The site runs as one Cloudflare Worker built with [OpenNext](https://opennext.js
 | `ADMIN_EMAILS` | `.env` (dev), `wrangler secret` (prod) | Read at runtime. |
 | `DATABASE_URL` | GitHub secret (CI) | Supabase Session pooler string, used only by `supabase db push` in the workflow. The app doesn't read it. |
 | `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `.env` (dev), GitHub variables (CI) | Inlined into the bundle at build time. Changing one needs a new build. Setting them on the Worker has no effect. |
+| `MAINTENANCE_MODE`, `MAINTENANCE_UNTIL` | `wrangler.jsonc` `vars` (prod), shell or `.env` (dev) | Read at runtime. See [Maintenance mode](#maintenance-mode). |
 | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | GitHub secrets | Used only by the deploy step. |
 
 ## Before you start
@@ -72,6 +73,24 @@ In the GitHub repository, open **Settings → Secrets and variables → Actions*
 `SUPABASE_SECRET_KEY` and `ADMIN_EMAILS` stay Worker secrets (step 2). The workflow doesn't touch them.
 
 **Alternative: Workers Builds.** Cloudflare can build from the repository itself (**Workers & Pages → bettercabanatuan-fare → Settings → Builds → Connect**). Set the build command to `npx opennextjs-cloudflare build` and the deploy command to `npx opennextjs-cloudflare deploy`. Put the `NEXT_PUBLIC_*` values under **Build variables and secrets**. Workers Builds doesn't run migrations, so you would run `npm run db:deploy` by hand before each release that adds one. That's why this repository ships the GitHub Actions workflow instead. Don't enable both, or every push deploys twice.
+
+## Maintenance mode
+
+While the Worker variable `MAINTENANCE_MODE` is `"true"`, every public page shows a maintenance page in the rider's language, with HTTP status `503` and a `Retry-After` header. The address doesn't change, so each page works again as soon as maintenance ends. The admin area (`/admin`, `/tl/admin`, including sign-in) and the sign-in callbacks under `/api/auth/` keep working, so admins can still review submissions. Static files, `/robots.txt` and `/sitemap.xml` are served as usual. Any value other than `true` (any case) leaves the site up.
+
+`MAINTENANCE_UNTIL` is optional. Set it to the time you expect to finish, such as `2026-10-18T18:00+08:00`, and the page shows "Back by Sunday 18 October at 6:00 pm" in Manila time. A time without an offset is read as Manila time. Leave it empty when you don't know; the page then says so and asks riders to try again in an hour. A time that has passed is ignored.
+
+`src/proxy.ts` reads both on every request through `process.env`, which OpenNext fills from the Worker's variables. Changing them needs no rebuild. The logic lives in `src/lib/maintenance.ts`.
+
+There are two ways to switch it. Pick by how long the maintenance lasts and whether anyone will push to `main` meanwhile.
+
+**In `wrangler.jsonc` (survives deploys).** Set `"MAINTENANCE_MODE": "true"` (and `MAINTENANCE_UNTIL` if you know it) under `vars`, commit and push to `main`. The workflow deploys it. To turn it off, set it back to `"false"` and push again. Each switch waits for a full build and deploy.
+
+**In the Cloudflare dashboard (fast, but temporary).** Open **Workers & Pages → bettercabanatuan-fare → Settings → Variables and Secrets**, edit `MAINTENANCE_MODE` to `true`, and deploy. It takes effect within seconds, without a build. To turn it off, set it back to `false` the same way. **The next deploy undoes a dashboard change:** every `wrangler deploy`, including the one the workflow runs on each push to `main`, replaces the plain-text variables with the list in `wrangler.jsonc`. A push during maintenance therefore turns maintenance off again. Use the dashboard for short windows when nobody is merging, or use `wrangler.jsonc` instead.
+
+Visiting `/maintenance` directly while maintenance is off gives a 404, so the page never says the site is down when it isn't. The page is never in the sitemap and is marked `noindex`. Search engines treat a `503` with `Retry-After` as a temporary outage and keep the pages indexed, so don't change `robots.txt` for maintenance.
+
+To try it locally, build and start with the variable set: `npm run build && MAINTENANCE_MODE=true npm start`. In the Worker runtime, run `npx opennextjs-cloudflare build && npx wrangler dev --var MAINTENANCE_MODE:true`.
 
 ## Local development and preview
 
