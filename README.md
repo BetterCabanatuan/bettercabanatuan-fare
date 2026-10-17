@@ -18,6 +18,50 @@ Pamasahe Cabanatuan is a fare calculator for commuters in Cabanatuan City, Nueva
 
 Every fare names its source and the date the rate took effect. A rate that isn't confirmed with the city is labelled as unconfirmed.
 
+## Help add TODAs and routes
+
+The city has no public list of TODAs, and many jeep routes aren't mapped yet. Residents fill these gaps through two forms in the app. You don't need an account, and you don't need GitHub.
+
+The site's public address isn't decided yet, so the pages below are given as paths. Add `/tl` in front for Tagalog, for example `/tl/toda`.
+
+### See what's already listed
+
+| What | Where |
+|---|---|
+| TODAs | `/toda` lists every verified TODA with its terminal, the barangays it serves and its official contact. Search by TODA name or barangay. |
+| Jeep routes | Open `/fare`, switch to **Jeep**, and scroll to **Jeepney routes**. Tap a route to show it on the map. The preset routes are in [`data/jeepney/routes.json`](data/jeepney/routes.json); routes added by residents appear in the same list once approved. |
+| Jeep terminals | [`data/jeepney/terminals.json`](data/jeepney/terminals.json), shown as markers on the jeep map. |
+| Sources | `/sources` names where every fare, route and terminal comes from. |
+
+Check these lists first. If a TODA or route is already there but wrong, send it again with the correct details: a submission with the same name updates the existing entry after review.
+
+### Add a TODA
+
+Go to `/toda/submit`, or tap **Add a TODA** on the directory. You'll be asked for:
+
+- The TODA's name, as written on the tricycles or the terminal sign
+- The barangay of the terminal and where exactly it is, plus an optional pin on the map
+- The barangays it serves and roughly how many tricycles it has (optional)
+- An official contact number (optional): the association's office or hotline only. Don't enter a driver's or officer's personal number unless they agreed to have it published.
+
+### Suggest a jeep route
+
+Go to `/fare/suggest`, or tap **Suggest a route** under the jeep route list. You'll be asked for:
+
+- Where the jeep starts and where it ends, each with a name and a pin on the map
+- The roads or towns it passes through (optional)
+- Whether it's a traditional or modern jeep, if you know
+- What you paid end to end as one regular passenger (optional)
+
+### How review works
+
+1. **You send the form.** It's saved as *pending* and isn't shown to anyone else.
+2. **An admin checks it.** Admins sign in at `/admin/todas` and `/admin/routes` with an email listed in `ADMIN_EMAILS`. They approve the submission or reject it with a reason.
+3. **Approved entries go live.** A TODA appears in the directory. A route appears on the jeep map and in the route list, with its line drawn along the roads between your two pins. A route whose pins have no road between them can't be approved, because a straight line would mislead riders.
+4. **Rejected entries stay private.** Nothing from them is published.
+
+Your name and contact details are optional. Only admins see them, so they can ask follow-up questions; they are never published.
+
 ## Tech stack
 
 - [Next.js](https://nextjs.org) 16 (App Router) with React 19 and TypeScript
@@ -104,7 +148,7 @@ Each data file has a `_status` field that says how far it can be trusted.
 | `data/tricycle/fare-matrix.json` | Unconfirmed. The figures come from a 2025 research paper, not the ordinance itself. |
 | `data/toda/todas.json` | Empty. No public TODA list exists yet; the directory is built from resident submissions. |
 
-The [sources page](src/app/[lang]/sources) in the app lists where each figure comes from.
+The `/sources` page in the app lists where each figure comes from.
 
 ## Deployment
 
@@ -116,7 +160,8 @@ The app is moving to Cloudflare Workers through [OpenNext](https://opennext.js.o
 
 Corrections are welcome, especially fares, routes and TODA details.
 
-- **Wrong fare or missing route?** Open an issue with the source: an ordinance number, an LTFRB memo, a fare matrix photo or a news report.
+- **Missing TODA or jeep route?** Use the forms in the app; see [Help add TODAs and routes](#help-add-todas-and-routes).
+- **Wrong fare?** Open an issue with the source: an ordinance number, an LTFRB memo, a fare matrix photo or a news report.
 - **Code changes.** Work on a branch named `<type>/<short-description>` and open a pull request to `main`. Commit messages follow [Conventional Commits](https://www.conventionalcommits.org), for example `fix(data): set modern jeep per-km rate to ₱2.40`.
 - **Fare data changes** go in their own commit, separate from code, and the commit body cites the source.
 - **Every visible string** goes in both `src/lib/i18n/dictionaries/en.ts` and `tl.ts`.
