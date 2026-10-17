@@ -266,6 +266,9 @@ function Received({ reference, onSuggestAnother, locale, dictionary: t }: Receiv
           {t.receivedBody} {t.reference}{" "}
           <span className="font-mono font-bold text-foreground">{reference}</span>
         </p>
+        <p className="text-muted-foreground">
+          <ContributorsLink locale={locale} />
+        </p>
       </div>
       <div className="flex flex-wrap gap-3">
         <Button
@@ -281,6 +284,21 @@ function Received({ reference, onSuggestAnother, locale, dictionary: t }: Receiv
         </Button>
       </div>
     </div>
+  );
+}
+
+function ContributorsLink({ locale }: { locale: Locale }) {
+  const { dict } = useDictionary();
+  return (
+    <>
+      {dict.contributors.receivedCounts}{" "}
+      <Link
+        href={localizePath(locale, "/contributors")}
+        className="font-semibold text-primary underline-offset-4 hover:underline"
+      >
+        {dict.contributors.footerLink}
+      </Link>
+    </>
   );
 }
 

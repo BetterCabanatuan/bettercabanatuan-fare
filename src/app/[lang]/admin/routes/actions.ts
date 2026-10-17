@@ -66,6 +66,21 @@ export async function approveRouteSubmission(id: string): Promise<ReviewResult> 
   return verified ? { ok: true } : { ok: false, message: ALREADY_REVIEWED };
 }
 
+/**
+ * Clears a name a rider chose for the contributors board, for one that breaks the Terms
+ * (offensive, impersonating someone, or contact details). The rider can choose a new one.
+ */
+export async function clearPublicName(formData: FormData): Promise<void> {
+  const admin = await getAdmin();
+  if (!admin) return;
+  const userId = z.uuid().safeParse(formData.get("userId"));
+  if (!userId.success) return;
+
+  const { error } = await getDb().from("contributor").update({ publicName: null }).eq("userId", userId.data);
+  if (error) throw error;
+  refresh();
+}
+
 export async function rejectRouteSubmission(id: string, reason: string): Promise<ReviewResult> {
   const admin = await getAdmin();
   if (!admin) return { ok: false, message: "Your session ended. Sign in again." };

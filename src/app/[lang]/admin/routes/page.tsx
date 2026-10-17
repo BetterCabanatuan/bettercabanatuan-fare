@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { clearPublicName } from "@/app/[lang]/admin/routes/actions";
 import { RouteReviewActions } from "@/components/admin/route-review-actions";
 import { RouteRoadPreview } from "@/components/admin/route-road-preview";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { SignOutButton } from "@/components/admin/sign-out-button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { JeepType, SubmissionStatus } from "@/lib/db";
 import { formatPeso } from "@/lib/fare";
 import { countRouteSubmissions, listRouteSubmissions, routeSlug, type SenderRecord } from "@/lib/routes/queries";
@@ -193,6 +195,7 @@ type SenderProps = {
     submitterName: string | null;
     submitterContact: string | null;
     senderRecord?: SenderRecord;
+    publicName: string | null;
   };
 };
 
@@ -211,6 +214,17 @@ function Sender({ submission }: SenderProps) {
         <span className="block text-muted-foreground">
           {record.VERIFIED} approved · {record.REJECTED} rejected · {record.PENDING} pending
         </span>
+      )}
+      {submission.publicName && (
+        <form action={clearPublicName} className="flex flex-wrap items-center gap-2">
+          <span>
+            Board name: <span className="font-semibold">“{submission.publicName}”</span>
+          </span>
+          <input type="hidden" name="userId" value={submission.userId} />
+          <Button type="submit" variant="outline" size="sm">
+            Clear public name
+          </Button>
+        </form>
       )}
     </>
   );

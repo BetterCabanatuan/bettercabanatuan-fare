@@ -6,6 +6,7 @@ import type { Json, Tables } from "@/lib/database-types";
 import { getDb, type SubmissionStatus } from "@/lib/db";
 import type { LngLat } from "@/lib/geo";
 import type { JeepRoute } from "@/lib/jeep-routes";
+import { toBoard, type Board } from "@/lib/routes/contributors";
 import type { RouteStop } from "@/lib/routes/waypoints";
 import { todaSlug } from "@/lib/toda/submission";
 
@@ -84,12 +85,14 @@ export async function listRouteSubmissions(status: SubmissionStatus) {
   ]);
   if (submissions.error) throw submissions.error;
   if (routes.error) throw routes.error;
-  const records = await senderRecords(submissions.data.flatMap((submission) => submission.userId ?? []));
+  const userIds = submissions.data.flatMap((submission) => submission.userId ?? []);
+  const [records, names] = await Promise.all([senderRecords(userIds), publicNames(userIds)]);
   return {
     submissions: submissions.data.map((submission) => ({
       ...submission,
       stops: toStops(submission.id, submission.waypoints),
       senderRecord: submission.userId ? records.get(submission.userId) : undefined,
+      publicName: submission.userId ? (names.get(submission.userId) ?? null) : null,
       createdAt: new Date(submission.createdAt),
       reviewedAt: submission.reviewedAt === null ? null : new Date(submission.reviewedAt),
     })),
@@ -112,6 +115,45 @@ async function senderRecords(userIds: string[]): Promise<Map<string, SenderRecor
     const record = records.get(userId) ?? { PENDING: 0, VERIFIED: 0, REJECTED: 0 };
     return records.set(userId, { ...record, [status]: record[status] + 1 });
   }, new Map<string, SenderRecord>());
+}
+
+/** The names senders chose for the contributors board, so admins can clear a bad one. */
+async function publicNames(userIds: string[]): Promise<Map<string, string>> {
+  if (userIds.length === 0) return new Map();
+  const { data, error } = await getDb()
+    .from("contributor")
+    .select("userId, publicName")
+    .in("userId", [...new Set(userIds)])
+    .not("publicName", "is", null);
+  if (error) throw error;
+  return new Map(data.flatMap(({ userId, publicName }) => (publicName ? [[userId, publicName] as const] : [])));
+}
+
+/**
+ * The contributors board, with the signed-in rider's row marked. Read per request so an
+ * approval or a name change shows at once. Null when the database can't be reached, so
+ * the rest of /contributors still renders.
+ */
+export async function getContributorBoard(riderId: string | null): Promise<Board | null> {
+  try {
+    const { data, error } = await getDb().rpc("route_contributor_board");
+    if (error) throw error;
+    return toBoard(data, riderId);
+  } catch (error) {
+    console.error("Could not load the contributors board", error);
+    return null;
+  }
+}
+
+/** The name a rider chose for the board, or null for "Anonymous rider". */
+export async function getPublicName(userId: string): Promise<string | null> {
+  const { data, error } = await getDb()
+    .from("contributor")
+    .select("publicName")
+    .eq("userId", userId)
+    .maybeSingle();
+  if (error) throw error;
+  return data?.publicName ?? null;
 }
 
 /**

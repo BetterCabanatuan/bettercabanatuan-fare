@@ -27,6 +27,9 @@ export async function Footer() {
             <Link href={localizePath(locale, "/feedback")} className={linkClass}>
               {dict.feedback.footerLink}
             </Link>
+            <Link href={localizePath(locale, "/contributors")} className={linkClass}>
+              {dict.contributors.footerLink}
+            </Link>
             <Link href={localizePath(locale, "/sources")} className={linkClass}>
               {dict.footer.sources}
             </Link>

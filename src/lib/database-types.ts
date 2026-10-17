@@ -54,6 +54,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      contributor: {
+        Row: {
+          createdAt: string;
+          publicName: string | null;
+          updatedAt: string;
+          userId: string;
+        };
+        Insert: {
+          createdAt?: string;
+          publicName?: string | null;
+          updatedAt?: string;
+          userId: string;
+        };
+        Update: {
+          createdAt?: string;
+          publicName?: string | null;
+          updatedAt?: string;
+          userId?: string;
+        };
+        Relationships: [];
+      };
       feedback: {
         Row: {
           createdAt: string;
@@ -334,6 +355,16 @@ export type Database = {
       approve_toda_submission: {
         Args: { reviewer_email: string; submission_id: string; toda_id: string };
         Returns: boolean;
+      };
+      route_contributor_board: {
+        Args: never;
+        Returns: {
+          approved: number;
+          latest: string;
+          publicName: string | null;
+          rank: number;
+          userId: string;
+        }[];
       };
     };
     Enums: {
