@@ -19,8 +19,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import type { FareSourceInfo } from "@/lib/data";
 import { formatDate } from "@/lib/format-date";
@@ -41,7 +39,6 @@ const MAX_PASSENGERS = 6;
 const LONG_TRIP_KM = 15;
 // Spec §8: points under 100 m apart count as "very close".
 const VERY_CLOSE_KM = 0.1;
-const MIN_MANUAL_KM = 0.1;
 
 type TricyclePanelProps = {
   rules: TricycleFareRules;
@@ -51,8 +48,6 @@ type TricyclePanelProps = {
   outsideCity: boolean;
   onSelectRoad: (index: number) => void;
 };
-
-type Distance = { km: number; enteredByUser: boolean };
 
 type TricycleText = Dictionary["tricycle"];
 
@@ -64,9 +59,8 @@ function basisLine(source: FareSourceInfo, t: TricycleText): string {
   });
 }
 
-function distanceLine(distance: Distance, billableKm: number, t: TricycleText): string {
-  const km = displayKm(distance.km).toFixed(1);
-  const shown = fill(distance.enteredByUser ? t.enteredKm : t.roadKm, { km });
+function distanceLine(distanceKm: number, billableKm: number, t: TricycleText): string {
+  const shown = fill(t.roadKm, { km: displayKm(distanceKm).toFixed(1) });
   return [shown, fill(t.billedKm, { km: billableKm })].join(" · ");
 }
 
@@ -89,11 +83,6 @@ function perPassengerLines(
   ].filter((line) => line !== null);
 }
 
-function parseKm(text: string): number | null {
-  const km = Number(text);
-  return text.trim() !== "" && Number.isFinite(km) && km >= MIN_MANUAL_KM ? km : null;
-}
-
 export function TricyclePanel({
   rules,
   source,
@@ -105,11 +94,6 @@ export function TricyclePanel({
   const { dict } = useDictionary();
   const t = dict.tricycle;
   const [passengers, setPassengers] = useState<Passengers>({ regular: 1, discounted: 0 });
-  const [manualOpen, setManualOpen] = useState(false);
-  const [manualText, setManualText] = useState("");
-  const kmInputId = useId();
-  const kmHintId = useId();
-  const manualRegionId = useId();
   const resultTitleId = useId();
 
   const totalPassengers = passengers.regular + passengers.discounted;
@@ -120,21 +104,12 @@ export function TricyclePanel({
   const routeError = hasBothPoints && route.state === "error" ? route.reason : null;
   const measuring = hasBothPoints && route.state === "loading";
   const idle = !roadRoute && !routeError && !measuring;
-  const showManual = routeError !== null || (idle && manualOpen);
+  const distanceKm = roadRoute?.distanceKm ?? null;
 
-  const manualKm = parseKm(manualText);
-  const manualInvalid = manualText.trim() !== "" && manualKm === null;
-
-  const distance: Distance | null = roadRoute
-    ? { km: roadRoute.distanceKm, enteredByUser: false }
-    : showManual && manualKm !== null
-      ? { km: manualKm, enteredByUser: true }
-      : null;
-
-  const fare = distance ? tricycleFare(rules, distance.km, passengers) : null;
+  const fare = distanceKm !== null ? tricycleFare(rules, distanceKm, passengers) : null;
   const resultLabel = outsideCity ? t.estimateOnly : t.resultTitle;
   const rateLabel = fare?.rate === "solo" ? t.soloRate : t.sharedRate;
-  const distanceText = distance && fare ? distanceLine(distance, fare.billableKm, t) : "";
+  const distanceText = distanceKm !== null && fare ? distanceLine(distanceKm, fare.billableKm, t) : "";
   const basis = basisLine(source, t);
   const activeRate = totalPassengers === 1 ? "solo" : "shared";
   const perPassenger = fare ? perPassengerLines(fare, passengers, t) : [];
@@ -194,7 +169,7 @@ export function TricyclePanel({
         {routeError === "unreachable" && (
           <p className="text-sm">{t.unreachable}</p>
         )}
-        {idle && !distance && (
+        {idle && (
           <p className="text-sm">{t.idle}</p>
         )}
         {outsideCity && (
@@ -203,47 +178,13 @@ export function TricyclePanel({
         {roadRoute?.nationalRoad && (
           <Notice>{fill(t.nationalRoad, { road: roadRoute.nationalRoad })}</Notice>
         )}
-        {distance && distance.km > LONG_TRIP_KM && (
+        {distanceKm !== null && distanceKm > LONG_TRIP_KM && (
           <Notice>{t.longTrip}</Notice>
         )}
-        {distance && distance.km < VERY_CLOSE_KM && (
+        {distanceKm !== null && distanceKm < VERY_CLOSE_KM && (
           <Notice>{t.veryClose}</Notice>
         )}
       </div>
-
-      {idle && (
-        <Button
-          variant="link"
-          className="h-11 self-start px-0"
-          aria-expanded={manualOpen}
-          aria-controls={manualRegionId}
-          onClick={() => setManualOpen(!manualOpen)}
-        >
-          {t.typeDistance}
-        </Button>
-      )}
-
-      {showManual && (
-        <Field id={manualRegionId} data-invalid={manualInvalid || undefined}>
-          <FieldLabel htmlFor={kmInputId}>{t.distanceLabel}</FieldLabel>
-          <Input
-            id={kmInputId}
-            type="number"
-            inputMode="decimal"
-            step={0.1}
-            min={MIN_MANUAL_KM}
-            placeholder={t.distancePlaceholder}
-            value={manualText}
-            onChange={(event) => setManualText(event.target.value)}
-            aria-invalid={manualInvalid || undefined}
-            aria-describedby={kmHintId}
-            className="h-11 tabular-nums"
-          />
-          <FieldDescription id={kmHintId}>
-            {manualInvalid ? fill(t.distanceTooShort, { min: MIN_MANUAL_KM }) : t.distanceHint}
-          </FieldDescription>
-        </Field>
-      )}
 
       {hasBothPoints && route.state === "ready" && route.routes.length > 1 && (
         <RoadOptions
@@ -254,7 +195,7 @@ export function TricyclePanel({
         />
       )}
 
-      {fare && distance && (
+      {fare && (
         <section
           aria-labelledby={resultTitleId}
           className="flex flex-col gap-4 rounded-2xl bg-foreground p-5 text-background"
@@ -285,9 +226,7 @@ export function TricyclePanel({
 
           <div className="flex flex-col gap-0.5">
             <p className="text-sm font-medium tabular-nums">{distanceText}</p>
-            <p className="text-sm text-background/70">
-              {distance.enteredByUser ? t.enteredByYou : t.routeNote}
-            </p>
+            <p className="text-sm text-background/70">{t.routeNote}</p>
           </div>
 
           <div className="flex flex-col gap-1 border-t border-background/20 pt-3">

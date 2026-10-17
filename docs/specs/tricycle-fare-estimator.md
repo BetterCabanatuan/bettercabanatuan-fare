@@ -80,7 +80,7 @@ The site has no server of its own (static site). The routing and search services
 ### 4.5 Language and accessibility
 
 - **FR-21** All labels, messages and results exist in English and Tagalog, switched by the site-wide language toggle.
-- **FR-22** Everything works without the map. Search fields and a "type the distance instead" option let keyboard and screen-reader users get the same fare.
+- **FR-22** Everything works without the map. Search fields let keyboard and screen-reader users set A and B and get the same fare.
 - **FR-23** Touch targets are at least 44 × 44 px. Text contrast meets WCAG AA. Pins differ by letter (A, B) as well as colour.
 
 ## 5. Fare estimation logic
@@ -188,7 +188,7 @@ The 4.6 km rows depend on the part-km assumption in step 2, and the solo rows on
 5. **Fare.** Road distance + passenger counts + fare rules → fare steps from §5.2 → result card. This runs in the browser, with no network call.
 6. **Change.** A change to a pin repeats steps 2–5. A change to passenger counts repeats step 5 only.
 7. **Share or report.** The current A, B, distance and fare → page link, or prefilled fields on the Report page.
-8. **Offline.** If the routing service can't be reached, step 4 fails and the user is offered manual distance entry, which goes straight to step 5 (see §8).
+8. **Offline.** If the routing service can't be reached, step 4 fails and the user is asked to try again (see §8).
 
 ## 8. Edge cases
 
@@ -197,8 +197,8 @@ The 4.6 km rows depend on the part-km assumption in step 2, and the solo rows on
 | A or B is outside Cabanatuan City | "This point is outside Cabanatuan City. City tricycle fares may not apply." | Shows the route and fare but labels the result "Estimate only, special trip likely". |
 | A and B are the same or under 100 m apart | "Your start and end points are very close." | Shows the minimum fare (first-3-km rate). |
 | Pin dropped in a field, river or building | Pin moves to the nearest road, with a short note "Moved to nearest road". | Snaps to the nearest road a tricycle can use. |
-| No road route found | "We couldn't find a road route between these points. Try moving a pin closer to a road." | Keeps both pins and offers manual distance entry. |
-| Routing service unreachable (offline, quota, outage) | "Can't measure the route right now. Enter the distance instead." plus a km field. | Uses the typed distance for the fare. Marks the result "Distance entered by you". |
+| No road route found | "We couldn't find a road route between these points. Try moving a pin closer to a road." | Keeps both pins. |
+| Routing service unreachable (offline, quota, outage) | "Can't measure the route right now. Try again in a moment." | Keeps both pins and shows no fare until the route is measured. |
 | Route only works by using a national highway | "This route uses [road name], where tricycles may be restricted." | Shows the fare. **[FILL: whether to block, warn, or reroute]** |
 | Very long trip (over **[FILL: e.g. 15 km]**) | "Long trips are usually special trips. Agree on the fare before riding." | Shows the matrix fare with the special-trip warning. |
 | Fare data missing or fails to load | "Tricycle fares are not available right now." | Hides the result card. The map still works. |
@@ -213,7 +213,7 @@ The 4.6 km rows depend on the part-km assumption in step 2, and the solo rows on
 - Tricycle fares are set by the city, not LTFRB. The page always names the city ordinance as the source.
 - Road distance from a routing service is close enough to what a driver's odometer would show. **[FILL: spot-check 10 real trips against the app before launch]**
 - One fare matrix applies to the whole city. **[FILL: confirm there are no zone-based or TODA-specific rates]**
-- Users can read a map. The search fields and the manual distance entry cover users who can't.
+- Users can read a map. The search fields cover users who can't.
 
 ## 10. Open items
 
