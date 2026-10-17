@@ -19,11 +19,11 @@ export async function Footer() {
   return (
     <footer className="bg-foreground text-background">
       <div className="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-8 text-sm">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2">
           <p>
             <span className="font-bold">Pamasahe Cabanatuan</span> · {dict.footer.about} {dict.footer.alpha}
           </p>
-          <p className="flex shrink-0 flex-wrap gap-x-4">
+          <p className="flex flex-wrap gap-x-4">
             <Link href={localizePath(locale, "/feedback")} className={linkClass}>
               {dict.feedback.footerLink}
             </Link>
