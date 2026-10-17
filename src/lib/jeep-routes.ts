@@ -1,5 +1,6 @@
 import { jeepFare, type Centavos, type JeepFare, type JeepFareRules, type JeepType } from "@/lib/fare";
 import { projectOntoLine, type LineProjection, type LngLat } from "@/lib/geo";
+import { searchable, searchWords } from "@/lib/search-text";
 
 export type JeepStop = { name: string; barangay?: string; km?: number; position: LngLat };
 
@@ -119,16 +120,6 @@ export type JeepRouteFilter = {
   line: RouteLineFilter;
 };
 
-// Riders type without accents or dashes ("penaranda", "cabanatuan san jose"), so both
-// sides drop marks and punctuation before comparing.
-const searchable = (text: string): string =>
-  text
-    .normalize("NFD")
-    .replace(/\p{M}/gu, "")
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, " ")
-    .trim();
-
 /** The name (which carries from and to), via, terminal and the places along the route. */
 const routeText = (route: JeepRoute): string =>
   searchable(
@@ -143,7 +134,7 @@ const matchesLine = (route: JeepRoute, line: RouteLineFilter): boolean =>
 
 /** Routes of the chosen jeep type and line status whose text contains every word of the query. */
 export function filterRoutes(routes: JeepRoute[], filter: JeepRouteFilter): JeepRoute[] {
-  const words = searchable(filter.query).split(" ").filter(Boolean);
+  const words = searchWords(filter.query);
   return routes.filter((route) => {
     if (filter.type !== "all" && route.type !== filter.type) return false;
     if (!matchesLine(route, filter.line)) return false;
