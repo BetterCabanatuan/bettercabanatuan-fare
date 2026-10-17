@@ -260,6 +260,17 @@ export const tl: Dictionary = {
     tag: "Alpha",
     text: "Tantiya lang ang mga pamasahe at ruta dito at maaaring iba sa aktuwal na pamasahe. Tingnan ang opisyal na fare matrix kung may duda.",
   },
+  maintenance: {
+    heading: "Naka-maintenance muna ang Pamasahe Cabanatuan",
+    description: "Naka-maintenance muna ang Pamasahe Cabanatuan. Babalik agad ang fare map at mga ruta.",
+    intro: "May inaayos kami sa site, kaya hindi muna magagamit ang fare map, mga ruta ng jeep at TODA directory.",
+    backBy: "Inaasahang babalik: {time}",
+    backUnknown: "Hindi pa namin alam kung kailan ito babalik. Subukan ulit pagkalipas ng isang oras.",
+    reload: "Pagbalik ng site, i-reload lang ang page na ito. Pareho pa rin ang address.",
+    fareBoardNote: "Nasa fare board ang mga minimum na pamasahe, kaya makikita mo pa rin kung magkano ang dapat bayaran.",
+    helpHeading: "Kailangan ng tulong ngayon?",
+    helpText: "Para mag-report ng sobrang singil o emergency, tawagan ang mga hotline ng lungsod.",
+  },
   home: {
     tag: "Bagong pamasahe sa jeep mula {date}",
     intro:

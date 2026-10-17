@@ -1,17 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Manrope } from "next/font/google";
 
 import { AlphaBanner } from "@/components/shared/alpha-banner";
 import { DictionaryProvider } from "@/components/shared/dictionary-provider";
 import { Footer } from "@/components/shared/footer";
 import { Navbar } from "@/components/shared/navbar";
+import { manrope } from "@/lib/fonts";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { locales, openGraphLocale } from "@/lib/i18n/locales";
 import { siteName, siteUrl } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import "../globals.css";
-
-const manrope = Manrope({ subsets: ["latin", "latin-ext"], variable: "--font-sans" });
 
 export function generateStaticParams() {
   return locales.map((lang) => ({ lang }));

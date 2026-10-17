@@ -34,7 +34,7 @@ export async function FareBoard() {
     >
       <h2
         id="fare-board-heading"
-        className="bg-foreground px-5 py-3 text-sm font-extrabold tracking-widest text-highlight uppercase"
+        className="bg-foreground px-5 py-3 dark:bg-background text-sm font-extrabold tracking-widest text-highlight uppercase"
       >
         {t.fareBoardTitle}
       </h2>

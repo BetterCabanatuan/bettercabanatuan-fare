@@ -1,6 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { isMaintenanceOn, isOpenDuringMaintenance, parseMaintenanceUntil, retryAfter } from "@/lib/maintenance";
+
 // English keeps the short, existing URLs (/fare); Tagalog lives under /tl (/tl/fare).
 // Both are served from app/[lang], so unprefixed paths are rewritten to /en internally.
 export async function proxy(request: NextRequest): Promise<NextResponse> {
@@ -15,6 +17,16 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 
   const isTagalog = pathname === "/tl" || pathname.startsWith("/tl/");
   const url = request.nextUrl.clone();
+
+  // Read per request, not inlined at build time: OpenNext copies the Worker's variables
+  // into process.env, so changing MAINTENANCE_MODE needs no rebuild.
+  if (isMaintenanceOn(process.env.MAINTENANCE_MODE) && !isOpenDuringMaintenance(pathname)) {
+    // A rewrite, not a redirect, so the address stays put and works again once maintenance ends.
+    url.pathname = isTagalog ? "/tl/maintenance" : "/en/maintenance";
+    const until = parseMaintenanceUntil(process.env.MAINTENANCE_UNTIL, new Date());
+    return NextResponse.rewrite(url, { status: 503, headers: { "Retry-After": retryAfter(until) } });
+  }
+
   url.pathname = `/en${pathname === "/" ? "" : pathname}`;
   // Passing `request` forwards cookies a session refresh rewrote, so the page sees them.
   const respond = () => (isTagalog ? NextResponse.next({ request }) : NextResponse.rewrite(url, { request }));

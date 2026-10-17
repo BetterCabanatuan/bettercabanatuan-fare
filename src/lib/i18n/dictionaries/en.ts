@@ -258,6 +258,17 @@ export const en = {
     tag: "Alpha",
     text: "Fares and routes here are estimates and may differ from the actual fare. Check the official fare matrix when in doubt.",
   },
+  maintenance: {
+    heading: "Pamasahe Cabanatuan is down for maintenance",
+    description: "Pamasahe Cabanatuan is down for maintenance. The fare map and routes will be back soon.",
+    intro: "We're updating the site, so the fare map, jeep routes and TODA directory can't be used right now.",
+    backBy: "Back by {time}",
+    backUnknown: "We don't know yet when it will be back. Try again in an hour.",
+    reload: "When the site is back, reload this page. The address stays the same.",
+    fareBoardNote: "The minimum fares are on the fare board, so you can still check what to pay.",
+    helpHeading: "Need help now?",
+    helpText: "To report overcharging or an emergency, call the city's hotlines.",
+  },
   home: {
     tag: "Jeep fares updated {date}",
     intro:

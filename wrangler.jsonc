@@ -25,6 +25,12 @@
     "NEXT_PUBLIC_SUPABASE_URL": "https://atbnaxugjobwqtaombtx.supabase.co",
     // Public by design: row level security keeps every table closed to it.
     "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_QWp6HUsgalwjwxuxlC2mGQ_-eDT35Ac",
+    // "true" serves the maintenance page (HTTP 503) on every page except /admin; read at
+    // request time, so no rebuild. A dashboard change lasts only until the next deploy
+    // resets it to this value. How to switch: docs/deploy/cloudflare.md#maintenance-mode
+    "MAINTENANCE_MODE": "false",
+    // Optional end time shown as "Back by …", e.g. "2026-10-18T18:00+08:00"; empty for unknown.
+    "MAINTENANCE_UNTIL": "",
   },
   // Secrets, set once with `npx wrangler secret put <NAME>` (or as type "Secret" in the
   // dashboard) and never committed. Unlike "vars", deploys leave them in place:
