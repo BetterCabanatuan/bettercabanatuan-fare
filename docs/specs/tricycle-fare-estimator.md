@@ -3,8 +3,8 @@
 | | |
 |---|---|
 | Status | Draft for review |
-| Last updated | 2026-10-16 |
-| Related | [Jeepney Route Viewer spec](jeepney-route-viewer.md), `data/tricycle/fare-matrix.json`, `data/pamasahe-handoff/CLAUDE.md` |
+| Last updated | 2026-10-18 |
+| Related | [Jeepney Route Viewer spec](jeepney-route-viewer.md), `data/tricycle/fare-matrix.json`, `data/pamasahe-handoff/CLAUDE.md`, [tricycle fare research](../research/tricycle-fares-and-tariffs.md) |
 
 ## 1. Purpose
 
@@ -61,18 +61,19 @@ The site has no server of its own (static site). The routing and search services
 ### 4.3 Passengers
 
 - **FR-13** Two counters: **Regular** and **Discounted (student, senior, PWD)**. Default is 1 regular, 0 discounted.
-- **FR-14** The total number of passengers is at least 1. **[FILL: maximum passengers per tricycle under city rules]**
+- **FR-14** The total number of passengers is at least 1 and at most 3 (Ord. 050-2026 Sec. 4.2).
+- **FR-14a** A **Special trip** switch, available only when there is 1 passenger, doubles the fare (Sec. 2d). It is off by default because a special trip applies only when the passenger asks for one.
 - **FR-15** A short note says that discounted riders should show a valid ID.
 
 ### 4.4 Fare result
 
 - **FR-16** The result shows:
   - the **total fare** in large type
-  - the rate used: "Solo rate" (1 passenger) or "Shared rate" (2 or more)
+  - a "Special trip" badge when the special-trip switch is on
   - one line per passenger type with count, per-person fare and subtotal
   - the extra-kilometre charge, if any
   - the billable distance
-- **FR-17** Below the result, a **basis line** names the source and date, e.g. "Based on the Cabanatuan tricycle fare matrix last adjusted November 2018, ordinance no. **[FILL: ordinance number]**. Last checked 16 Oct 2026."
+- **FR-17** Below the result, a **basis line** names the source and date, e.g. "Based on the 2026 Tricycle Fare Matrix Ordinance of Cabanatuan City, ordinance no. 050-2026. Last checked 18 Oct 2026."
 - **FR-18** While the matrix is unconfirmed, a yellow "Not yet confirmed with the city" notice appears above the result. It cannot be dismissed.
 - **FR-19** A "Charged more than this?" link opens the Report page with vehicle type, route, distance and correct fare already filled in.
 - **FR-20** A "Show the driver" button enlarges the fare, distance and source to full screen for showing at arm's length.
@@ -87,24 +88,23 @@ The site has no server of its own (static site). The routing and search services
 
 ### 5.1 Rates (from `data/tricycle/fare-matrix.json`, unconfirmed)
 
-| First 3 km | Regular | Discounted |
+Ordinance No. 050-2026, base fuel band (gasoline ₱50.00–59.99/L). Per passenger; there is no solo/shared split.
+
+| | Regular | Discounted (student, senior, PWD) |
 |---|---|---|
-| Solo (1 passenger) | ₱20.00 | ₱15.00 |
-| Shared (2 or more), each | ₱15.00 | ₱10.00 |
+| First 3 km | ₱35.00 | ₱28.00 |
+| Each succeeding km, or part of a km | + ₱5.00 | + ₱4.00 |
+| Special trip, first 3 km (2 × fare) | ₱70.00 | ₱56.00 |
 
-After the first 3 km:
-- **Shared (2 or more):** add **₱5.00 per passenger for every km** (2018 matrix).
-- **Solo (1 passenger):** add **₱10.00 for every km**. This is **unofficial**: it is calibrated from one rider-reported fare. A solo regular ride from the Kalikid Norte / Patalac area to Jollibee Crossing (11.4 km by road) cost ₱100 on 2026-10-17. The 2018 matrix would give ₱65 for that trip.
-
-The shared figures come from a 2025 study, not the ordinance. A new 2026 fare matrix was approved (Sangguniang Panlungsod 2026-04-14, Sangguniang Panlalawigan 2026-08-18), and stickers roll out from 2026-10-19; its amounts are not published yet. **[FILL: confirmed rates, including the official solo rule, ordinance number and effective date]**
+The rates are read from a certified true copy of the ordinance. They stay unconfirmed until the legal effective date (15 days after newspaper publication, Sec. 15) and any fuel-price provisional rate (Sec. 5) are known. Fare stickers launch 2026-10-19. Sources and open questions: [tricycle fare research](../research/tricycle-fares-and-tariffs.md).
 
 ### 5.2 Steps
 
 1. **Distance.** Take the road distance from the routing service, in km.
-2. **Billable distance.** Round the distance using the city's rule. **[FILL: the official rule for part-kilometres. Working assumption until confirmed: round to the nearest whole km, at least 1 km, so 4.2 km is billed as 4 km and 4.5 km as 5 km. This matches the rider report: 11.4 km billed as 11 km.]**
+2. **Billable distance.** Round the displayed distance (0.1 km) **up** to a whole km, at least 1 km. The ordinance charges every succeeding 0.01–1.00 km as a full km (Sec. 3, Sec. 4.1). Rounding the displayed distance, not the raw one, keeps the billed km consistent with the km the rider sees, so 3.04 km (shown as 3.0 km) is billed as 3 km.
 3. **Extra km.** Extra km = billable distance minus 3. If that is below zero, use zero.
-4. **Rate.** If total passengers is 1, use the solo rate. Otherwise use the shared rate.
-5. **Per-person fare.** For each passenger type: first-3-km rate for that type + (extra km × the per-km rate: ₱10.00 solo, ₱5.00 shared).
+4. **Per-person fare.** For each passenger type: first-3-km rate for that type + (extra km × that type's per-km rate: ₱5.00 regular, ₱4.00 discounted).
+5. **Special trip.** If the passenger asked for a special trip, multiply the fare by 2.
 6. **Total.** (Regular count × regular per-person fare) + (discounted count × discounted per-person fare).
 7. **Display.** Show amounts in pesos with two decimals. All arithmetic is done in whole centavos to avoid rounding errors.
 
@@ -112,20 +112,21 @@ The shared figures come from a 2025 study, not the ordinance. A new 2026 fare ma
 
 | Trip | Billable km | Passengers | Calculation | Total |
 |---|---|---|---|---|
-| 2.4 km | 2 | 1 regular | ₱20 | **₱20.00** |
-| 2.4 km | 2 | 1 discounted | ₱15 | **₱15.00** |
-| 4.6 km | 5 | 1 regular | ₱20 + 2 × ₱10 | **₱40.00** |
-| 4.6 km | 5 | 2 regular | 2 × (₱15 + 2 × ₱5) | **₱50.00** |
-| 6.0 km | 6 | 1 regular + 1 discounted | (₱15 + 3 × ₱5) + (₱10 + 3 × ₱5) | **₱55.00** |
-| 11.4 km (rider report) | 11 | 1 regular | ₱20 + 8 × ₱10 | **₱100.00** |
-
-The 4.6 km rows depend on the part-km assumption in step 2, and the solo rows on the calibrated solo rate.
+| 2.4 km | 3 | 1 regular | ₱35 | **₱35.00** |
+| 2.4 km | 3 | 1 discounted | ₱28 | **₱28.00** |
+| 3.1 km | 4 | 1 regular | ₱35 + 1 × ₱5 | **₱40.00** |
+| 4.6 km | 5 | 2 regular | 2 × (₱35 + 2 × ₱5) | **₱90.00** |
+| 6.0 km | 6 | 1 regular + 1 discounted | (₱35 + 3 × ₱5) + (₱28 + 3 × ₱4) | **₱90.00** |
+| 11.4 km | 12 | 1 regular | ₱35 + 9 × ₱5 | **₱80.00** |
+| 11.4 km, special trip | 12 | 1 regular | 2 × (₱35 + 9 × ₱5) | **₱160.00** |
+| 14.4 km | 15 | 1 discounted | ₱28 + 12 × ₱4 | **₱76.00** |
 
 ### 5.4 Not covered yet
 
-- Special trip (arkila), when one rider hires the whole tricycle. **[FILL: rate and when it applies]**
-- Night-time or rain surcharges. **[FILL: confirm whether the ordinance allows any; if not, say so on the page]**
-- Baggage charges. **[FILL]**
+- **Fuel-price provisional rates (Sec. 5).** For every ₱10/L rise in gasoline, the city's Tricycle Franchising and Regulatory Board may set +₱2.50 base and +₱0.50 per km, for up to 60 days. Not modelled; the fare table carries a note telling riders to check the sticker. **[FILL: whether a provisional rate is in force and what the stickers show]**
+- **Barangay fare table (Sec. 4).** The ordinance also lists fixed fares from the City Supermarket TODA terminal to 89 barangays. Above about 6.5 km they are lower than the per-km formula. Planned: show the table fare next to the formula for terminal trips. **[FILL: which one governs, from the TMLU]**
+- **Special trips off the terminal.** The ordinance defines the 2× rule for trips leaving the City Supermarket terminal; the calculator offers it for any solo trip. **[FILL: whether it applies to street pick-ups]**
+- Night, rain and baggage surcharges: the ordinance has none, and Sec. 7 bans charging more than the approved rate.
 
 ## 6. UI wireframe descriptions
 
@@ -200,7 +201,7 @@ The 4.6 km rows depend on the part-km assumption in step 2, and the solo rows on
 | No road route found | "We couldn't find a road route between these points. Try moving a pin closer to a road." | Keeps both pins. |
 | Routing service unreachable (offline, quota, outage) | "Can't measure the route right now. Try again in a moment." | Keeps both pins and shows no fare until the route is measured. |
 | Route only works by using a national highway | "This route uses [road name], where tricycles may be restricted." | Shows the fare. **[FILL: whether to block, warn, or reroute]** |
-| Very long trip (over **[FILL: e.g. 15 km]**) | "Long trips are usually special trips. Agree on the fare before riding." | Shows the matrix fare with the special-trip warning. |
+| Very long trip (over **[FILL: e.g. 15 km]**) | "For long trips from the City Supermarket terminal, the ordinance's list of barangay fares may show a lower fare. Check the sticker." | Shows the formula fare with the warning. |
 | Fare data missing or fails to load | "Tricycle fares are not available right now." | Hides the result card. The map still works. |
 | Fare matrix unconfirmed (current state) | Yellow notice from FR-18. | Always on until the data file is marked confirmed. |
 | Location permission denied or inaccurate (over 100 m accuracy) | "We couldn't get your exact location. Tap the map or search instead." | Leaves A empty, or places it with an accuracy circle. |
@@ -212,19 +213,18 @@ The 4.6 km rows depend on the part-km assumption in step 2, and the solo rows on
 
 - Tricycle fares are set by the city, not LTFRB. The page always names the city ordinance as the source.
 - Road distance from a routing service is close enough to what a driver's odometer would show. **[FILL: spot-check 10 real trips against the app before launch]**
-- One fare matrix applies to the whole city. **[FILL: confirm there are no zone-based or TODA-specific rates]**
+- One per-km formula applies to the whole city. Ordinance 050-2026 also has a terminal-to-barangay fare table (see §5.4).
 - Users can read a map. The search fields cover users who can't.
 
 ## 10. Open items
 
 | # | Item | Owner |
 |---|---|---|
-| 1 | Confirmed fare matrix, ordinance number, effective date | Project developer, via City Legalization Division |
-| 2 | Part-kilometre rounding rule | Same |
-| 3 | Special trip, night and baggage rules | Same |
+| 1 | Effective date of Ord. 050-2026, fuel-price provisional rate, sticker amounts | Project developer, via TMLU |
+| 2 | Barangay table vs. per-km formula for terminal trips | Same |
+| 3 | Special trips off the terminal | Same |
 | 4 | National highway restrictions in Cabanatuan | Same, via Transport Management and Legalization Unit |
 | 5 | Routing provider and its limits | Project developer |
 | 6 | Geocoding provider and curated landmark list | Project developer |
 | 7 | City boundary source | Project developer |
-| 8 | Maximum passengers per tricycle | City |
 | 9 | Whether trip coordinates in shared links are acceptable | Project developer |
