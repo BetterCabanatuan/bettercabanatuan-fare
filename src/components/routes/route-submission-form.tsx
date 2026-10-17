@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useActionState, useId, useRef, useState, useTransition, type FormEvent } from "react";
 
 import { submitRoute, type SubmitState } from "@/app/[lang]/fare/suggest/actions";
+import { RouteRoadField } from "@/components/routes/route-road-field";
 import { useDictionary } from "@/components/shared/dictionary-provider";
 import { LocationPicker } from "@/components/toda/location-picker";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -180,6 +181,13 @@ function SubmissionRound({ boundary, onSuggestAnother }: { boundary: LngLat[]; o
           />
         </FieldGroup>
       </FieldSet>
+
+      <RouteRoadField
+        a={fromPin}
+        b={toPin}
+        error={errors.waypoints}
+        onEdit={() => markEdited("waypoints")}
+      />
 
       <FieldSet>
         <FieldLegend>{t.tripLegend}</FieldLegend>

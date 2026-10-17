@@ -128,6 +128,7 @@ export type Database = {
           toName: string;
           updatedAt: string;
           via: string | null;
+          waypoints: Json;
         };
         Insert: {
           createdAt?: string;
@@ -151,6 +152,7 @@ export type Database = {
           toName: string;
           updatedAt?: string;
           via?: string | null;
+          waypoints?: Json;
         };
         Update: {
           createdAt?: string;
@@ -174,6 +176,7 @@ export type Database = {
           toName?: string;
           updatedAt?: string;
           via?: string | null;
+          waypoints?: Json;
         };
         Relationships: [
           {

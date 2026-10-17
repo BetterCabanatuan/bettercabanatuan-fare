@@ -82,6 +82,12 @@ export async function fetchRoadRoutes(a: LngLat, b: LngLat, signal?: AbortSignal
   return direct.length === 0 ? [] : pickRoadOptions(direct, detours.flat());
 }
 
+/** One road through every point in order, for a suggested jeep route; null when OSRM finds none. */
+export async function fetchRoadThrough(points: LngLat[], signal?: AbortSignal): Promise<RoadRoute | null> {
+  const [road] = await requestRoads(points, false, signal);
+  return road ?? null;
+}
+
 // Null when Photon has nothing readable to call the place; callers skip it or use their own label.
 function toPlace(feature: PhotonFeature, position: LngLat = feature.geometry.coordinates): Place | null {
   const { name, street, housenumber, district, locality, city } = feature.properties;

@@ -29,6 +29,7 @@ export async function submitRoute(_previous: SubmitState, formData: FormData): P
         toName: data.toName,
         toLat: data.toLat,
         toLng: data.toLng,
+        waypoints: data.waypoints,
         via: data.via ?? null,
         jeepType: data.jeepType,
         farePaid: data.farePaid ?? null,

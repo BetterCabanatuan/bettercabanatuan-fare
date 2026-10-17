@@ -16,9 +16,9 @@ const ALREADY_REVIEWED = "Another admin already reviewed this submission. The li
 /**
  * Marks a pending submission VERIFIED and publishes it as a community route in one
  * database transaction (approve_route_submission in supabase/migrations). The road line
- * between A and B is fetched from OSRM first: a route without one is never stored, since
- * a straight line would mislead riders. A submission whose name matches a published
- * route updates that route, so corrections flow through the same review.
+ * from A through the rider's stops to B is fetched from OSRM first: a route without one
+ * is never stored, since a straight line would mislead riders. A submission whose name
+ * matches a published route updates that route, so corrections flow through the same review.
  */
 export async function approveRouteSubmission(id: string): Promise<ReviewResult> {
   const admin = await getAdmin();
@@ -27,7 +27,7 @@ export async function approveRouteSubmission(id: string): Promise<ReviewResult> 
   const db = getDb();
   const { data: submission, error } = await db
     .from("route_submission")
-    .select("name, fromLat, fromLng, toLat, toLng")
+    .select("name, fromLat, fromLng, toLat, toLng, waypoints")
     .eq("id", id)
     .eq("status", "PENDING")
     .maybeSingle();
@@ -40,8 +40,16 @@ export async function approveRouteSubmission(id: string): Promise<ReviewResult> 
   const slug = routeSlug(submission.name);
   if (!slug) return { ok: false, message: "This name has no letters or numbers to file it under. Reject it instead." };
 
+  // Checked when the rider sent it; checked again because it is stored as plain JSON.
+  const stops = waypointsSchema.safeParse(submission.waypoints);
+  if (!stops.success) return { ok: false, message: "This submission's stops are malformed. Reject it instead." };
+
   // Fetched before the transaction so a slow routing server never holds one open.
-  const road = await fetchRoadLine([submission.fromLng, submission.fromLat], [submission.toLng, submission.toLat]);
+  const road = await fetchRoadLine([
+    [submission.fromLng, submission.fromLat],
+    ...stops.data,
+    [submission.toLng, submission.toLat],
+  ]);
   if (!road.ok) return { ok: false, message: road.message };
 
   // Returns false when another admin reviewed it while the road line was loading.
@@ -104,10 +112,14 @@ const osrmResponseSchema = z.object({
     .optional(),
 });
 
+const waypointsSchema = z.array(z.tuple([z.number(), z.number()]));
+
 type RoadLine = { ok: true; line: LngLat[]; distanceKm: number } | { ok: false; message: string };
 
-async function fetchRoadLine(from: LngLat, to: LngLat): Promise<RoadLine> {
-  const url = `${OSRM_URL}/${from[0]},${from[1]};${to[0]},${to[1]}?overview=full&geometries=geojson`;
+/** The road through every point in order: A, the rider's stops, then B. */
+async function fetchRoadLine(points: LngLat[]): Promise<RoadLine> {
+  const coordinates = points.map(([lng, lat]) => `${lng},${lat}`).join(";");
+  const url = `${OSRM_URL}/${coordinates}?overview=full&geometries=geojson`;
   const failed = (reason: string): RoadLine => ({
     ok: false,
     message: `The road line could not be fetched from OpenStreetMap routing (${reason}). Nothing was published; try again in a moment.`,
@@ -123,7 +135,7 @@ async function fetchRoadLine(from: LngLat, to: LngLat): Promise<RoadLine> {
     // treating the status as a failure.
     const body = osrmResponseSchema.safeParse(await response.json().catch(() => null));
     if (body.success && body.data.code === "NoRoute") {
-      return { ok: false, message: "OpenStreetMap has no drivable road between these two points. Check the pins, or reject it." };
+      return { ok: false, message: "OpenStreetMap has no drivable road through these points. Check the pins and stops, or reject it." };
     }
     if (!response.ok || !body.success) return failed(`status ${response.status}`);
 

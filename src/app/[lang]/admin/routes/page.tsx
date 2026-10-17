@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { RouteReviewActions } from "@/components/admin/route-review-actions";
+import { RouteRoadPreview } from "@/components/admin/route-road-preview";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { SignOutButton } from "@/components/admin/sign-out-button";
 import { Badge } from "@/components/ui/badge";
@@ -114,6 +115,19 @@ async function ReviewQueue({
                   <Detail label="To (B)">
                     <Pin name={submission.toName} lat={submission.toLat} lng={submission.toLng} />
                   </Detail>
+                  <Detail label="Stops along the road">
+                    {submission.stops.length === 0 ? (
+                      "None; the road is the shortest one from A to B"
+                    ) : (
+                      <ol className="flex flex-col gap-0.5">
+                        {submission.stops.map((stop, index) => (
+                          <li key={stop.id}>
+                            <Pin name={`Stop ${index + 1}`} lat={stop.position[1]} lng={stop.position[0]} />
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                  </Detail>
                   <Detail label="Via">{submission.via ?? "Not given"}</Detail>
                   <Detail label="Jeep type">{JEEP_TYPE_LABEL[submission.jeepType]}</Detail>
                   <Detail label="Fare paid, end to end">
@@ -124,6 +138,12 @@ async function ReviewQueue({
                   </Detail>
                   {submission.notes && <Detail label="Notes">{submission.notes}</Detail>}
                 </dl>
+
+                <RouteRoadPreview
+                  a={[submission.fromLng, submission.fromLat]}
+                  b={[submission.toLng, submission.toLat]}
+                  stops={submission.stops}
+                />
 
                 {status === "PENDING" ? (
                   <RouteReviewActions id={submission.id} updatesExisting={updatesExisting} />

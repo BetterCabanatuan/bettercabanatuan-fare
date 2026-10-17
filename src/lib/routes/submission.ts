@@ -6,14 +6,19 @@
 import { z } from "zod";
 
 import { toCentavos } from "@/lib/fare";
-import { isInsideRing, type LngLat } from "@/lib/geo";
+import { haversineKm, isInsideRing, type LngLat } from "@/lib/geo";
 
 export const SUBMISSION_LIMITS = {
   name: 80,
   via: 120,
   notes: 1000,
   farePesos: 500,
+  waypoints: 12,
+  // San Jose City, the farthest town a Cabanatuan jeep is known to reach, is about 45 km out.
+  waypointKm: 60,
 } as const;
+
+const CITY_CENTER: LngLat = [120.9667, 15.4865];
 
 export const JEEP_TYPES = ["TRADITIONAL", "MODERN", "UNKNOWN"] as const;
 export type JeepTypeInput = (typeof JEEP_TYPES)[number];
@@ -24,6 +29,7 @@ const ERROR_KEYS = [
   "fromPin",
   "toPin",
   "outsideCity",
+  "waypoints",
   "via",
   "jeepType",
   "farePaid",
@@ -51,6 +57,17 @@ const placeName = (key: SubmissionErrorKey) => z.string().trim().min(2, key).max
 const latitude = (key: SubmissionErrorKey) => z.number(key).min(-90, key).max(90, key);
 const longitude = (key: SubmissionErrorKey) => z.number(key).min(-180, key).max(180, key);
 
+// Stops between A and B as [lng, lat] pairs, in travel order (see src/lib/routes/waypoints.ts).
+const waypointsSchema = z
+  .array(
+    z
+      .tuple([longitude("waypoints"), latitude("waypoints")], "waypoints")
+      .refine((point) => haversineKm(CITY_CENTER, point) <= SUBMISSION_LIMITS.waypointKm, "waypoints"),
+    "waypoints",
+  )
+  .max(SUBMISSION_LIMITS.waypoints, "waypoints")
+  .default([]);
+
 export const submissionSchema = z.object({
   fromName: placeName("fromName"),
   toName: placeName("toName"),
@@ -58,6 +75,7 @@ export const submissionSchema = z.object({
   fromLng: longitude("fromPin"),
   toLat: latitude("toPin"),
   toLng: longitude("toPin"),
+  waypoints: waypointsSchema,
   via: optionalText(SUBMISSION_LIMITS.via, "via"),
   jeepType: z.enum(JEEP_TYPES, "jeepType").default("UNKNOWN"),
   farePaid: z
@@ -73,8 +91,9 @@ export const submissionSchema = z.object({
 
 type Coordinate = "fromLat" | "fromLng" | "toLat" | "toLng";
 // A pin that was never set posts as an empty string; the schema turns that into an error.
-export type SubmissionInput = Omit<z.input<typeof submissionSchema>, Coordinate> &
-  Record<Coordinate, number | undefined>;
+// Stops post as JSON text, so they are unknown until the schema has checked them.
+export type SubmissionInput = Omit<z.input<typeof submissionSchema>, Coordinate | "waypoints"> &
+  Record<Coordinate, number | undefined> & { waypoints?: unknown };
 export type Submission = z.output<typeof submissionSchema>;
 export type SubmissionField = keyof SubmissionInput;
 export type FieldErrors = Partial<Record<SubmissionField, SubmissionErrorKey>>;
@@ -87,6 +106,7 @@ export function formDataToInput(formData: FormData): SubmissionInput {
     return raw === "" ? undefined : Number(raw);
   };
   const jeepType = text("jeepType");
+  const waypoints = text("waypoints").trim();
 
   return {
     fromName: text("fromName"),
@@ -95,6 +115,7 @@ export function formDataToInput(formData: FormData): SubmissionInput {
     fromLng: number("fromLng"),
     toLat: number("toLat"),
     toLng: number("toLng"),
+    waypoints: waypoints === "" ? undefined : parseJson(waypoints),
     via: text("via"),
     jeepType: jeepType === "" ? undefined : (jeepType as JeepTypeInput),
     farePaid: number("farePaid"),
@@ -102,6 +123,15 @@ export function formDataToInput(formData: FormData): SubmissionInput {
     submitterContact: text("submitterContact"),
     notes: text("notes"),
   };
+}
+
+// Text that isn't JSON is passed on as is, so the schema reports it like any other bad value.
+function parseJson(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
 }
 
 export type ParseResult =

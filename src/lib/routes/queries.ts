@@ -2,10 +2,11 @@ import "server-only";
 
 import { z } from "zod";
 
-import type { Tables } from "@/lib/database-types";
+import type { Json, Tables } from "@/lib/database-types";
 import { getDb, type SubmissionStatus } from "@/lib/db";
 import type { LngLat } from "@/lib/geo";
 import type { JeepRoute } from "@/lib/jeep-routes";
+import type { RouteStop } from "@/lib/routes/waypoints";
 import { todaSlug } from "@/lib/toda/submission";
 
 /** Prefix that keeps community ids apart from the preset ids in data/jeepney/routes.json. */
@@ -86,11 +87,22 @@ export async function listRouteSubmissions(status: SubmissionStatus) {
   return {
     submissions: submissions.data.map((submission) => ({
       ...submission,
+      stops: toStops(submission.id, submission.waypoints),
       createdAt: new Date(submission.createdAt),
       reviewedAt: submission.reviewedAt === null ? null : new Date(submission.reviewedAt),
     })),
     existingIds: new Set(routes.data.map((route) => route.id)),
   };
+}
+
+/**
+ * A submission's stops for the review page. A malformed list shows as no stops; approving
+ * checks it again and refuses. Stops have no id of their own, and a stored list never
+ * changes order, so the submission id and position make one.
+ */
+function toStops(submissionId: string, waypoints: Json): RouteStop[] {
+  const parsed = z.array(z.tuple([z.number(), z.number()])).safeParse(waypoints);
+  return parsed.success ? parsed.data.map((position, index) => ({ id: `${submissionId}-${index}`, position })) : [];
 }
 
 export async function countRouteSubmissions(): Promise<Record<SubmissionStatus, number>> {
