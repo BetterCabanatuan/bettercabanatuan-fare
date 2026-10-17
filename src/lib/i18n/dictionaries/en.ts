@@ -132,7 +132,7 @@ const termsSections: LegalSection[] = [
     id: "about",
     heading: "What this site is",
     paragraphs: [
-      "Pamasahe Cabanatuan is a free community project made with BetterCabanatuan. It is not an official website of the Cabanatuan City government, the LTFRB or any transport group, and it does not speak for them.",
+      "Pamasahe Cabanatuan is a free community project made by the BetterCabanatuan team. It is not an official website of the Cabanatuan City government, the LTFRB or any transport group, and it does not speak for them.",
       "The site is in alpha: features and data are still being checked and may change.",
     ],
   },
