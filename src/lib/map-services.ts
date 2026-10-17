@@ -2,6 +2,7 @@
 // the typed search text are sent.
 import type { Place, RoadRoute } from "@/components/fare/types";
 import type { LngLat } from "@/lib/geo";
+import { detourVias, pickRoadOptions } from "@/lib/road-routes";
 
 // Free public server with fair-use limits; the routing provider is an open item in the spec (§10 #5).
 const OSRM_URL = "https://routing.openstreetmap.de/routed-car/route/v1/driving";
@@ -20,6 +21,7 @@ type OsrmResponse = {
   code?: string;
   routes?: {
     distance: number;
+    duration: number;
     geometry: { coordinates: LngLat[] };
     legs?: { steps?: OsrmStep[] }[];
   }[];
@@ -45,30 +47,39 @@ async function getJson<T>(url: string, signal?: AbortSignal): Promise<T> {
   return (await response.json()) as T;
 }
 
-export async function fetchRoadRoute(
-  a: LngLat,
-  b: LngLat,
-  signal?: AbortSignal,
-): Promise<RoadRoute | null> {
-  const url = `${OSRM_URL}/${a[0]},${a[1]};${b[0]},${b[1]}?overview=full&geometries=geojson&steps=true`;
+/** One OSRM request through the given points; [] when OSRM finds no road. */
+async function requestRoads(points: LngLat[], alternatives: boolean, signal?: AbortSignal): Promise<RoadRoute[]> {
+  const coordinates = points.map(([lng, lat]) => `${lng},${lat}`).join(";");
+  const url = `${OSRM_URL}/${coordinates}?overview=full&geometries=geojson&steps=true&alternatives=${alternatives}`;
   const response = await fetch(url, { signal });
   // OSRM answers "no route" with a 400 and a JSON body, so read the body before
   // treating the status as a failure.
   const body = (await response.json().catch(() => null)) as OsrmResponse | null;
-  if (body?.code === "NoRoute") return null;
+  if (body?.code === "NoRoute") return [];
   if (!response.ok || !body) throw new Error(`Routing failed with status ${response.status}`);
 
-  const route = body.routes?.[0];
-  if (!route) return null;
+  return (body.routes ?? []).map((route) => {
+    const steps = route.legs?.flatMap((leg) => leg.steps ?? []) ?? [];
+    const national = steps.find((step) => step.ref && NATIONAL_ROUTE_REF.test(step.ref));
+    return {
+      line: route.geometry.coordinates,
+      distanceKm: route.distance / 1000,
+      durationMin: route.duration / 60,
+      nationalRoad: national ? national.name || national.ref || null : null,
+    };
+  });
+}
 
-  const steps = route.legs?.flatMap((leg) => leg.steps ?? []) ?? [];
-  const national = steps.find((step) => step.ref && NATIONAL_ROUTE_REF.test(step.ref));
-
-  return {
-    line: route.geometry.coordinates,
-    distanceKm: route.distance / 1000,
-    nationalRoad: national ? national.name || national.ref || null : null,
-  };
+/**
+ * The roads between A and B, shortest first; [] when there is none. The direct request
+ * decides success: detours only add choices, so a failed detour is skipped.
+ */
+export async function fetchRoadRoutes(a: LngLat, b: LngLat, signal?: AbortSignal): Promise<RoadRoute[]> {
+  const detourRequests = detourVias(a, b).map((via) =>
+    requestRoads([a, via, b], false, signal).catch((): RoadRoute[] => []),
+  );
+  const [direct, ...detours] = await Promise.all([requestRoads([a, b], true, signal), ...detourRequests]);
+  return direct.length === 0 ? [] : pickRoadOptions(direct, detours.flat());
 }
 
 // Null when Photon has nothing readable to call the place; callers skip it or use their own label.

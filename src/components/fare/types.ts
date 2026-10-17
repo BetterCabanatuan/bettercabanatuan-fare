@@ -14,21 +14,24 @@ export type Place = {
 export type RoadRoute = {
   line: LngLat[];
   distanceKm: number;
+  /** Driving time at car speeds, from OSRM. */
+  durationMin: number;
   /** Name of a national road on the route (tricycles may be restricted there), or null. */
   nationalRoad: string | null;
 };
 
+/** When ready, `routes` is shortest first and never empty; `selected` is the road the rider picked. */
 export type RouteStatus =
   | { state: "idle" }
   | { state: "loading" }
-  | { state: "ready"; route: RoadRoute }
+  | { state: "ready"; routes: RoadRoute[]; selected: number }
   | { state: "error"; reason: "no-route" | "unreachable" };
 
 export type MapLine = {
   id: string;
   line: LngLat[];
   /**
-   * road: tricycle or jeep road route between A and B. ride/walk/faded: a matched jeep trip.
+   * road: the picked road route between A and B. ride/walk/faded: a matched jeep trip.
    * route: a preset jeep route in the background. routeActive: the route the rider picked.
    */
   kind: "road" | "ride" | "faded" | "walk" | "route" | "routeActive";

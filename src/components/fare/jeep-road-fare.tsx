@@ -2,6 +2,7 @@
 
 import { useId, useState } from "react";
 
+import { RoadOptions } from "@/components/fare/road-options";
 import { JeepFareBasis, JeepFareBreakdown, JeepTypeToggle } from "@/components/fare/jeep-fare-calculator";
 import type { RouteStatus } from "@/components/fare/types";
 import { useDictionary } from "@/components/shared/dictionary-provider";
@@ -27,10 +28,11 @@ type JeepRoadFareProps = {
   source: FareSourceInfo;
   route: RouteStatus;
   hasBothPoints: boolean;
+  onSelectRoad: (index: number) => void;
 };
 
 /** Jeep fare from the A→B road distance, with a typed distance when the route can't be measured. */
-export function JeepRoadFare({ rules, source, route, hasBothPoints }: JeepRoadFareProps) {
+export function JeepRoadFare({ rules, source, route, hasBothPoints, onSelectRoad }: JeepRoadFareProps) {
   const { dict } = useDictionary();
   const t = dict.jeep;
   const [type, setType] = useState<JeepType>("traditional");
@@ -41,7 +43,7 @@ export function JeepRoadFare({ rules, source, route, hasBothPoints }: JeepRoadFa
   const manualRegionId = useId();
   const resultTitleId = useId();
 
-  const roadRoute = hasBothPoints && route.state === "ready" ? route.route : null;
+  const roadRoute = hasBothPoints && route.state === "ready" ? route.routes[route.selected] : null;
   const routeError = hasBothPoints && route.state === "error" ? route.reason : null;
   const measuring = hasBothPoints && route.state === "loading";
   const idle = !roadRoute && !routeError && !measuring;
@@ -111,6 +113,15 @@ export function JeepRoadFare({ rules, source, route, hasBothPoints }: JeepRoadFa
             {manualInvalid ? fill(t.distanceTooShort, { min: MIN_MANUAL_KM }) : t.distanceHint}
           </FieldDescription>
         </Field>
+      )}
+
+      {hasBothPoints && route.state === "ready" && route.routes.length > 1 && (
+        <RoadOptions
+          roads={route.routes}
+          selected={route.selected}
+          onSelect={onSelectRoad}
+          fareFor={(km) => jeepFare(rules, type, km).regular}
+        />
       )}
 
       {fare && distance && (

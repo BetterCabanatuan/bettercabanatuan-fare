@@ -3,6 +3,7 @@
 import { useId, useState, type ReactNode } from "react";
 import { Maximize2, Minus, Plus, TriangleAlert } from "lucide-react";
 
+import { RoadOptions } from "@/components/fare/road-options";
 import { TricycleFareHistory } from "@/components/fare/tricycle-fare-history";
 import { TricycleFareMatrix } from "@/components/fare/tricycle-fare-matrix";
 import type { RouteStatus } from "@/components/fare/types";
@@ -48,6 +49,7 @@ type TricyclePanelProps = {
   route: RouteStatus;
   hasBothPoints: boolean;
   outsideCity: boolean;
+  onSelectRoad: (index: number) => void;
 };
 
 type Distance = { km: number; enteredByUser: boolean };
@@ -98,6 +100,7 @@ export function TricyclePanel({
   route,
   hasBothPoints,
   outsideCity,
+  onSelectRoad,
 }: TricyclePanelProps) {
   const { dict } = useDictionary();
   const t = dict.tricycle;
@@ -113,7 +116,7 @@ export function TricyclePanel({
   const atMax = totalPassengers >= MAX_PASSENGERS;
   const atMin = totalPassengers <= 1;
 
-  const roadRoute = hasBothPoints && route.state === "ready" ? route.route : null;
+  const roadRoute = hasBothPoints && route.state === "ready" ? route.routes[route.selected] : null;
   const routeError = hasBothPoints && route.state === "error" ? route.reason : null;
   const measuring = hasBothPoints && route.state === "loading";
   const idle = !roadRoute && !routeError && !measuring;
@@ -240,6 +243,15 @@ export function TricyclePanel({
             {manualInvalid ? fill(t.distanceTooShort, { min: MIN_MANUAL_KM }) : t.distanceHint}
           </FieldDescription>
         </Field>
+      )}
+
+      {hasBothPoints && route.state === "ready" && route.routes.length > 1 && (
+        <RoadOptions
+          roads={route.routes}
+          selected={route.selected}
+          onSelect={onSelectRoad}
+          fareFor={(km) => tricycleFare(rules, km, passengers).total}
+        />
       )}
 
       {fare && distance && (

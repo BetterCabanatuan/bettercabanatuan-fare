@@ -47,6 +47,7 @@ type JeepPanelProps = {
   highlightedRouteId: string | null;
   onHighlightRoute: (routeId: string | null) => void;
   onUseTricycle: () => void;
+  onSelectRoad: (index: number) => void;
 };
 
 export function JeepPanel({
@@ -63,6 +64,7 @@ export function JeepPanel({
   highlightedRouteId,
   onHighlightRoute,
   onUseTricycle,
+  onSelectRoad,
 }: JeepPanelProps) {
   const { dict } = useDictionary();
   const withLine = routes.filter(hasLine);
@@ -92,7 +94,13 @@ export function JeepPanel({
         />
       )}
 
-      <JeepRoadFare rules={rules} source={source} route={route} hasBothPoints={hasBothPoints} />
+      <JeepRoadFare
+        rules={rules}
+        source={source}
+        route={route}
+        hasBothPoints={hasBothPoints}
+        onSelectRoad={onSelectRoad}
+      />
 
       {withLine.length > 0 ? (
         <JeepRouteList

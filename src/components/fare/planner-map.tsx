@@ -6,7 +6,8 @@ import { useEffect, type Ref } from "react";
 import { MapHint } from "@/components/fare/map-hint";
 import { RouteEndMarkers, StopDots } from "@/components/fare/stop-markers";
 import { TerminalMarkers } from "@/components/fare/terminal-markers";
-import type { MapLine, Place, PointKey } from "@/components/fare/types";
+import { roadSummary } from "@/components/fare/road-options";
+import type { MapLine, Place, PointKey, RoadRoute } from "@/components/fare/types";
 import { useDictionary } from "@/components/shared/dictionary-provider";
 import {
   Map,
@@ -17,8 +18,11 @@ import {
   useMap,
   type MapRef,
 } from "@/components/ui/map";
+import { displayKm } from "@/lib/fare";
 import type { LngLat } from "@/lib/geo";
+import { fill } from "@/lib/i18n/locales";
 import type { JeepRoute, JeepTerminal } from "@/lib/jeep-routes";
+import { labelPoint } from "@/lib/road-routes";
 import { cn } from "@/lib/utils";
 
 const CABANATUAN_CENTER: LngLat = [120.9667, 15.4865];
@@ -33,12 +37,19 @@ const BOUNDARY_ID = "planner-boundary";
 // MapRoute names its layers "route-layer-<id>".
 const layerId = (id: string): string => `route-layer-${id}`;
 const lineId = (line: MapLine): string => `planner-${line.id}-${line.kind}`;
+// Roads the rider can switch to. Clicks on them pick the road instead of moving a pin.
+const ROAD_CHOICE_PREFIX = "planner-road-choice-";
+// The picked road's casing, which the other roads sit under.
+const PICKED_ROAD_CASING = layerId(`${lineId({ id: "road", line: [], kind: "road" })}-casing`);
 
 type PlannerMapProps = {
   mode: "tricycle" | "jeep";
   a?: Place;
   b?: Place;
   lines: MapLine[];
+  /** Roads between A and B to choose from, when there is more than one. */
+  roadChoices: { roads: RoadRoute[]; selected: number } | null;
+  onSelectRoad: (index: number) => void;
   boundary: LngLat[];
   /** Jeep routes whose terminals, far ends and (when highlighted) stops get markers in jeep mode. */
   routes: JeepRoute[];
@@ -61,6 +72,8 @@ export function PlannerMap({
   a,
   b,
   lines,
+  roadChoices,
+  onSelectRoad,
   boundary,
   routes,
   terminals,
@@ -101,6 +114,10 @@ export function PlannerMap({
       {lines.map((line) => (
         <PlannerLine key={`${line.id}-${line.kind}`} line={line} belowPicked={belowPicked} />
       ))}
+
+      {roadChoices && (
+        <RoadChoices roads={roadChoices.roads} selected={roadChoices.selected} onSelect={onSelectRoad} />
+      )}
 
       {mode === "jeep" && (
         <>
@@ -147,7 +164,7 @@ export function PlannerMap({
         onLocateError={onLocateError}
       />
       <MapClickHandler onMapClick={onMapClick} />
-      <FitToTrip a={a} b={b} lines={lines} />
+      <FitToTrip a={a} b={b} lines={lines} roads={roadChoices?.roads ?? []} />
       {loading && <LoadingBar />}
       {nextPin && <MapHint pin={nextPin} mode={mode} />}
     </Map>
@@ -265,6 +282,98 @@ function PinIcon({ pin }: { pin: PointKey }) {
   );
 }
 
+/**
+ * The roads the rider did not pick, drawn grey under the picked one, and a label on every
+ * road with its time and distance. Clicking a grey road or any label picks that road.
+ */
+function RoadChoices({
+  roads,
+  selected,
+  onSelect,
+}: {
+  roads: RoadRoute[];
+  selected: number;
+  onSelect: (index: number) => void;
+}) {
+  const { dict } = useDictionary();
+  const t = dict.roads;
+  const lines = roads.map((road) => road.line);
+
+  return (
+    <>
+      {roads.map((road, index) =>
+        index === selected ? null : (
+          <RoadChoiceLine key={`${road.distanceKm}:${road.durationMin}`} road={road} onSelect={() => onSelect(index)} />
+        ),
+      )}
+      {roads.map((road, index) => {
+        const [longitude, latitude] = labelPoint(
+          road.line,
+          lines.filter((_, other) => other !== index),
+        );
+        const isSelected = index === selected;
+        return (
+          <MapMarker
+            key={`${road.distanceKm}:${road.durationMin}`}
+            longitude={longitude}
+            latitude={latitude}
+            // Above the other labels, below the A and B pins.
+            className={isSelected ? "z-[5]" : undefined}
+          >
+            <MarkerContent>
+              <button
+                type="button"
+                aria-pressed={isSelected}
+                aria-label={fill(t.pickRoad, { summary: roadSummary(road, t) })}
+                onClick={() => onSelect(index)}
+                className="flex min-h-11 items-center p-1.5 outline-none focus-visible:[&>span]:ring-3 focus-visible:[&>span]:ring-ring/50"
+              >
+                <span
+                  className={cn(
+                    "rounded-md px-2 py-1 text-xs font-semibold whitespace-nowrap tabular-nums shadow-md",
+                    isSelected ? "bg-[#1B3F8B] text-white" : "bg-white text-[#15181C] ring-1 ring-black/15",
+                  )}
+                >
+                  {fill(t.mapLabel, {
+                    minutes: Math.max(1, Math.round(road.durationMin)),
+                    km: displayKm(road.distanceKm).toFixed(1),
+                  })}
+                </span>
+              </button>
+            </MarkerContent>
+          </MapMarker>
+        );
+      })}
+    </>
+  );
+}
+
+function RoadChoiceLine({ road, onSelect }: { road: RoadRoute; onSelect: () => void }) {
+  const id = `${ROAD_CHOICE_PREFIX}${road.distanceKm}`;
+  return (
+    <>
+      <MapRoute
+        id={`${id}-casing`}
+        coordinates={road.line}
+        color="#FFFFFF"
+        width={8}
+        opacity={1}
+        beforeId={PICKED_ROAD_CASING}
+        onClick={onSelect}
+      />
+      <MapRoute
+        id={id}
+        coordinates={road.line}
+        color={LINE_GREY}
+        width={5}
+        opacity={0.75}
+        beforeId={PICKED_ROAD_CASING}
+        onClick={onSelect}
+      />
+    </>
+  );
+}
+
 function MapClickHandler({ onMapClick }: { onMapClick: (position: LngLat) => void }) {
   const { map } = useMap();
 
@@ -274,6 +383,11 @@ function MapClickHandler({ onMapClick }: { onMapClick: (position: LngLat) => voi
       // MapLibre also reports clicks on markers and popups as map clicks; those must not move a pin.
       const target = event.originalEvent.target;
       if (target instanceof Element && target.closest(".maplibregl-marker, .maplibregl-popup")) return;
+      // A click on a road choice picks that road (its own handler), so the pins stay put.
+      const onRoadChoice = map
+        .queryRenderedFeatures(event.point)
+        .some((feature) => feature.layer.id.startsWith(layerId(ROAD_CHOICE_PREFIX)));
+      if (onRoadChoice) return;
       onMapClick([event.lngLat.lng, event.lngLat.lat]);
     };
     map.on("click", handleClick);
@@ -285,7 +399,7 @@ function MapClickHandler({ onMapClick }: { onMapClick: (position: LngLat) => voi
   return null;
 }
 
-function FitToTrip({ a, b, lines }: { a?: Place; b?: Place; lines: MapLine[] }) {
+function FitToTrip({ a, b, lines, roads }: { a?: Place; b?: Place; lines: MapLine[]; roads: RoadRoute[] }) {
   const { map } = useMap();
 
   // Background lines (faded, preset routes) are context, not part of this trip. With a ride
@@ -295,7 +409,13 @@ function FitToTrip({ a, b, lines }: { a?: Place; b?: Place; lines: MapLine[] }) 
     (line) => line.kind !== "faded" && line.kind !== "route" && !(hasRide && line.kind === "routeActive"),
   );
   const shouldFit = (a !== undefined && b !== undefined) || tripLines.length > 0;
-  const points = [a?.position, b?.position, ...tripLines.flatMap((line) => line.line)].filter(
+  // Every road choice is framed, so picking one never moves the map.
+  const points = [
+    a?.position,
+    b?.position,
+    ...tripLines.flatMap((line) => line.line),
+    ...roads.flatMap((road) => road.line),
+  ].filter(
     (point): point is LngLat => point !== undefined,
   );
   const lngs = points.map(([lng]) => lng);

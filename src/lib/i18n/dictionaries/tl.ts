@@ -146,6 +146,20 @@ export const tl: Dictionary = {
     searchFailed: "Hindi gumagana ang online na paghahanap ngayon. Pumili ng palatandaan o i-tap ang mapa.",
     noResults: "Walang nahanap na lugar. Subukan ang pangalan ng palatandaan o barangay.",
   },
+  roads: {
+    heading: "Mga daang puwedeng daanan",
+    shortest: "Pinakamaikli",
+    shortestFastest: "Pinakamaikli at pinakamabilis",
+    fastest: "Pinakamabilis",
+    other: "Ibang daan",
+    summary: "{km} km · mga {minutes} min",
+    sameFare: "Parehong pamasahe",
+    moreFare: "Dagdag na {amount}",
+    fareNote:
+      "Ayon sa layo ang pamasahe, kaya pinakamura ang pinakamaikling daan. Pang-kotseng walang hinto ang oras; mas matagal ang tricycle at jeep.",
+    mapLabel: "{minutes} min · {km} km",
+    pickRoad: "Gamitin ang daang ito: {summary}",
+  },
   tricycle: {
     passengers: "Mga pasahero",
     regular: "Regular",

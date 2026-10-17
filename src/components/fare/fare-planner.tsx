@@ -19,7 +19,7 @@ import type { FareSourceInfo, JeepPreviousRates, Landmark } from "@/lib/data";
 import type { JeepFareRules, TricycleFareRules } from "@/lib/fare";
 import { isInsideRing, sliceLine, type LngLat } from "@/lib/geo";
 import { hasLine, type JeepRoute, type JeepTerminal, type JeepTrip } from "@/lib/jeep-routes";
-import { fetchRoadRoute, reversePlace } from "@/lib/map-services";
+import { fetchRoadRoutes, reversePlace } from "@/lib/map-services";
 import { cn } from "@/lib/utils";
 
 type Mode = "tricycle" | "jeep";
@@ -100,6 +100,8 @@ export function FarePlanner({
     key: "",
     status: { state: "idle" },
   });
+  // Which road the rider picked, for this A–B pair only; a new trip starts on the shortest.
+  const [roadChoice, setRoadChoice] = useState<{ key: string; index: number }>({ key: "", index: 0 });
   const [selectedTrip, setSelectedTrip] = useState<{ key: string; trip: JeepTrip } | null>(null);
   const [highlightedRouteId, setHighlightedRouteId] = useState<string | null>(null);
   const mapRef = useRef<MapRef>(null);
@@ -109,16 +111,19 @@ export function FarePlanner({
   const aPosition = points.a?.position;
   const bPosition = points.b?.position;
 
-  // The road route comes from an outside service, so it is synced in an effect. Both modes
-  // draw it: jeep mode shows it until the rider picks a trip.
+  // The road routes come from an outside service, so they are synced in an effect. Both
+  // modes draw them: jeep mode shows them until the rider picks a trip.
   useEffect(() => {
     if (!aPosition || !bPosition) return;
     const controller = new AbortController();
-    fetchRoadRoute(aPosition, bPosition, controller.signal)
-      .then((route) =>
+    fetchRoadRoutes(aPosition, bPosition, controller.signal)
+      .then((routes) =>
         setRouteResult({
           key: currentKey,
-          status: route ? { state: "ready", route } : { state: "error", reason: "no-route" },
+          status:
+            routes.length > 0
+              ? { state: "ready", routes, selected: 0 }
+              : { state: "error", reason: "no-route" },
         }),
       )
       .catch(() => {
@@ -129,15 +134,24 @@ export function FarePlanner({
     return () => controller.abort();
   }, [currentKey, aPosition, bPosition]);
 
-  const route: RouteStatus = !currentKey
+  const fetched: RouteStatus = !currentKey
     ? { state: "idle" }
     : routeResult.key === currentKey
       ? routeResult.status
       : { state: "loading" };
+  const route: RouteStatus =
+    fetched.state === "ready" && roadChoice.key === currentKey
+      ? { ...fetched, selected: Math.min(roadChoice.index, fetched.routes.length - 1) }
+      : fetched;
+  const roads = route.state === "ready" ? route.routes : [];
+  const selectedRoad = route.state === "ready" ? route.selected : 0;
 
   const trip = selectedTrip?.key === currentKey ? selectedTrip.trip : null;
 
-  const roadLines: MapLine[] = route.state === "ready" ? [{ id: "road", line: route.route.line, kind: "road" }] : [];
+  const roadLines: MapLine[] = roads.length > 0 ? [{ id: "road", line: roads[selectedRoad].line, kind: "road" }] : [];
+  // Other roads show as choices wherever the picked road shows: always for tricycles, and
+  // for jeeps until a trip is picked.
+  const showRoadChoices = roads.length > 1 && (mode === "tricycle" || !trip);
   const drawableRoutes = jeepRoutes.filter(hasLine);
   const highlightedRoute = drawableRoutes.find((preset) => preset.id === highlightedRouteId);
   const pickedLines: MapLine[] = highlightedRoute
@@ -210,6 +224,8 @@ export function FarePlanner({
         : null;
 
   const switchMode = (next: Mode): void => writeUrl(next, points);
+
+  const selectRoad = (index: number): void => setRoadChoice({ key: currentKey, index });
 
   const highlightRoute = (routeId: string | null): void => {
     setHighlightedRouteId(routeId);
@@ -359,6 +375,7 @@ export function FarePlanner({
             route={route}
             hasBothPoints={Boolean(currentKey)}
             outsideCity={outsideCity}
+            onSelectRoad={selectRoad}
           />
         ) : (
           <JeepPanel
@@ -381,6 +398,7 @@ export function FarePlanner({
               if (routeId) revealMap();
             }}
             onUseTricycle={() => switchMode("tricycle")}
+            onSelectRoad={selectRoad}
           />
         )}
       </section>
@@ -392,6 +410,8 @@ export function FarePlanner({
           a={points.a}
           b={points.b}
           lines={lines}
+          roadChoices={showRoadChoices ? { roads, selected: selectedRoad } : null}
+          onSelectRoad={selectRoad}
           boundary={boundary}
           routes={jeepRoutes}
           terminals={terminals}

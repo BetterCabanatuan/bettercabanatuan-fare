@@ -71,17 +71,19 @@ export function projectOntoLine(target: LngLat, line: LngLat[]): LineProjection 
   return candidates.reduce((best, candidate) => (candidate.offsetKm < best.offsetKm ? candidate : best));
 }
 
+/** The point a given distance along a line; `totals` is the line's cumulativeKm. */
+export function pointAlong(line: LngLat[], km: number, totals: number[] = cumulativeKm(line)): LngLat {
+  const index = totals.findIndex((total) => total >= km);
+  const i = index === -1 ? totals.length - 1 : Math.max(1, index);
+  const segment = totals[i] - totals[i - 1];
+  const t = segment === 0 ? 0 : (km - totals[i - 1]) / segment;
+  const [start, end] = [line[i - 1], line[i]];
+  return [start[0] + t * (end[0] - start[0]), start[1] + t * (end[1] - start[1])];
+}
+
 /** The part of a line between two distances along it. */
 export function sliceLine(line: LngLat[], fromKm: number, toKm: number): LngLat[] {
   const totals = cumulativeKm(line);
-  const pointAt = (km: number): LngLat => {
-    const index = totals.findIndex((total) => total >= km);
-    const i = index === -1 ? totals.length - 1 : Math.max(1, index);
-    const segment = totals[i] - totals[i - 1];
-    const t = segment === 0 ? 0 : (km - totals[i - 1]) / segment;
-    const [start, end] = [line[i - 1], line[i]];
-    return [start[0] + t * (end[0] - start[0]), start[1] + t * (end[1] - start[1])];
-  };
   const inner = line.filter((_, i) => totals[i] > fromKm && totals[i] < toKm);
-  return [pointAt(fromKm), ...inner, pointAt(toKm)];
+  return [pointAlong(line, fromKm, totals), ...inner, pointAlong(line, toKm, totals)];
 }

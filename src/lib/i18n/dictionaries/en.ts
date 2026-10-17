@@ -143,6 +143,20 @@ export const en = {
     searchFailed: "Online search isn't available right now. Try a landmark or tap the map.",
     noResults: "No places found. Try a landmark or barangay name.",
   },
+  roads: {
+    heading: "Roads you can take",
+    shortest: "Shortest",
+    shortestFastest: "Shortest and fastest",
+    fastest: "Fastest",
+    other: "Another road",
+    summary: "{km} km · about {minutes} min",
+    sameFare: "Same fare",
+    moreFare: "{amount} more",
+    fareNote:
+      "The fare goes by distance, so the shortest road costs least. Times are for a car that doesn't stop; tricycles and jeeps take longer.",
+    mapLabel: "{minutes} min · {km} km",
+    pickRoad: "Use this road: {summary}",
+  },
   tricycle: {
     passengers: "Passengers",
     regular: "Regular",
