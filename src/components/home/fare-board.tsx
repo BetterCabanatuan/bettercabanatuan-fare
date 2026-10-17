@@ -18,10 +18,10 @@ export async function FareBoard() {
     {
       key: "tricycle",
       name: t.fareBoardTricycle,
-      amount: tricycleRules.regular.solo,
+      amount: tricycleRules.baseFare.regular,
       rule: fill(t.fareBoardTricycleRule, {
         baseKm: tricycleRules.baseKm,
-        perKm: formatPeso(tricycleRules.perSucceedingKm.solo),
+        perKm: formatPeso(tricycleRules.perSucceedingKm.regular),
       }),
       unconfirmed: !tricycleSource.confirmed,
     },

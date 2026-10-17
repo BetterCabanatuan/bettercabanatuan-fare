@@ -30,8 +30,7 @@ export async function RideOptions() {
       Icon: TricycleIcon,
       title: t.tricycleTitle,
       description: t.tricycleDescription,
-      // A solo rider pays the solo fare; quoting the lower shared per-person fare would mislead.
-      from: tricycleRules.regular.solo,
+      from: tricycleRules.baseFare.regular,
       unconfirmed: !tricycleSource.confirmed,
     },
   ];

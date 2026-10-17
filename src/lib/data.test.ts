@@ -5,8 +5,9 @@ import { haversineKm, isInsideRing } from "@/lib/geo";
 
 describe("data files", () => {
   it("load the tricycle matrix in centavos", () => {
-    expect(tricycleRules.regular.solo).toBe(2000);
-    expect(tricycleSource.reference).toBeNull();
+    expect(tricycleRules.baseFare.regular).toBe(3500);
+    expect(tricycleRules.perSucceedingKm.discounted).toBe(400);
+    expect(tricycleSource.reference).toBe("050-2026");
   });
 
   it("load the jeep rules and every route", () => {

@@ -39,12 +39,10 @@ const tricycleSchema = z.object({
     ordinanceNo: todoOr(z.string()),
     effectiveDate: todoOr(z.string()),
     baseKm: z.number().positive(),
-    fares: z.object({
-      regular: z.object({ single: peso, perPassengerIfTwoOrMore: peso }),
-      discounted: z.object({ single: peso, perPassengerIfTwoOrMore: peso }),
-    }),
-    perSucceedingKmPerPassenger: peso,
-    perSucceedingKmSolo: peso,
+    baseFare: z.object({ regular: peso, discounted: peso }),
+    perSucceedingKm: z.object({ regular: peso, discounted: peso }),
+    maxPassengers: z.number().int().positive(),
+    specialTripMultiplier: z.number().int().positive(),
   }),
 });
 
@@ -126,20 +124,17 @@ const boundarySchema = z.object({
 const tricycle = tricycleSchema.parse(tricycleJson);
 const jeep = jeepRulesSchema.parse(jeepRulesJson);
 
+const { baseFare, perSucceedingKm } = tricycle.current;
+
 export const tricycleRules: TricycleFareRules = {
   baseKm: tricycle.current.baseKm,
-  regular: {
-    solo: toCentavos(tricycle.current.fares.regular.single),
-    shared: toCentavos(tricycle.current.fares.regular.perPassengerIfTwoOrMore),
-  },
-  discounted: {
-    solo: toCentavos(tricycle.current.fares.discounted.single),
-    shared: toCentavos(tricycle.current.fares.discounted.perPassengerIfTwoOrMore),
-  },
+  baseFare: { regular: toCentavos(baseFare.regular), discounted: toCentavos(baseFare.discounted) },
   perSucceedingKm: {
-    solo: toCentavos(tricycle.current.perSucceedingKmSolo),
-    shared: toCentavos(tricycle.current.perSucceedingKmPerPassenger),
+    regular: toCentavos(perSucceedingKm.regular),
+    discounted: toCentavos(perSucceedingKm.discounted),
   },
+  maxPassengers: tricycle.current.maxPassengers,
+  specialTripMultiplier: tricycle.current.specialTripMultiplier,
 };
 
 export const tricycleSource: FareSourceInfo = {

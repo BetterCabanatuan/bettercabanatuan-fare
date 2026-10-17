@@ -13,26 +13,31 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatPeso, type TricycleFare, type TricycleFareRules } from "@/lib/fare";
+import { formatPeso, type Centavos, type TricycleFareRules } from "@/lib/fare";
 import { fill } from "@/lib/i18n/locales";
 
 type TricycleFareMatrixProps = {
   rules: TricycleFareRules;
   confirmed: boolean;
   basis: string;
-  /** The row that the current passenger count uses, highlighted so riders can find it. */
-  activeRate: TricycleFare["rate"];
 };
 
-export function TricycleFareMatrix({ rules, confirmed, basis, activeRate }: TricycleFareMatrixProps) {
+export function TricycleFareMatrix({ rules, confirmed, basis }: TricycleFareMatrixProps) {
   const { dict } = useDictionary();
   const t = dict.tricycle;
   const titleId = useId();
+  const { baseFare, perSucceedingKm, specialTripMultiplier } = rules;
 
-  const rows = [
-    { rate: "solo", label: t.matrixSolo },
-    { rate: "shared", label: t.matrixShared },
-  ] as const;
+  const rows: { key: string; label: string; regular: Centavos; discounted: Centavos }[] = [
+    { key: "base", label: fill(t.matrixFirstKm, { km: rules.baseKm }), ...baseFare },
+    { key: "perKm", label: t.matrixPerKm, ...perSucceedingKm },
+    {
+      key: "specialTrip",
+      label: fill(t.matrixSpecialTrip, { km: rules.baseKm }),
+      regular: baseFare.regular * specialTripMultiplier,
+      discounted: baseFare.discounted * specialTripMultiplier,
+    },
+  ];
 
   return (
     <section
@@ -54,7 +59,7 @@ export function TricycleFareMatrix({ rules, confirmed, basis, activeRate }: Tric
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             <TableHead scope="col" className="px-2 text-muted-foreground">
-              {fill(t.matrixFirstKm, { km: rules.baseKm })}
+              {t.matrixPerPassenger}
             </TableHead>
             <TableHead scope="col" className="px-2 text-right">
               {t.regular}
@@ -65,43 +70,29 @@ export function TricycleFareMatrix({ rules, confirmed, basis, activeRate }: Tric
           </TableRow>
         </TableHeader>
         <TableBody>
-          {rows.map(({ rate, label }) => {
-            const active = rate === activeRate;
-            return (
-              <TableRow
-                key={rate}
-                className={active ? "bg-highlight/25 hover:bg-highlight/25" : "hover:bg-transparent"}
-              >
-                <TableHead scope="row" className="h-auto px-2 py-2.5 font-medium whitespace-normal">
-                  <span className="flex flex-col items-start gap-1">
-                    {label}
-                    {active && (
-                      <Badge className="bg-highlight text-highlight-foreground">{t.matrixYourRate}</Badge>
-                    )}
-                  </span>
-                </TableHead>
-                <TableCell className="px-2 text-right text-base font-semibold tabular-nums">
-                  {formatPeso(rules.regular[rate])}
-                </TableCell>
-                <TableCell className="px-2 text-right text-base font-semibold tabular-nums">
-                  {formatPeso(rules.discounted[rate])}
-                </TableCell>
-              </TableRow>
-            );
-          })}
+          {rows.map(({ key, label, regular, discounted }) => (
+            <TableRow key={key} className="hover:bg-transparent">
+              <TableHead scope="row" className="h-auto px-2 py-2.5 font-medium whitespace-normal">
+                {label}
+              </TableHead>
+              <TableCell className="px-2 text-right text-base font-semibold tabular-nums">
+                {formatPeso(regular)}
+              </TableCell>
+              <TableCell className="px-2 text-right text-base font-semibold tabular-nums">
+                {formatPeso(discounted)}
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
 
-      <p className="text-sm font-medium tabular-nums">
-        {fill(t.matrixPerKm, {
-          solo: formatPeso(rules.perSucceedingKm.solo),
-          shared: formatPeso(rules.perSucceedingKm.shared),
-          baseKm: rules.baseKm,
-        })}
+      <p className="flex items-start gap-2 text-sm text-muted-foreground">
+        <Info aria-hidden className="mt-0.5 size-4 shrink-0" />
+        {fill(t.specialTrip, { times: specialTripMultiplier })}
       </p>
       <p className="flex items-start gap-2 text-sm text-muted-foreground">
         <Info aria-hidden className="mt-0.5 size-4 shrink-0" />
-        {t.specialTrip}
+        {t.fuelPrice}
       </p>
       <p className="border-t pt-3 text-xs text-muted-foreground">{basis}</p>
     </section>

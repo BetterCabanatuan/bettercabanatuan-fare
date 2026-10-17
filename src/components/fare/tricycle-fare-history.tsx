@@ -6,12 +6,11 @@ import { useDictionary } from "@/components/shared/dictionary-provider";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
-type Stage = "past" | "current" | "draft";
+type Stage = "past" | "current";
 
 const stageStyles: Record<Stage, string> = {
   past: "border-border",
   current: "rounded-r-lg border-highlight bg-highlight/20",
-  draft: "border-dashed border-warning-border",
 };
 
 export function TricycleFareHistory() {
@@ -21,8 +20,8 @@ export function TricycleFareHistory() {
   const entries = [
     { key: "ordinance2007", stage: "past", ...h.ordinance2007 },
     { key: "early2018", stage: "past", ...h.early2018 },
-    { key: "november2018", stage: "current", ...h.november2018 },
-    { key: "draft2026", stage: "draft", ...h.draft2026 },
+    { key: "november2018", stage: "past", ...h.november2018 },
+    { key: "ordinance2026", stage: "current", ...h.ordinance2026 },
   ] as const;
 
   return (
@@ -45,11 +44,6 @@ export function TricycleFareHistory() {
                   <span className="text-sm font-bold tabular-nums">{when}</span>
                   {stage === "current" && (
                     <Badge className="bg-highlight text-highlight-foreground">{h.current}</Badge>
-                  )}
-                  {stage === "draft" && (
-                    <Badge variant="outline" className="border-warning-border bg-warning text-warning-foreground">
-                      {h.draft}
-                    </Badge>
                   )}
                 </span>
                 <span className="text-sm">{what}</span>

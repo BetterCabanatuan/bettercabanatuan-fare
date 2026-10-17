@@ -20,6 +20,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
+import { Switch } from "@/components/ui/switch";
 import type { FareSourceInfo } from "@/lib/data";
 import { formatDate } from "@/lib/format-date";
 import {
@@ -33,8 +34,6 @@ import {
 import type { Dictionary } from "@/lib/i18n/dictionaries/en";
 import { fill } from "@/lib/i18n/locales";
 
-// City limit not yet confirmed (spec §10, open item 8).
-const MAX_PASSENGERS = 6;
 // Threshold to confirm with the city (spec §8 leaves it as a FILL).
 const LONG_TRIP_KM = 15;
 // Spec §8: points under 100 m apart count as "very close".
@@ -94,11 +93,15 @@ export function TricyclePanel({
   const { dict } = useDictionary();
   const t = dict.tricycle;
   const [passengers, setPassengers] = useState<Passengers>({ regular: 1, discounted: 0 });
+  const [specialTripRequested, setSpecialTripRequested] = useState(false);
   const resultTitleId = useId();
 
   const totalPassengers = passengers.regular + passengers.discounted;
-  const atMax = totalPassengers >= MAX_PASSENGERS;
+  const atMax = totalPassengers >= rules.maxPassengers;
   const atMin = totalPassengers <= 1;
+  // A special trip is one passenger hiring the whole tricycle (Ord. 050-2026 Sec. 2d).
+  const canRequestSpecialTrip = totalPassengers === 1;
+  const specialTrip = specialTripRequested && canRequestSpecialTrip;
 
   const roadRoute = hasBothPoints && route.state === "ready" ? route.routes[route.selected] : null;
   const routeError = hasBothPoints && route.state === "error" ? route.reason : null;
@@ -106,12 +109,10 @@ export function TricyclePanel({
   const idle = !roadRoute && !routeError && !measuring;
   const distanceKm = roadRoute?.distanceKm ?? null;
 
-  const fare = distanceKm !== null ? tricycleFare(rules, distanceKm, passengers) : null;
+  const fare = distanceKm !== null ? tricycleFare(rules, distanceKm, passengers, specialTrip) : null;
   const resultLabel = outsideCity ? t.estimateOnly : t.resultTitle;
-  const rateLabel = fare?.rate === "solo" ? t.soloRate : t.sharedRate;
   const distanceText = distanceKm !== null && fare ? distanceLine(distanceKm, fare.billableKm, t) : "";
   const basis = basisLine(source, t);
-  const activeRate = totalPassengers === 1 ? "solo" : "shared";
   const perPassenger = fare ? perPassengerLines(fare, passengers, t) : [];
 
   return (
@@ -139,10 +140,25 @@ export function TricyclePanel({
             onChange={(discounted) => setPassengers({ ...passengers, discounted })}
           />
           <p className="text-sm text-muted-foreground">
-            {atMax ? `${fill(t.maxPassengers, { max: MAX_PASSENGERS })} ` : ""}
+            {atMax ? `${fill(t.maxPassengers, { max: rules.maxPassengers })} ` : ""}
             {t.showId}
           </p>
         </fieldset>
+        <div className="mt-4 flex flex-col gap-1 border-t pt-4">
+          <label className="flex min-h-11 cursor-pointer items-center justify-between gap-3 font-medium has-data-disabled:cursor-not-allowed">
+            {t.specialTripToggle}
+            <Switch
+              checked={specialTrip}
+              disabled={!canRequestSpecialTrip}
+              onCheckedChange={setSpecialTripRequested}
+            />
+          </label>
+          <p className="text-sm text-muted-foreground">
+            {canRequestSpecialTrip
+              ? fill(t.specialTripHint, { times: rules.specialTripMultiplier })
+              : t.specialTripSoloOnly}
+          </p>
+        </div>
       </div>
 
       {!source.confirmed && (
@@ -191,7 +207,7 @@ export function TricyclePanel({
           roads={route.routes}
           selected={route.selected}
           onSelect={onSelectRoad}
-          fareFor={(km) => tricycleFare(rules, km, passengers).total}
+          fareFor={(km) => tricycleFare(rules, km, passengers, specialTrip).total}
         />
       )}
 
@@ -215,7 +231,9 @@ export function TricyclePanel({
               <p className="text-5xl leading-none font-bold tracking-tight tabular-nums text-highlight">
                 {formatPeso(fare.total)}
               </p>
-              <Badge className="bg-highlight text-highlight-foreground">{rateLabel}</Badge>
+              {fare.specialTrip && (
+                <Badge className="bg-highlight text-highlight-foreground">{t.specialTripBadge}</Badge>
+              )}
             </div>
             <ul className="flex flex-col text-base font-semibold tabular-nums">
               {perPassenger.map((line) => (
@@ -251,8 +269,14 @@ export function TricyclePanel({
                 {fill(t.extraKm, {
                   extra: fare.extraKm,
                   base: rules.baseKm,
-                  rate: formatPeso(rules.perSucceedingKm[fare.rate]),
+                  regular: formatPeso(rules.perSucceedingKm.regular),
+                  discounted: formatPeso(rules.perSucceedingKm.discounted),
                 })}
+              </p>
+            )}
+            {fare.specialTrip && (
+              <p className="text-sm text-background/70">
+                {fill(t.specialTripApplied, { times: rules.specialTripMultiplier })}
               </p>
             )}
           </div>
@@ -281,7 +305,8 @@ export function TricyclePanel({
               </ul>
               <p className="text-2xl tabular-nums">{distanceText}</p>
               <p className="text-xl">
-                {passengerSummary(passengers, t)} · {rateLabel}
+                {passengerSummary(passengers, t)}
+                {fare.specialTrip ? ` · ${t.specialTripBadge}` : ""}
               </p>
               <DialogDescription className="max-w-xl text-base text-background/80">
                 {basis}
@@ -299,12 +324,7 @@ export function TricyclePanel({
         </section>
       )}
 
-      <TricycleFareMatrix
-        rules={rules}
-        confirmed={source.confirmed}
-        basis={basis}
-        activeRate={activeRate}
-      />
+      <TricycleFareMatrix rules={rules} confirmed={source.confirmed} basis={basis} />
       <TricycleFareHistory />
     </div>
   );
