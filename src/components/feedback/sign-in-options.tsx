@@ -11,11 +11,16 @@ import { localizePath } from "@/lib/i18n/locales";
 type SignInOptionsProps = {
   /** The page the rider came from, already checked to be on this site. */
   from?: string;
+  /** The page to come back to after signing in, when it isn't the feedback page. */
+  returnTo?: string;
+  /** Defaults to the feedback page's heading and reason. */
+  heading?: string;
+  reason?: string;
   signInFailed: boolean;
 };
 
 /** Google and Facebook sign-in. Plain forms, so they work before the page's JavaScript loads. */
-export async function SignInOptions({ from, signInFailed }: SignInOptionsProps) {
+export async function SignInOptions({ from, returnTo, heading, reason, signInFailed }: SignInOptionsProps) {
   const { locale, dict } = await getDictionary();
   const t = dict.feedback;
   const providers = [
@@ -27,9 +32,9 @@ export async function SignInOptions({ from, signInFailed }: SignInOptionsProps) 
     <section aria-labelledby="sign-in-heading" className="flex flex-col gap-4 rounded-2xl border bg-card p-6">
       <div className="flex flex-col gap-1">
         <h2 id="sign-in-heading" className="text-xl font-bold tracking-tight">
-          {t.signInHeading}
+          {heading ?? t.signInHeading}
         </h2>
-        <p className="text-pretty text-muted-foreground">{t.signInWhy}</p>
+        <p className="text-pretty text-muted-foreground">{reason ?? t.signInWhy}</p>
       </div>
 
       {signInFailed && (
@@ -45,6 +50,7 @@ export async function SignInOptions({ from, signInFailed }: SignInOptionsProps) 
             <input type="hidden" name="provider" value={id} />
             <input type="hidden" name="locale" value={locale} />
             {from && <input type="hidden" name="from" value={from} />}
+            {returnTo && <input type="hidden" name="returnTo" value={returnTo} />}
             <Button type="submit" variant="outline" size="lg" className="h-12 w-full gap-3 text-base font-semibold">
               <Icon aria-hidden className="size-5" />
               {label}

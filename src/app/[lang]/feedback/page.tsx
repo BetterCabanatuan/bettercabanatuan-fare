@@ -1,14 +1,12 @@
-import { UserRound } from "lucide-react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import { signOutRider } from "@/app/[lang]/feedback/actions";
 import { FeedbackForm } from "@/components/feedback/feedback-form";
 import { SignInOptions } from "@/components/feedback/sign-in-options";
-import { Button } from "@/components/ui/button";
+import { SignedInBar } from "@/components/shared/signed-in-bar";
 import { sitePath } from "@/lib/feedback/submission";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
-import { fill, localizePath } from "@/lib/i18n/locales";
+import { localizePath } from "@/lib/i18n/locales";
 import { getRider } from "@/lib/session";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -40,31 +38,14 @@ export default async function FeedbackPage({ searchParams }: PageProps<"/[lang]/
 }
 
 async function SignedInOrNot({ searchParams }: Pick<PageProps<"/[lang]/feedback">, "searchParams">) {
-  const [{ locale, dict }, params, rider] = await Promise.all([getDictionary(), searchParams, getRider()]);
+  const [{ dict }, params, rider] = await Promise.all([getDictionary(), searchParams, getRider()]);
   const from = sitePath(typeof params.from === "string" ? params.from : undefined);
 
   if (!rider) return <SignInOptions from={from} signInFailed={params.error === "signin"} />;
 
   return (
     <section aria-label={dict.feedback.title} className="rounded-2xl border bg-card">
-      <div className="flex items-center gap-3 border-b px-4 py-2 sm:px-6">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted">
-          <UserRound aria-hidden className="size-4 text-muted-foreground" />
-        </span>
-        <div className="flex min-w-0 flex-1 flex-col text-sm">
-          <p className="font-semibold break-words">
-            {fill(dict.feedback.signedInAs, { name: rider.name ?? rider.email ?? "" })}
-          </p>
-          {rider.name && rider.email && <p className="truncate text-muted-foreground">{rider.email}</p>}
-        </div>
-        <form action={signOutRider}>
-          <input type="hidden" name="locale" value={locale} />
-          {from && <input type="hidden" name="from" value={from} />}
-          <Button type="submit" variant="ghost" className="h-11">
-            {dict.feedback.signOut}
-          </Button>
-        </form>
-      </div>
+      <SignedInBar rider={rider} from={from} className="border-b" />
       <FeedbackForm from={from} />
     </section>
   );

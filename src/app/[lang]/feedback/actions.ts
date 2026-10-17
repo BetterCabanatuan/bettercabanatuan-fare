@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 
 import { createAuthClient } from "@/lib/auth";
 import { getDb } from "@/lib/db";
-import { feedbackPath, formDataToInput, parseFeedback, type FieldErrors } from "@/lib/feedback/submission";
+import { feedbackPath, formDataToInput, parseFeedback, sitePath, type FieldErrors } from "@/lib/feedback/submission";
 import { hasLocale, type Locale } from "@/lib/i18n/locales";
 import { getRider } from "@/lib/session";
 import { siteUrl } from "@/lib/site";
@@ -31,13 +31,19 @@ const localeFrom = (formData: FormData): Locale => {
   return hasLocale(locale) ? locale : "en";
 };
 
+// Where a rider lands after signing in or out: the page whose form they used (`returnTo`,
+// e.g. /tl/fare/suggest), or else the feedback page with the page they came from.
+const backFrom = (formData: FormData): string =>
+  sitePath(String(formData.get("returnTo") ?? "")) ??
+  feedbackPath(localeFrom(formData), String(formData.get("from") ?? ""));
+
 /**
  * Starts Google or Facebook sign-in through Supabase Auth. The PKCE code verifier is saved
  * as a cookie here; /api/auth/callback trades the returned code for a session and sends
- * the rider back to the feedback page they started from.
+ * the rider back to the page they started from.
  */
 export async function signInWithProvider(formData: FormData): Promise<never> {
-  const back = feedbackPath(localeFrom(formData), String(formData.get("from") ?? ""));
+  const back = backFrom(formData);
   const provider = String(formData.get("provider") ?? "");
   if (!isProvider(provider)) redirect(back);
 
@@ -58,7 +64,7 @@ export async function signInWithProvider(formData: FormData): Promise<never> {
 export async function signOutRider(formData: FormData): Promise<never> {
   const supabase = await createAuthClient();
   await supabase.auth.signOut();
-  redirect(feedbackPath(localeFrom(formData), String(formData.get("from") ?? "")));
+  redirect(backFrom(formData));
 }
 
 export async function submitFeedback(_previous: FeedbackState, formData: FormData): Promise<FeedbackState> {
