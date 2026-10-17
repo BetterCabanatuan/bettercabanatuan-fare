@@ -245,6 +245,18 @@ otp_expiry = 600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
+# Admin sign-in emails, rendered from emails/admin-sign-in.tsx by `npm run email:export`.
+# An admin's first sign-in sends "confirmation" (it creates the user); later ones send
+# "magic_link". These apply to the local stack; paste the same HTML into the hosted
+# project's dashboard (docs/deploy/supabase.md).
+[auth.email.template.magic_link]
+subject = "Your Pamasahe Cabanatuan sign-in link"
+content_path = "./supabase/templates/admin-sign-in.html"
+
+[auth.email.template.confirmation]
+subject = "Your Pamasahe Cabanatuan sign-in link"
+content_path = "./supabase/templates/admin-sign-in.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"

@@ -12,6 +12,12 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["next", "start", "-p", "3005"],
       "port": 3005
+    },
+    {
+      "name": "email-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "email:dev"],
+      "port": 3001
     }
   ]
 }
