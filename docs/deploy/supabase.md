@@ -65,12 +65,12 @@ Both providers redirect to Supabase, not to the app. The callback address they n
 1. **Authentication → URL Configuration → Redirect URLs**: add the app's callback, with `**` so the `?next=` part matches:
    - `http://localhost:3000/api/auth/callback**`
    - `https://[FILL: PRODUCTION_DOMAIN]/api/auth/callback**`
-2. **Google**: in the [Google Cloud console](https://console.cloud.google.com/apis/credentials), set up the **OAuth consent screen** (External; app name Pamasahe Cabanatuan; scopes `openid`, `email`, `profile`; the home page and privacy policy links). Then **Create credentials → OAuth client ID → Web application**, with the Supabase callback above under **Authorized redirect URIs**. Paste the client ID and secret into **Authentication → Sign In / Providers → Google** and turn it on.
+2. **Google**: in the [Google Cloud console](https://console.cloud.google.com/apis/credentials), set up the **OAuth consent screen** (External; app name Pamasahe Cabanatuan; scopes `openid`, `email`, `profile`; home page `https://[FILL: PRODUCTION_DOMAIN]`, privacy policy `https://[FILL: PRODUCTION_DOMAIN]/privacy`, terms of service `https://[FILL: PRODUCTION_DOMAIN]/terms`). Then **Create credentials → OAuth client ID → Web application**, with the Supabase callback above under **Authorized redirect URIs**. Paste the client ID and secret into **Authentication → Sign In / Providers → Google** and turn it on.
 3. **Facebook**: at [Meta for Developers](https://developers.facebook.com/apps), create an app with the **Authenticate and request data from users with Facebook Login** use case and add the `email` permission. Under **Facebook Login → Settings**, put the Supabase callback in **Valid OAuth Redirect URIs**. Paste the **App ID** and **App secret** (App settings → Basic) into **Authentication → Sign In / Providers → Facebook** and turn it on.
 
-   Until the app is switched to **Live**, only people with a role on the app can sign in. Going Live needs a **Privacy policy URL** and **User data deletion** instructions in App settings → Basic.
+   Until the app is switched to **Live**, only people with a role on the app can sign in. To go Live, fill in App settings → Basic: **Privacy policy URL** `https://[FILL: PRODUCTION_DOMAIN]/privacy`, **Terms of Service URL** `https://[FILL: PRODUCTION_DOMAIN]/terms`, and under **User data deletion** choose **Data deletion instructions URL** `https://[FILL: PRODUCTION_DOMAIN]/privacy#delete`.
 
-To delete a rider's data, delete their user under **Authentication → Users**: their feedback is deleted with it.
+Privacy requests (see a copy, correct, delete) arrive at the address in `src/lib/legal.ts`. Answer them from **/admin/data**: search the person's name, email or phone number to see everything held about them, correct their details, or delete records. Deleting their account deletes their feedback too. The Privacy Policy promises a reply within 30 days.
 
 ## 6. Make schema changes
 
