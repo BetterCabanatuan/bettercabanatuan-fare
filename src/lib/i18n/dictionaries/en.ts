@@ -1,3 +1,216 @@
+import type { LegalSection } from "@/lib/legal";
+
+// The Privacy Policy and Terms of Use. Every statement here must stay true of the code:
+// update them together with any change to what the site collects or who receives it.
+const privacySections: LegalSection[] = [
+  {
+    id: "who",
+    heading: "Who we are",
+    paragraphs: [
+      "Pamasahe Cabanatuan helps commuters in Cabanatuan City check jeep and tricycle fares. It is a community project made with BetterCabanatuan, not an official site of the city government. In this policy, \"we\" means the BetterCabanatuan team that runs this site.",
+      "We follow the Data Privacy Act of 2012 (Republic Act No. 10173).",
+    ],
+  },
+  {
+    id: "collect",
+    heading: "What we collect and why",
+    paragraphs: ["What we collect depends on what you do:"],
+    items: [
+      "Using the fare map: nothing that identifies you. The points you set (A and B) are used to measure the road distance and find jeep routes.",
+      "Searching for a place: the text you type is sent to the place search service to find matches. Your last few picks are saved only in your browser, so you can pick them again.",
+      "Suggesting a jeep route or adding a TODA: the details of the route or TODA, which an admin checks and may publish. Your name and contact are optional. Only admins see them, in case they need to ask you something, and they are never published.",
+      "Sending feedback: your name and email address from Google or Facebook, which of the two you used, your topic and message, the language you were reading in, and the page you came from. For the fare map, that page includes the two points of your trip. Admins use these to understand your feedback and to reply to you.",
+      "Signing in: Supabase, our sign-in service, keeps a record of your account (name, email address, profile picture link and your Google or Facebook account ID) and of each sign-in, including your IP address and browser.",
+      "Admins: the email address they sign in with, and which admin reviewed each submission.",
+    ],
+  },
+  {
+    id: "location",
+    heading: "Your location and map points",
+    paragraphs: [
+      "We never track you. Your device's location is read only when you tap \"Use my location\", and only once.",
+      "That position, like any point you set, goes into the page address (for example ?a=15.48,120.96) so a trip can be shared or bookmarked. This means it reaches our host with each page load, stays in your browser history, and is included in any link you share. To keep your exact location private, tap the map near where you are instead.",
+    ],
+  },
+  {
+    id: "services",
+    heading: "Services that receive data",
+    paragraphs: [
+      "We do not sell or rent your information, show ads, or use analytics or tracking tools. These services receive data so the site can work:",
+    ],
+    items: [
+      "Supabase stores our database and handles sign-in. Its servers may be outside the Philippines.",
+      "Cloudflare hosts the site. Its request logs, kept for a few days to run and secure the site, include your IP address and the page address.",
+      "Google or Facebook, if you sign in with them. They learn that you signed in to Pamasahe Cabanatuan; we receive only your name, email address and profile picture.",
+      "OSRM, run by FOSSGIS e.V. in Germany, receives the two points of your trip to measure the road distance.",
+      "Photon, run by komoot, receives what you type in the search box and points you drop on the map, to find place names.",
+      "CARTO serves the map images and unpkg serves part of the map's code. Like any website, they see your IP address and the part of the map you view.",
+      "Our email provider delivers the sign-in links that admins receive.",
+    ],
+  },
+  {
+    id: "cookies",
+    heading: "Cookies and storage",
+    paragraphs: [
+      "We set cookies only when you sign in: they keep you signed in and are removed when you sign out. Signing in also sets a short-lived cookie that protects the sign-in from tampering. We use no advertising or tracking cookies.",
+      "Your recent searches are kept in your browser's local storage. Clearing your browser data removes them.",
+    ],
+  },
+  {
+    id: "retention",
+    heading: "How long we keep it",
+    paragraphs: [
+      "We don't delete data on a schedule yet. Feedback, submissions and accounts are kept until they are no longer needed to run the service, or until you ask us to delete them. Admins can view, correct and delete any of it at any time.",
+      "Published TODA and route details stay public because they help other commuters. They never include your name or contact. Cloudflare deletes its request logs automatically after a few days.",
+    ],
+  },
+  {
+    id: "rights",
+    heading: "Your rights",
+    paragraphs: ["Under the Data Privacy Act, you have the right to:"],
+    items: [
+      "be told how your information is used, which this page does;",
+      "get a copy of the information we hold about you;",
+      "have wrong or outdated information corrected;",
+      "have your information deleted or blocked;",
+      "object to its use, or withdraw your consent, at any time;",
+      "receive your information in a format you can take elsewhere;",
+      "complain to the National Privacy Commission, and be paid damages if your rights are violated.",
+    ],
+  },
+  {
+    id: "requests",
+    heading: "How to make a request",
+    paragraphs: [
+      "Email us at {email}. Write from the address you signed in with, or tell us the name and contact you gave on a submission, so we can find your information and confirm that it's yours. We reply within 30 days.",
+    ],
+  },
+  {
+    id: "delete",
+    heading: "Delete your data",
+    paragraphs: ["To delete your account and everything linked to it:"],
+    items: [
+      "Email {email} with the subject \"Delete my data\", from the email address you used to sign in.",
+      "We delete your account, all your feedback, and your name and contact on any submission you sent.",
+      "We email you when it's done.",
+      "If you signed in with Facebook, you can also remove Pamasahe Cabanatuan under Facebook → Settings and privacy → Settings → Apps and websites. That stops Facebook from sharing your details with us again; to delete what we already hold, email us as above.",
+    ],
+  },
+  {
+    id: "security",
+    heading: "How we protect it",
+    paragraphs: [
+      "Only admins can read names, contacts and feedback. The database is closed to the public: only the site's server reads it, with a key that never reaches your browser. Admins sign in with a one-time link sent to an approved email address.",
+      "No system is perfectly secure. If a breach affects your information, we will tell you and the National Privacy Commission as the law requires.",
+    ],
+  },
+  {
+    id: "children",
+    heading: "Children",
+    paragraphs: [
+      "The fare map is for everyone. To sign in and send feedback, you must be old enough to have your own Google or Facebook account (13 or older). If you are under 18, ask a parent or guardian first.",
+    ],
+  },
+  {
+    id: "changes",
+    heading: "Changes to this policy",
+    paragraphs: [
+      "When we change this policy, we update the date at the top. If a change affects how we use information you already gave us, we will say so on the site before it takes effect.",
+    ],
+  },
+  {
+    id: "contact",
+    heading: "Contact and complaints",
+    paragraphs: [
+      "Email {email} with any privacy question or request. If you think we have mishandled your information, you can also complain to the National Privacy Commission at https://privacy.gov.ph.",
+    ],
+  },
+];
+
+const termsSections: LegalSection[] = [
+  {
+    id: "about",
+    heading: "What this site is",
+    paragraphs: [
+      "Pamasahe Cabanatuan is a free community project made with BetterCabanatuan. It is not an official website of the Cabanatuan City government, the LTFRB or any transport group, and it does not speak for them.",
+      "The site is in alpha: features and data are still being checked and may change.",
+    ],
+  },
+  {
+    id: "fares",
+    heading: "Fares are estimates",
+    paragraphs: [
+      "Every fare here is calculated from the published fare rules and the road distance between the points you set. The real fare can differ: rules change, distances come from map data, and some rules, such as rounding and special trips, are not yet confirmed with the city. The official fare matrix always prevails: the LTFRB's for jeeps and the city government's for tricycles.",
+      "Use the fare as a guide when you talk with a driver, not as proof of a violation. To report overcharging, contact the city's transport office or the LTFRB.",
+    ],
+  },
+  {
+    id: "maps",
+    heading: "Maps and routes",
+    paragraphs: [
+      "Map data comes from OpenStreetMap contributors under the Open Database License. Jeep route lines may be approximate, and travel times are rough estimates for a car. Always follow road signs, traffic rules and traffic enforcers.",
+    ],
+  },
+  {
+    id: "contributions",
+    heading: "What you send us",
+    paragraphs: ["When you suggest a route, add a TODA or send feedback:"],
+    items: [
+      "Send only information you believe is true. Admins check submissions and may edit, publish or reject them.",
+      "Don't include anyone else's personal phone number or details without their permission. For a TODA, give only its official contact.",
+      "By sending a route or TODA, you let us publish and update that information on the site, without your name, for as long as it helps commuters.",
+      "Feedback is read only by admins, who may use it to fix fares, routes and the site.",
+    ],
+  },
+  {
+    id: "conduct",
+    heading: "Using the site fairly",
+    paragraphs: ["Please don't:"],
+    items: [
+      "harass, threaten or insult anyone in feedback or submissions;",
+      "try to get into admin pages, other people's accounts or the database;",
+      "send automated requests that slow down the site or the free map services it uses;",
+      "use the site to break the law.",
+    ],
+  },
+  {
+    id: "enforcement",
+    heading: "When the rules are broken",
+    paragraphs: ["We may remove content, or block access for anyone who breaks these terms."],
+  },
+  {
+    id: "accounts",
+    heading: "Signing in",
+    paragraphs: [
+      "You sign in with Google or Facebook to send feedback, and their terms also apply to your account with them. To prevent spam, each account can send up to 5 messages an hour. You can stop using the site at any time and ask us to delete your data, as the Privacy Policy explains.",
+    ],
+  },
+  {
+    id: "liability",
+    heading: "No guarantees",
+    paragraphs: [
+      "The site is free and provided \"as is\". We work to keep it accurate and available, but we don't guarantee that fares, routes or the site will be correct, complete or always online. To the extent Philippine law allows, we are not liable for losses from using the site, including disputes over a fare.",
+    ],
+  },
+  {
+    id: "changes",
+    heading: "Changes to these terms",
+    paragraphs: [
+      "We may update these terms. The date at the top shows the current version. If you keep using the site after a change, you accept the new terms.",
+    ],
+  },
+  {
+    id: "law",
+    heading: "Governing law",
+    paragraphs: ["These terms are governed by the laws of the Republic of the Philippines."],
+  },
+  {
+    id: "contact",
+    heading: "Contact",
+    paragraphs: ["Questions about these terms? Email {email}."],
+  },
+];
+
 // Every user-facing string. Placeholders like {date} are filled with `fill` from locales.ts.
 export const en = {
   meta: {
@@ -30,6 +243,9 @@ export const en = {
     portalMtop: "Tricycle MTOP clearance",
     portalAbout: "About",
     portalContact: "Contact",
+    privacy: "Privacy",
+    terms: "Terms",
+    deleteData: "Delete your data",
   },
   banner: {
     label: "Alpha notice",
@@ -405,6 +621,8 @@ export const en = {
     signInFailed: "Sign-in didn't finish. Try again, or use the other option.",
     signedInAs: "Signed in as {name}",
     signOut: "Sign out",
+    consentBefore: "By continuing, you agree to our",
+    consentAnd: "and",
     topicLegend: "What is it about?",
     topics: {
       WRONG_FARE: "Wrong fare",
@@ -439,6 +657,25 @@ export const en = {
       messageLong: "Keep your message to 2000 characters.",
       invalid: "Check this answer.",
     },
+  },
+  legal: {
+    updated: "Last updated {date}",
+    onThisPage: "On this page",
+    howWeHandle: "How we handle your information",
+  },
+  privacy: {
+    title: "Privacy Policy",
+    description:
+      "What Pamasahe Cabanatuan collects, why, who else receives it, and how to see, correct or delete your information.",
+    intro:
+      "You can check fares without telling us anything about yourself. We ask for your name and email only when you send feedback, and we never sell your information or show ads. This page explains the details.",
+    sections: privacySections,
+  },
+  terms: {
+    title: "Terms of Use",
+    description: "The rules for using Pamasahe Cabanatuan, and what its fare estimates can and can't be used for.",
+    intro: "These terms apply when you use Pamasahe Cabanatuan. By using the site, you agree to them.",
+    sections: termsSections,
   },
 };
 

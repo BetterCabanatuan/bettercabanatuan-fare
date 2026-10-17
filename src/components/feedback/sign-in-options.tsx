@@ -1,10 +1,12 @@
 import { TriangleAlert } from "lucide-react";
+import Link from "next/link";
 import type { ComponentType, SVGProps } from "react";
 
 import { signInWithProvider } from "@/app/[lang]/feedback/actions";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { localizePath } from "@/lib/i18n/locales";
 
 type SignInOptionsProps = {
   /** The page the rider came from, already checked to be on this site. */
@@ -51,7 +53,17 @@ export async function SignInOptions({ from, signInFailed }: SignInOptionsProps) 
         ))}
       </div>
 
-      <p className="text-sm text-muted-foreground">{t.privacy}</p>
+      <p className="text-sm text-muted-foreground">
+        {t.consentBefore}{" "}
+        <Link href={localizePath(locale, "/terms")} className="font-semibold text-primary underline-offset-4 hover:underline">
+          {dict.terms.title}
+        </Link>{" "}
+        {t.consentAnd}{" "}
+        <Link href={localizePath(locale, "/privacy")} className="font-semibold text-primary underline-offset-4 hover:underline">
+          {dict.privacy.title}
+        </Link>
+        . {t.privacy}
+      </p>
     </section>
   );
 }

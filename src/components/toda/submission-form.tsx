@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useActionState, useId, useRef, useState, useTransition, type FormEvent } from "react";
 
 import { submitToda, type SubmitState } from "@/app/[lang]/toda/submit/actions";
+import { useDictionary } from "@/components/shared/dictionary-provider";
 import { LocationPicker } from "@/components/toda/location-picker";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { LngLat } from "@/lib/geo";
+import { localizePath } from "@/lib/i18n/locales";
 import {
   SUBMISSION_LIMITS,
   formDataToInput,
@@ -39,6 +41,7 @@ export function SubmissionForm({ boundary }: { boundary: LngLat[] }) {
 }
 
 function SubmissionRound({ boundary, onAddAnother }: { boundary: LngLat[]; onAddAnother: () => void }) {
+  const { locale, dict } = useDictionary();
   const [state, dispatch] = useActionState(submitToda, initialState);
   const [isPending, startTransition] = useTransition();
   const [clientErrors, setClientErrors] = useState<FieldErrors | null>(null);
@@ -244,7 +247,10 @@ function SubmissionRound({ boundary, onAddAnother }: { boundary: LngLat[]; onAdd
       <FieldSet>
         <FieldLegend>About you (optional)</FieldLegend>
         <FieldDescription>
-          Only our admins see this, in case they need to ask you about the TODA. It is never published.
+          Only our admins see this, in case they need to ask you about the TODA. It is never published.{" "}
+          <Link href={localizePath(locale, "/privacy")} className="font-semibold text-primary underline-offset-4 hover:underline">
+            {dict.legal.howWeHandle}
+          </Link>
         </FieldDescription>
         <FieldGroup>
           <TextField name="submitterName" label="Your name" autoComplete="name" error={errors.submitterName} />

@@ -240,7 +240,12 @@ function SubmissionRound({ boundary, onSuggestAnother }: { boundary: LngLat[]; o
         <Button type="submit" size="lg" className="h-11 px-5 text-base font-bold" disabled={isPending}>
           {isPending ? t.sending : t.submit}
         </Button>
-        <p className="text-sm text-muted-foreground">{t.privacy}</p>
+        <p className="text-sm text-muted-foreground">
+          {t.privacy}{" "}
+          <Link href={localizePath(locale, "/privacy")} className="font-semibold text-primary underline-offset-4 hover:underline">
+            {dict.legal.howWeHandle}
+          </Link>
+        </p>
       </div>
     </form>
   );

@@ -1,4 +1,216 @@
 import type { Dictionary } from "@/lib/i18n/dictionaries/en";
+import type { LegalSection } from "@/lib/legal";
+
+// The Privacy Policy and Terms of Use, matching en.ts section for section. A translation,
+// not a separate policy: change both together.
+const privacySections: LegalSection[] = [
+  {
+    id: "who",
+    heading: "Sino kami",
+    paragraphs: [
+      "Tinutulungan ng Pamasahe Cabanatuan ang mga commuter sa Lungsod ng Cabanatuan na alamin ang pamasahe sa jeep at tricycle. Proyekto ito ng komunidad kasama ang BetterCabanatuan, hindi opisyal na site ng pamahalaang lungsod. Sa policy na ito, ang \"kami\" ay ang team ng BetterCabanatuan na nagpapatakbo ng site.",
+      "Sinusunod namin ang Data Privacy Act of 2012 (Republic Act No. 10173).",
+    ],
+  },
+  {
+    id: "collect",
+    heading: "Ano ang kinokolekta namin at bakit",
+    paragraphs: ["Depende sa ginagawa mo ang kinokolekta namin:"],
+    items: [
+      "Sa paggamit ng mapa ng pamasahe: walang anumang nagpapakilala sa iyo. Ginagamit ang mga puntong itinakda mo (A at B) para sukatin ang layo sa daan at hanapin ang mga ruta ng jeep.",
+      "Sa paghahanap ng lugar: ipinapadala ang tina-type mo sa serbisyo ng paghahanap ng lugar para makahanap ng tugma. Sa browser mo lang naka-save ang huling mga pinili mo, para mapili mo ulit.",
+      "Sa pagmungkahi ng ruta ng jeep o pagdagdag ng TODA: ang detalye ng ruta o TODA, na sinusuri ng admin at maaaring ilathala. Opsyonal ang pangalan at contact mo. Mga admin lang ang nakakakita nito, kung sakaling may itanong sila, at hindi ito kailanman ilalathala.",
+      "Sa pagpapadala ng feedback: ang pangalan at email address mo mula sa Google o Facebook, kung alin sa dalawa ang ginamit mo, ang paksa at mensahe mo, ang wikang binabasa mo, at ang pahinang pinanggalingan mo. Kung mula sa mapa ng pamasahe, kasama roon ang dalawang punto ng biyahe mo. Ginagamit ito ng mga admin para maintindihan ang feedback mo at para masagot ka.",
+      "Sa pag-sign in: nagtatago ang Supabase, ang serbisyo namin sa pag-sign in, ng tala ng account mo (pangalan, email address, link ng profile picture at ID ng Google o Facebook account mo) at ng bawat pag-sign in, kasama ang IP address at browser mo.",
+      "Mga admin: ang email address na ginagamit nila sa pag-sign in, at kung sinong admin ang sumuri sa bawat submission.",
+    ],
+  },
+  {
+    id: "location",
+    heading: "Ang lokasyon mo at mga punto sa mapa",
+    paragraphs: [
+      "Hindi ka namin sinusubaybayan. Binabasa lang ang lokasyon ng device mo kapag pinindot mo ang \"Gamitin ang lokasyon ko\", at isang beses lang.",
+      "Gaya ng anumang puntong itinakda mo, napupunta ang posisyong iyon sa address ng pahina (halimbawa ?a=15.48,120.96) para maibahagi o ma-bookmark ang biyahe. Ibig sabihin, umaabot ito sa host namin tuwing magbubukas ng pahina, nananatili sa history ng browser mo, at kasama sa anumang link na ibabahagi mo. Para manatiling pribado ang eksaktong lokasyon mo, pindutin na lang ang mapa malapit sa kinaroroonan mo.",
+    ],
+  },
+  {
+    id: "services",
+    heading: "Mga serbisyong tumatanggap ng datos",
+    paragraphs: [
+      "Hindi namin ibinebenta o pinauupahan ang impormasyon mo, hindi kami nagpapakita ng ads, at hindi kami gumagamit ng analytics o tracking. Tumatanggap ng datos ang mga serbisyong ito para gumana ang site:",
+    ],
+    items: [
+      "Ang Supabase ang nagtatago ng database at humahawak ng pag-sign in. Maaaring nasa labas ng Pilipinas ang mga server nito.",
+      "Ang Cloudflare ang host ng site. Kasama sa mga request log nito, na itinatago nang ilang araw para mapatakbo at maprotektahan ang site, ang IP address mo at ang address ng pahina.",
+      "Ang Google o Facebook, kung sila ang ginamit mo sa pag-sign in. Malalaman nila na nag-sign in ka sa Pamasahe Cabanatuan; pangalan, email address at profile picture mo lang ang natatanggap namin.",
+      "Ang OSRM, na pinapatakbo ng FOSSGIS e.V. sa Germany, ay tumatanggap ng dalawang punto ng biyahe mo para sukatin ang layo sa daan.",
+      "Ang Photon, na pinapatakbo ng komoot, ay tumatanggap ng tina-type mo sa search box at ng mga puntong inilalagay mo sa mapa, para mahanap ang pangalan ng lugar.",
+      "Ang CARTO ang nagbibigay ng mga larawan ng mapa at ang unpkg ng bahagi ng code ng mapa. Gaya ng anumang website, nakikita nila ang IP address mo at ang bahagi ng mapang tinitingnan mo.",
+      "Ang email provider namin ang naghahatid ng mga sign-in link na natatanggap ng mga admin.",
+    ],
+  },
+  {
+    id: "cookies",
+    heading: "Cookies at storage",
+    paragraphs: [
+      "Nagtatakda lang kami ng cookies kapag nag-sign in ka: pinapanatili ka nitong naka-sign in at nabubura ito kapag nag-sign out ka. Nagtatakda rin ang pag-sign in ng panandaliang cookie na nagpoprotekta sa pag-sign in laban sa pandaraya. Wala kaming cookies para sa ads o tracking.",
+      "Nasa local storage ng browser mo ang mga huling hinanap mo. Mabubura ang mga ito kapag binura mo ang data ng browser mo.",
+    ],
+  },
+  {
+    id: "retention",
+    heading: "Gaano katagal namin ito itinatago",
+    paragraphs: [
+      "Wala pa kaming nakatakdang iskedyul ng pagbura. Itinatago ang feedback, mga submission at mga account hangga't kailangan pa para patakbuhin ang serbisyo, o hanggang hilingin mong burahin ang mga ito. Kayang tingnan, itama at burahin ng mga admin ang alinman dito anumang oras.",
+      "Nananatiling pampubliko ang nailathalang detalye ng TODA at ruta dahil nakakatulong ito sa ibang commuter. Hindi kailanman kasama rito ang pangalan o contact mo. Kusang binubura ng Cloudflare ang mga request log nito pagkalipas ng ilang araw.",
+    ],
+  },
+  {
+    id: "rights",
+    heading: "Ang mga karapatan mo",
+    paragraphs: ["Sa ilalim ng Data Privacy Act, may karapatan kang:"],
+    items: [
+      "malaman kung paano ginagamit ang impormasyon mo, na siyang ginagawa ng pahinang ito;",
+      "makakuha ng kopya ng impormasyong hawak namin tungkol sa iyo;",
+      "ipatama ang mali o luma nang impormasyon;",
+      "ipabura o ipa-block ang impormasyon mo;",
+      "tumutol sa paggamit nito, o bawiin ang pahintulot mo, anumang oras;",
+      "matanggap ang impormasyon mo sa format na madadala mo sa iba;",
+      "magreklamo sa National Privacy Commission, at mabayaran ng danyos kung nalabag ang mga karapatan mo.",
+    ],
+  },
+  {
+    id: "requests",
+    heading: "Paano humiling",
+    paragraphs: [
+      "Mag-email sa {email}. Gamitin ang address na ipinang-sign in mo, o sabihin sa amin ang pangalan at contact na ibinigay mo sa isang submission, para mahanap namin ang impormasyon mo at makumpirmang sa iyo ito. Sasagot kami sa loob ng 30 araw.",
+    ],
+  },
+  {
+    id: "delete",
+    heading: "Burahin ang data mo",
+    paragraphs: ["Para burahin ang account mo at lahat ng kaugnay nito:"],
+    items: [
+      "Mag-email sa {email} na may subject na \"Delete my data\", gamit ang email address na ipinang-sign in mo.",
+      "Buburahin namin ang account mo, lahat ng feedback mo, at ang pangalan at contact mo sa anumang submission na ipinadala mo.",
+      "Mag-e-email kami kapag tapos na.",
+      "Kung Facebook ang ginamit mo sa pag-sign in, puwede mo ring alisin ang Pamasahe Cabanatuan sa Facebook → Settings and privacy → Settings → Apps and websites. Pinipigilan nito ang Facebook na ibahagi ulit sa amin ang detalye mo; para burahin ang hawak na namin, mag-email sa amin gaya ng nasa itaas.",
+    ],
+  },
+  {
+    id: "security",
+    heading: "Paano namin ito pinoprotektahan",
+    paragraphs: [
+      "Mga admin lang ang nakakabasa ng mga pangalan, contact at feedback. Sarado sa publiko ang database: ang server lang ng site ang nagbabasa nito, gamit ang key na hindi kailanman umaabot sa browser mo. Nagsa-sign in ang mga admin gamit ang one-time link na ipinapadala sa aprubadong email address.",
+      "Walang sistemang ganap na ligtas. Kapag may breach na umabot sa impormasyon mo, sasabihan ka namin at ang National Privacy Commission ayon sa hinihingi ng batas.",
+    ],
+  },
+  {
+    id: "children",
+    heading: "Mga bata",
+    paragraphs: [
+      "Para sa lahat ang mapa ng pamasahe. Para mag-sign in at magpadala ng feedback, dapat sapat na ang edad mo para magkaroon ng sariling Google o Facebook account (13 pataas). Kung wala ka pang 18, magpaalam muna sa magulang o tagapag-alaga.",
+    ],
+  },
+  {
+    id: "changes",
+    heading: "Mga pagbabago sa policy na ito",
+    paragraphs: [
+      "Kapag binago namin ang policy na ito, ia-update namin ang petsa sa itaas. Kung makakaapekto ang pagbabago sa paggamit ng impormasyong naibigay mo na, ipapaalam namin ito sa site bago ito magkabisa.",
+    ],
+  },
+  {
+    id: "contact",
+    heading: "Contact at reklamo",
+    paragraphs: [
+      "Mag-email sa {email} para sa anumang tanong o kahilingan tungkol sa privacy. Kung sa tingin mo ay mali ang paghawak namin sa impormasyon mo, puwede ka ring magreklamo sa National Privacy Commission sa https://privacy.gov.ph.",
+    ],
+  },
+];
+
+const termsSections: LegalSection[] = [
+  {
+    id: "about",
+    heading: "Ano ang site na ito",
+    paragraphs: [
+      "Ang Pamasahe Cabanatuan ay libreng proyekto ng komunidad kasama ang BetterCabanatuan. Hindi ito opisyal na website ng pamahalaang Lungsod ng Cabanatuan, ng LTFRB o ng anumang grupo ng transportasyon, at hindi ito nagsasalita para sa kanila.",
+      "Nasa alpha pa ang site: sinusuri pa ang mga feature at datos at maaari pang magbago.",
+    ],
+  },
+  {
+    id: "fares",
+    heading: "Tantiya ang mga pamasahe",
+    paragraphs: [
+      "Kinukuwenta ang bawat pamasahe dito mula sa nailathalang mga patakaran sa pamasahe at sa layo sa daan ng mga puntong itinakda mo. Maaaring iba ang totoong pamasahe: nagbabago ang mga patakaran, galing sa datos ng mapa ang mga layo, at may mga patakarang hindi pa kumpirmado sa lungsod, gaya ng rounding at special trip. Laging masusunod ang opisyal na fare matrix: ang sa LTFRB para sa jeep at ang sa pamahalaang lungsod para sa tricycle.",
+      "Gamitin ang pamasahe bilang gabay sa pakikipag-usap sa driver, hindi bilang patunay ng paglabag. Para mag-report ng sobrang singil, makipag-ugnayan sa tanggapan ng transportasyon ng lungsod o sa LTFRB.",
+    ],
+  },
+  {
+    id: "maps",
+    heading: "Mapa at mga ruta",
+    paragraphs: [
+      "Galing ang datos ng mapa sa mga contributor ng OpenStreetMap sa ilalim ng Open Database License. Maaaring tantiya lang ang mga linya ng ruta ng jeep, at magaspang na tantiya pang-kotse ang oras ng biyahe. Laging sundin ang mga karatula, batas trapiko at mga traffic enforcer.",
+    ],
+  },
+  {
+    id: "contributions",
+    heading: "Ang mga ipinapadala mo",
+    paragraphs: ["Kapag nagmungkahi ka ng ruta, nagdagdag ng TODA o nagpadala ng feedback:"],
+    items: [
+      "Ipadala lang ang impormasyong pinaniniwalaan mong totoo. Sinusuri ng mga admin ang mga submission at maaari nilang i-edit, ilathala o tanggihan ang mga ito.",
+      "Huwag isama ang personal na numero o detalye ng ibang tao nang walang pahintulot nila. Para sa TODA, ang opisyal na contact lang nito ang ibigay.",
+      "Sa pagpapadala ng ruta o TODA, pinapayagan mo kaming ilathala at i-update ang impormasyong iyon sa site, nang wala ang pangalan mo, hangga't nakakatulong ito sa mga commuter.",
+      "Mga admin lang ang nagbabasa ng feedback, at maaari nila itong gamitin para ayusin ang mga pamasahe, ruta at ang site.",
+    ],
+  },
+  {
+    id: "conduct",
+    heading: "Patas na paggamit ng site",
+    paragraphs: ["Pakiusap, huwag:"],
+    items: [
+      "manggulo, magbanta o mang-insulto ng sinuman sa feedback o submission;",
+      "subukang pasukin ang mga pahina ng admin, ang account ng iba o ang database;",
+      "magpadala ng automated na request na nagpapabagal sa site o sa libreng serbisyo ng mapa na ginagamit nito;",
+      "gamitin ang site para lumabag sa batas.",
+    ],
+  },
+  {
+    id: "enforcement",
+    heading: "Kapag nilabag ang mga patakaran",
+    paragraphs: ["Maaari naming alisin ang content, o i-block ang sinumang lumalabag sa mga tuntuning ito."],
+  },
+  {
+    id: "accounts",
+    heading: "Pag-sign in",
+    paragraphs: [
+      "Nagsa-sign in ka gamit ang Google o Facebook para magpadala ng feedback, at sakop din ng mga tuntunin nila ang account mo sa kanila. Para maiwasan ang spam, hanggang 5 mensahe kada oras ang kayang ipadala ng bawat account. Puwede kang tumigil sa paggamit ng site anumang oras at hilingin na burahin namin ang data mo, gaya ng paliwanag sa Privacy Policy.",
+    ],
+  },
+  {
+    id: "liability",
+    heading: "Walang garantiya",
+    paragraphs: [
+      "Libre ang site at ibinibigay \"as is\". Sinisikap naming panatilihin itong tama at bukas, pero hindi namin ginagarantiya na laging tama, kumpleto o online ang mga pamasahe, ruta o ang site. Hangga't pinapayagan ng batas ng Pilipinas, hindi kami mananagot sa pagkalugi mula sa paggamit ng site, kasama ang mga away tungkol sa pamasahe.",
+    ],
+  },
+  {
+    id: "changes",
+    heading: "Mga pagbabago sa mga tuntuning ito",
+    paragraphs: [
+      "Maaari naming i-update ang mga tuntuning ito. Ipinapakita ng petsa sa itaas ang kasalukuyang bersyon. Kung patuloy mong gagamitin ang site pagkatapos ng pagbabago, tinatanggap mo ang bagong mga tuntunin.",
+    ],
+  },
+  {
+    id: "law",
+    heading: "Batas na sinusunod",
+    paragraphs: ["Ang mga tuntuning ito ay sakop ng mga batas ng Republika ng Pilipinas."],
+  },
+  {
+    id: "contact",
+    heading: "Contact",
+    paragraphs: ["May tanong tungkol sa mga tuntuning ito? Mag-email sa {email}."],
+  },
+];
 
 // Everyday Filipino, with the English words commuters actually use (fare matrix, special trip,
 // PWD, senior). Have a native speaker review before launch.
@@ -33,6 +245,9 @@ export const tl: Dictionary = {
     portalMtop: "MTOP clearance para sa tricycle",
     portalAbout: "Tungkol sa amin",
     portalContact: "Makipag-ugnayan",
+    privacy: "Privacy",
+    terms: "Terms",
+    deleteData: "Burahin ang data mo",
   },
   banner: {
     label: "Paalala: alpha version",
@@ -411,6 +626,8 @@ export const tl: Dictionary = {
     signInFailed: "Hindi natapos ang pag-sign in. Subukan ulit, o gamitin ang isa pang paraan.",
     signedInAs: "Naka-sign in bilang {name}",
     signOut: "Mag-sign out",
+    consentBefore: "Sa pagpapatuloy, sumasang-ayon ka sa aming",
+    consentAnd: "at",
     topicLegend: "Tungkol saan ito?",
     topics: {
       WRONG_FARE: "Maling pamasahe",
@@ -446,5 +663,24 @@ export const tl: Dictionary = {
       messageLong: "Hanggang 2000 karakter lang ang mensahe.",
       invalid: "Pakitingnan ang sagot na ito.",
     },
+  },
+  legal: {
+    updated: "Huling na-update {date}",
+    onThisPage: "Sa pahinang ito",
+    howWeHandle: "Paano namin hinahawakan ang impormasyon mo",
+  },
+  privacy: {
+    title: "Privacy Policy",
+    description:
+      "Ano ang kinokolekta ng Pamasahe Cabanatuan, bakit, sino pa ang tumatanggap nito, at paano makita, itama o burahin ang impormasyon mo.",
+    intro:
+      "Puwede mong alamin ang pamasahe nang hindi nagbibigay ng anumang impormasyon tungkol sa iyo. Hinihingi lang namin ang pangalan at email mo kapag nagpadala ka ng feedback, at hindi namin kailanman ibinebenta ang impormasyon mo o nagpapakita ng ads. Narito ang mga detalye.",
+    sections: privacySections,
+  },
+  terms: {
+    title: "Terms of Use",
+    description: "Ang mga patakaran sa paggamit ng Pamasahe Cabanatuan, at kung saan puwede at hindi puwedeng gamitin ang mga tantiyang pamasahe nito.",
+    intro: "Sakop ng mga tuntuning ito ang paggamit mo ng Pamasahe Cabanatuan. Sa paggamit ng site, sumasang-ayon ka sa mga ito.",
+    sections: termsSections,
   },
 };

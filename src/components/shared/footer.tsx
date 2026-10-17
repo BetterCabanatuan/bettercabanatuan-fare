@@ -30,6 +30,15 @@ export async function Footer() {
             <Link href={localizePath(locale, "/sources")} className={linkClass}>
               {dict.footer.sources}
             </Link>
+            <Link href={localizePath(locale, "/privacy")} className={linkClass}>
+              {dict.footer.privacy}
+            </Link>
+            <Link href={localizePath(locale, "/terms")} className={linkClass}>
+              {dict.footer.terms}
+            </Link>
+            <Link href={`${localizePath(locale, "/privacy")}#delete`} className={linkClass}>
+              {dict.footer.deleteData}
+            </Link>
             <a href="https://www.openstreetmap.org/copyright" className={linkClass}>
               {dict.footer.mapData}
             </a>

@@ -6,7 +6,7 @@ import { siteUrl } from "@/lib/site";
 const absolute = (path: string): string => new URL(path, siteUrl).toString();
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const localized = ["/", "/fare", "/fare/suggest", "/feedback", "/sources"].flatMap((path) => {
+  const localized = ["/", "/fare", "/fare/suggest", "/feedback", "/sources", "/privacy", "/terms"].flatMap((path) => {
     const languages = Object.fromEntries(locales.map((locale) => [locale, absolute(localizePath(locale, path))]));
     return locales.map((locale) => ({
       url: absolute(localizePath(locale, path)),

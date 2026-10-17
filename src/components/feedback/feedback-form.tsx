@@ -144,7 +144,10 @@ function FeedbackRound({ from, onSendAnother }: { from?: string; onSendAnother: 
       <div className="flex flex-col gap-3">
         <p className="text-sm text-muted-foreground">
           {from && `${t.fromPage} `}
-          {t.privacy}
+          {t.privacy}{" "}
+          <Link href={localizePath(locale, "/privacy")} className="font-semibold text-primary underline-offset-4 hover:underline">
+            {dict.legal.howWeHandle}
+          </Link>
         </p>
         <Button type="submit" size="lg" className="h-11 self-start px-5 text-base font-bold" disabled={isPending}>
           {isPending ? t.sending : t.submit}
