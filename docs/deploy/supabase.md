@@ -56,7 +56,23 @@ Admins sign in with a one-time email link. Only addresses in `ADMIN_EMAILS` get 
 
 Removing an address from `ADMIN_EMAILS` revokes access on the next request, even for a signed-in admin.
 
-## 5. Make schema changes
+## 5. Set up rider sign-in (Google and Facebook)
+
+Riders sign in with Google or Facebook before they send feedback at `/feedback`. Admins read it at `/admin/feedback`. A Google or Facebook session never counts as an admin, even when its address is in `ADMIN_EMAILS`: only the emailed link signs an admin in.
+
+Both providers redirect to Supabase, not to the app. The callback address they need is `https://[FILL: SUPABASE_PROJECT_REF].supabase.co/auth/v1/callback` (**Authentication → Sign In / Providers** shows it under each provider).
+
+1. **Authentication → URL Configuration → Redirect URLs**: add the app's callback, with `**` so the `?next=` part matches:
+   - `http://localhost:3000/api/auth/callback**`
+   - `https://[FILL: PRODUCTION_DOMAIN]/api/auth/callback**`
+2. **Google**: in the [Google Cloud console](https://console.cloud.google.com/apis/credentials), set up the **OAuth consent screen** (External; app name Pamasahe Cabanatuan; scopes `openid`, `email`, `profile`; the home page and privacy policy links). Then **Create credentials → OAuth client ID → Web application**, with the Supabase callback above under **Authorized redirect URIs**. Paste the client ID and secret into **Authentication → Sign In / Providers → Google** and turn it on.
+3. **Facebook**: at [Meta for Developers](https://developers.facebook.com/apps), create an app with the **Authenticate and request data from users with Facebook Login** use case and add the `email` permission. Under **Facebook Login → Settings**, put the Supabase callback in **Valid OAuth Redirect URIs**. Paste the **App ID** and **App secret** (App settings → Basic) into **Authentication → Sign In / Providers → Facebook** and turn it on.
+
+   Until the app is switched to **Live**, only people with a role on the app can sign in. Going Live needs a **Privacy policy URL** and **User data deletion** instructions in App settings → Basic.
+
+To delete a rider's data, delete their user under **Authentication → Users**: their feedback is deleted with it.
+
+## 6. Make schema changes
 
 ```bash
 npm run db:new -- short_description
@@ -67,7 +83,7 @@ This creates an empty file in `supabase/migrations`. Write the SQL, then:
 1. Apply it with `npm run db:deploy`. Test it on a separate Supabase project (or a local stack with `npx supabase start`, which needs Docker) before it touches production data.
 2. Regenerate the TypeScript types with `npm run db:types`, and commit both files.
 
-## 6. Change the sign-in email
+## 7. Change the sign-in email
 
 ```bash
 npm run email:dev
