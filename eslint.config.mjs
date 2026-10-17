@@ -22,6 +22,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // OpenNext's Cloudflare build output, left behind by `npm run deploy` or `npm run preview`.
+    ".open-next/**",
     // Throwaway Node scripts that rendered the demo video; not part of the app.
     "demo-video/**",
   ]),
