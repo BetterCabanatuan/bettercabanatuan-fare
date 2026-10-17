@@ -1,16 +1,25 @@
 "use client";
 
-import { useId, useState } from "react";
-import { ChevronDownIcon, InfoIcon, MapPinIcon, PlusIcon, UsersIcon } from "lucide-react";
+import { useId, useRef, useState, type RefObject } from "react";
+import { ChevronDownIcon, InfoIcon, MapPinIcon, PlusIcon, SearchIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 
 import { useDictionary } from "@/components/shared/dictionary-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Label } from "@/components/ui/label";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { formatPeso } from "@/lib/fare";
 import { fill, localizePath } from "@/lib/i18n/locales";
-import { isApproximate, type JeepRoute } from "@/lib/jeep-routes";
+import {
+  filterRoutes,
+  isApproximate,
+  isMapped,
+  type JeepRoute,
+  type JeepRouteFilter,
+} from "@/lib/jeep-routes";
 import { cn } from "@/lib/utils";
 
 export const isTodo = (value: string | undefined): boolean => !value || value.startsWith("TODO");
@@ -130,11 +139,117 @@ type JeepRouteListProps = {
 /** Routes shown on phones before "Show all", so the fare calculator isn't buried. */
 const PHONE_PREVIEW = 5;
 
+const NO_FILTER: JeepRouteFilter = { query: "", type: "all", line: "all" };
+
+type ToggleOption<T extends string> = { value: T; label: string };
+
+/** One-choice toggle row; tapping the chosen option again keeps it chosen. */
+function FilterToggle<T extends string>({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: ToggleOption<T>[];
+  value: T;
+  onChange: (value: T) => void;
+}) {
+  return (
+    <ToggleGroup
+      aria-label={label}
+      variant="outline"
+      spacing={0}
+      value={[value]}
+      onValueChange={(next) => {
+        const option = options.find((candidate) => candidate.value === next[0]);
+        if (option) onChange(option.value);
+      }}
+    >
+      {options.map((option) => (
+        <ToggleGroupItem
+          key={option.value}
+          value={option.value}
+          className="h-11 px-3 aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+        >
+          {option.label}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
+  );
+}
+
+function RouteFilters({
+  filter,
+  onChange,
+  showLineFilter,
+  searchRef,
+}: {
+  filter: JeepRouteFilter;
+  onChange: (filter: JeepRouteFilter) => void;
+  /** Only offered when the list holds both confirmed and approximate lines. */
+  showLineFilter: boolean;
+  searchRef: RefObject<HTMLInputElement | null>;
+}) {
+  const { dict } = useDictionary();
+  const searchId = useId();
+
+  return (
+    <div className="flex flex-col gap-2">
+      <Label htmlFor={searchId} className="sr-only">
+        {dict.jeep.routeSearchLabel}
+      </Label>
+      <InputGroup className="h-11 bg-background">
+        <InputGroupAddon align="inline-start">
+          <SearchIcon aria-hidden />
+        </InputGroupAddon>
+        <InputGroupInput
+          ref={searchRef}
+          id={searchId}
+          type="search"
+          autoComplete="off"
+          enterKeyHint="search"
+          placeholder={dict.jeep.routeSearchPlaceholder}
+          value={filter.query}
+          onChange={(event) => onChange({ ...filter, query: event.target.value })}
+        />
+      </InputGroup>
+      <div className="flex flex-wrap gap-2">
+        <FilterToggle
+          label={dict.jeep.routeTypeFilter}
+          value={filter.type}
+          onChange={(type) => onChange({ ...filter, type })}
+          options={[
+            { value: "all", label: dict.jeep.filterAll },
+            { value: "traditional", label: dict.jeep.traditional },
+            { value: "modern", label: dict.jeep.modern },
+          ]}
+        />
+        {showLineFilter && (
+          <FilterToggle
+            label={dict.jeep.routeLineFilter}
+            value={filter.line}
+            onChange={(line) => onChange({ ...filter, line })}
+            options={[
+              { value: "all", label: dict.jeep.filterAll },
+              { value: "mapped", label: dict.jeep.mappedLine },
+              { value: "approximate", label: dict.jeep.approximateLine },
+            ]}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function JeepRouteList({ routes, highlightedRouteId, onHighlightRoute }: JeepRouteListProps) {
   const { dict, locale } = useDictionary();
   const headingId = useId();
   const listId = useId();
+  const searchRef = useRef<HTMLInputElement>(null);
   const [expanded, setExpanded] = useState(false);
+  const [filter, setFilter] = useState(NO_FILTER);
+  const shown = filterRoutes(routes, filter);
 
   return (
     <section aria-labelledby={headingId} className="flex flex-col gap-3">
@@ -163,39 +278,65 @@ export function JeepRouteList({ routes, highlightedRouteId, onHighlightRoute }: 
           {dict.jeep.routeListHint}
         </p>
       </div>
-      <ul id={listId} className="flex flex-col gap-2">
-        {routes.map((route, index) => {
-          const pressed = route.id === highlightedRouteId;
-          // A route highlighted from the map stays listed even when it's past the preview.
-          const folded = !expanded && index >= PHONE_PREVIEW && !pressed;
-          return (
-            <li key={route.id} className={cn(folded && "max-sm:hidden")}>
-              <button
-                type="button"
-                aria-pressed={pressed}
-                onClick={() => onHighlightRoute(pressed ? null : route.id)}
-                className="flex min-h-11 w-full items-start gap-3 rounded-lg border p-3 text-left text-sm transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 aria-pressed:border-primary aria-pressed:bg-primary/5"
-              >
-                <span className="flex min-w-0 flex-1 flex-col gap-1">
-                  <span className="font-semibold">{route.name}</span>
-                  {!isTodo(route.via) && (
-                    <span className="text-xs text-muted-foreground">{fill(dict.jeep.via, { via: route.via })}</span>
-                  )}
-                  <Terminal terminal={route.terminal} />
-                  <ReportedFare route={route} />
-                </span>
-                <span className="flex shrink-0 flex-col items-end gap-1">
-                  <Badge variant="secondary">{dict.jeep[route.type]}</Badge>
-                  {route.origin === "community" && <CommunityBadge />}
-                  {isApproximate(route) && <ApproximateBadge />}
-                </span>
-              </button>
-              {pressed && <RouteStops route={route} />}
-            </li>
-          );
-        })}
-      </ul>
-      {routes.length > PHONE_PREVIEW && (
+      <RouteFilters
+        filter={filter}
+        onChange={setFilter}
+        showLineFilter={routes.some(isMapped) && routes.some(isApproximate)}
+        searchRef={searchRef}
+      />
+      <p aria-live="polite" aria-atomic className="text-xs text-muted-foreground tabular-nums">
+        {fill(dict.jeep.routeFilterCount, { shown: shown.length, total: routes.length })}
+      </p>
+      {shown.length === 0 ? (
+        <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed p-6 text-center text-sm">
+          <p>{dict.jeep.noRouteMatch}</p>
+          <Button
+            variant="outline"
+            className="h-11"
+            onClick={() => {
+              setFilter(NO_FILTER);
+              // The button disappears once routes show again, so focus goes back to the search box.
+              searchRef.current?.focus();
+            }}
+          >
+            {dict.jeep.clearRouteFilters}
+          </Button>
+        </div>
+      ) : (
+        <ul id={listId} className="flex flex-col gap-2">
+          {shown.map((route, index) => {
+            const pressed = route.id === highlightedRouteId;
+            // A route highlighted from the map stays listed even when it's past the preview.
+            const folded = !expanded && index >= PHONE_PREVIEW && !pressed;
+            return (
+              <li key={route.id} className={cn(folded && "max-sm:hidden")}>
+                <button
+                  type="button"
+                  aria-pressed={pressed}
+                  onClick={() => onHighlightRoute(pressed ? null : route.id)}
+                  className="flex min-h-11 w-full items-start gap-3 rounded-lg border p-3 text-left text-sm transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 aria-pressed:border-primary aria-pressed:bg-primary/5"
+                >
+                  <span className="flex min-w-0 flex-1 flex-col gap-1">
+                    <span className="font-semibold">{route.name}</span>
+                    {!isTodo(route.via) && (
+                      <span className="text-xs text-muted-foreground">{fill(dict.jeep.via, { via: route.via })}</span>
+                    )}
+                    <Terminal terminal={route.terminal} />
+                    <ReportedFare route={route} />
+                  </span>
+                  <span className="flex shrink-0 flex-col items-end gap-1">
+                    <Badge variant="secondary">{dict.jeep[route.type]}</Badge>
+                    {route.origin === "community" && <CommunityBadge />}
+                    {isApproximate(route) && <ApproximateBadge />}
+                  </span>
+                </button>
+                {pressed && <RouteStops route={route} />}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {shown.length > PHONE_PREVIEW && (
         <Button
           variant="outline"
           size="lg"
@@ -204,7 +345,7 @@ export function JeepRouteList({ routes, highlightedRouteId, onHighlightRoute }: 
           aria-expanded={expanded}
           onClick={() => setExpanded((open) => !open)}
         >
-          {expanded ? dict.jeep.showFewerRoutes : fill(dict.jeep.showAllRoutes, { count: routes.length })}
+          {expanded ? dict.jeep.showFewerRoutes : fill(dict.jeep.showAllRoutes, { count: shown.length })}
           <ChevronDownIcon aria-hidden className={cn("size-4 transition-transform", expanded && "rotate-180")} />
         </Button>
       )}

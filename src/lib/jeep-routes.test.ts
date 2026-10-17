@@ -2,7 +2,15 @@ import { describe, expect, it } from "vitest";
 
 import type { JeepFareRules } from "@/lib/fare";
 import { cumulativeKm, isInsideRing, sliceLine, type LngLat } from "@/lib/geo";
-import { findTrips, hasLine, isApproximate, isMapped, type JeepRoute } from "@/lib/jeep-routes";
+import {
+  filterRoutes,
+  findTrips,
+  hasLine,
+  isApproximate,
+  isMapped,
+  type JeepRoute,
+  type JeepRouteFilter,
+} from "@/lib/jeep-routes";
 
 const rules: JeepFareRules = {
   effectiveDate: "2026-09-28",
@@ -75,6 +83,63 @@ describe("findTrips", () => {
     expect(hasLine(preset)).toBe(true);
     expect(isApproximate(preset)).toBe(true);
     expect(findTrips([preset], rules, a, b, 0.5).trips).toHaveLength(1);
+  });
+});
+
+describe("filterRoutes", () => {
+  const sanJose = route({
+    id: "sanjose",
+    name: "Cabanatuan – San Jose City",
+    via: "Talavera (Maharlika Hwy)",
+    terminal: "Central Transport Terminal",
+    status: "approximate",
+    verifiedOn: undefined,
+    stops: [{ name: "Talavera", barangay: "Poblacion Sur", position: [120.92, 15.58] }],
+  });
+  const penaranda = route({
+    id: "penaranda",
+    name: "Cabanatuan – Peñaranda",
+    via: "TODO confirm via",
+    type: "modern",
+    terminal: "TODO confirm terminal",
+  });
+  const all = [sanJose, penaranda];
+  const ids = (filter: Partial<JeepRouteFilter>): string[] =>
+    filterRoutes(all, { query: "", type: "all", line: "all", ...filter }).map((jeepRoute) => jeepRoute.id);
+
+  it("keeps every route when nothing is filtered", () => {
+    expect(ids({ query: "  " })).toEqual(["sanjose", "penaranda"]);
+  });
+
+  it("matches the name, via, terminal, stops and barangays", () => {
+    expect(ids({ query: "san jose" })).toEqual(["sanjose"]);
+    expect(ids({ query: "maharlika" })).toEqual(["sanjose"]);
+    expect(ids({ query: "central terminal" })).toEqual(["sanjose"]);
+    expect(ids({ query: "poblacion sur" })).toEqual(["sanjose"]);
+    expect(ids({ query: "cabanatuan" })).toEqual(["sanjose", "penaranda"]);
+  });
+
+  it("ignores case, accents and punctuation", () => {
+    expect(ids({ query: "PENARANDA" })).toEqual(["penaranda"]);
+    expect(ids({ query: "cabanatuan-san jose" })).toEqual(["sanjose"]);
+  });
+
+  it("needs every word to match somewhere on the route", () => {
+    expect(ids({ query: "talavera penaranda" })).toEqual([]);
+  });
+
+  it("does not match the TODO placeholders for unknown values", () => {
+    expect(ids({ query: "todo" })).toEqual([]);
+  });
+
+  it("filters by jeep type", () => {
+    expect(ids({ type: "modern" })).toEqual(["penaranda"]);
+    expect(ids({ type: "traditional", query: "penaranda" })).toEqual([]);
+  });
+
+  it("filters by confirmed or approximate line", () => {
+    expect(ids({ line: "mapped" })).toEqual(["penaranda"]);
+    expect(ids({ line: "approximate" })).toEqual(["sanjose"]);
   });
 });
 

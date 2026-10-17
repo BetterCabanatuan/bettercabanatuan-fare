@@ -109,3 +109,45 @@ export function findTrips(
   const closest = candidates.reduce((best, trip) => (trip.board.offsetKm < best.board.offsetKm ? trip : best));
   return { trips, nearest: { route: closest.route, offsetKm: closest.board.offsetKm } };
 }
+
+/** mapped: a confirmed line (isMapped). approximate: a preset or community line, not confirmed. */
+export type RouteLineFilter = "all" | "mapped" | "approximate";
+
+export type JeepRouteFilter = {
+  query: string;
+  type: JeepType | "all";
+  line: RouteLineFilter;
+};
+
+// Riders type without accents or dashes ("penaranda", "cabanatuan san jose"), so both
+// sides drop marks and punctuation before comparing.
+const searchable = (text: string): string =>
+  text
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
+
+/** The name (which carries from and to), via, terminal and the places along the route. */
+const routeText = (route: JeepRoute): string =>
+  searchable(
+    [route.name, route.via, route.terminal ?? "", ...route.stops.flatMap((stop) => [stop.name, stop.barangay ?? ""])]
+      // Unknown via and terminal values are stored as "TODO …" placeholders.
+      .filter((text) => !text.startsWith("TODO"))
+      .join(" "),
+  );
+
+const matchesLine = (route: JeepRoute, line: RouteLineFilter): boolean =>
+  line === "all" || (line === "mapped" ? isMapped(route) : isApproximate(route));
+
+/** Routes of the chosen jeep type and line status whose text contains every word of the query. */
+export function filterRoutes(routes: JeepRoute[], filter: JeepRouteFilter): JeepRoute[] {
+  const words = searchable(filter.query).split(" ").filter(Boolean);
+  return routes.filter((route) => {
+    if (filter.type !== "all" && route.type !== filter.type) return false;
+    if (!matchesLine(route, filter.line)) return false;
+    const text = routeText(route);
+    return words.every((word) => text.includes(word));
+  });
+}
