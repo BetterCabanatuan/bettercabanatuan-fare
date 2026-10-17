@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { Hero } from "@/components/hero";
+import { Community } from "@/components/home/community";
 import { HowItWorks } from "@/components/home/how-it-works";
 import { RideOptions } from "@/components/home/ride-options";
 import { TrustPoints } from "@/components/home/trust-points";
@@ -24,6 +25,7 @@ export default function Home() {
       <RideOptions />
       <HowItWorks />
       <TrustPoints />
+      <Community />
     </main>
   );
 }

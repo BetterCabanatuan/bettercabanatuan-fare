@@ -330,6 +330,24 @@ export const en = {
         body: "The fare data is public, so anyone can check it and point out a mistake.",
       },
     },
+    communityHeading: "Built with the people who ride",
+    communityIntro:
+      "Pamasahe is a community project, and a community-driven one. Residents map the jeep routes, list the TODAs and point out wrong fares. An admin checks every suggestion before it goes live.",
+    community: {
+      route: {
+        title: "Suggest a jeep route",
+        body: "Know a route that isn't on the map yet? Mark where it starts, where it ends and the roads it passes through.",
+      },
+      toda: {
+        title: "Add a TODA",
+        body: "The city has no public TODA list, so riders are building one. Tell us which TODA serves your barangay. No account needed.",
+      },
+      fare: {
+        title: "Report a wrong fare",
+        body: "Paid a different amount, or spotted a mistake? Tell us so we can check the rate against its source.",
+      },
+    },
+    contributorsLink: "See who's mapping routes",
   },
   planner: {
     heading: "Where are you going?",

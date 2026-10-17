@@ -332,6 +332,24 @@ export const tl: Dictionary = {
         body: "Pampubliko ang datos ng pamasahe, kaya puwedeng suriin ito ng kahit sino at ituro ang mali.",
       },
     },
+    communityHeading: "Binubuo kasama ng mga pasahero",
+    communityIntro:
+      "Proyekto ng komunidad ang Pamasahe, at komunidad din ang nagpapalago nito. Ang mga residente ang nagmamapa ng ruta ng jeep, naglilista ng mga TODA at nagtuturo ng maling pamasahe. Sinusuri ng admin ang bawat mungkahi bago ito lumabas.",
+    community: {
+      route: {
+        title: "Magmungkahi ng ruta ng jeep",
+        body: "May alam kang ruta na wala pa sa mapa? Markahan kung saan ito nagsisimula, saan nagtatapos at anong mga daan ang dinaraanan.",
+      },
+      toda: {
+        title: "Magdagdag ng TODA",
+        body: "Walang pampublikong listahan ng TODA ang lungsod, kaya mga pasahero ang bumubuo nito. Sabihin sa amin kung aling TODA ang nagseserbisyo sa barangay mo. Hindi kailangan ng account.",
+      },
+      fare: {
+        title: "I-report ang maling pamasahe",
+        body: "Iba ang sinisingil sa iyo, o may nakita kang mali? Sabihin sa amin para masuri namin ang rate laban sa pinagkunan nito.",
+      },
+    },
+    contributorsLink: "Tingnan kung sino ang nagmamapa ng ruta",
   },
   planner: {
     heading: "Saan ka pupunta?",
