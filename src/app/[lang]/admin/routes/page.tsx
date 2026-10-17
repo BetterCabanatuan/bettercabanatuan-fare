@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { RouteReviewActions } from "@/components/admin/route-review-actions";
+import { AdminNav } from "@/components/admin/admin-nav";
 import { SignOutButton } from "@/components/admin/sign-out-button";
 import { Badge } from "@/components/ui/badge";
 import type { JeepType, SubmissionStatus } from "@/lib/db";
@@ -39,17 +40,7 @@ export default async function AdminRoutesPage({ searchParams }: PageProps<"/[lan
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <h1 className="text-3xl font-extrabold tracking-tight">Jeepney route submissions</h1>
-        <nav aria-label="Admin sections" className="flex gap-4 text-sm font-semibold">
-          <Link href="/admin/todas" className="text-primary underline-offset-4 hover:underline">
-            TODAs
-          </Link>
-          <span aria-current="page" className="text-muted-foreground">
-            Routes
-          </span>
-          <Link href="/admin/feedback" className="text-primary underline-offset-4 hover:underline">
-            Feedback
-          </Link>
-        </nav>
+        <AdminNav current="routes" />
       </div>
       <Suspense fallback={<p className="text-muted-foreground">Loading submissions…</p>}>
         <ReviewQueue admin={admin} searchParams={searchParams} />

@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { deleteRecord } from "@/app/[lang]/admin/data/actions";
+import { ConfirmDeleteButton } from "@/components/admin/confirm-delete-button";
 import { ResolveFeedbackButton } from "@/components/admin/resolve-feedback-button";
+import { AdminNav } from "@/components/admin/admin-nav";
 import { SignOutButton } from "@/components/admin/sign-out-button";
 import { Badge } from "@/components/ui/badge";
 import { countFeedback, listFeedback, type FeedbackStatus } from "@/lib/feedback/queries";
@@ -39,17 +42,7 @@ export default async function AdminFeedbackPage({ searchParams }: PageProps<"/[l
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <h1 className="text-3xl font-extrabold tracking-tight">Rider feedback</h1>
-        <nav aria-label="Admin sections" className="flex gap-4 text-sm font-semibold">
-          <Link href="/admin/todas" className="text-primary underline-offset-4 hover:underline">
-            TODAs
-          </Link>
-          <Link href="/admin/routes" className="text-primary underline-offset-4 hover:underline">
-            Routes
-          </Link>
-          <span aria-current="page" className="text-muted-foreground">
-            Feedback
-          </span>
-        </nav>
+        <AdminNav current="feedback" />
       </div>
       <Suspense fallback={<p className="text-muted-foreground">Loading feedback…</p>}>
         <FeedbackQueue admin={admin} searchParams={searchParams} />
@@ -141,7 +134,14 @@ async function FeedbackQueue({
               </dl>
 
               {status === "NEW" ? (
-                <ResolveFeedbackButton id={entry.id} />
+                <div className="flex flex-wrap items-start gap-3">
+                  <ResolveFeedbackButton id={entry.id} />
+                  <ConfirmDeleteButton
+                    label="Delete"
+                    warning="Deletes this feedback, for spam or a deletion request."
+                    action={deleteRecord.bind(null, "feedback", entry.id)}
+                  />
+                </div>
               ) : (
                 <p className="border-t pt-3 text-sm text-muted-foreground">
                   Resolved
