@@ -1,0 +1,29 @@
+// Cloudflare Workers config for the OpenNext build. Setup: docs/deploy/cloudflare.md
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pamasahe-cabanatuan",
+  // Both paths are written by `opennextjs-cloudflare build`; don't change them.
+  "main": ".open-next/worker.js",
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+  },
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": [
+    // Node.js APIs for Next.js.
+    "nodejs_compat",
+    // fetch() may only reach public addresses (Supabase, OSRM).
+    "global_fetch_strictly_public",
+  ],
+
+  // No "vars": the NEXT_PUBLIC_* settings (NEXT_PUBLIC_SITE_URL, NEXT_PUBLIC_SUPABASE_URL,
+  // NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) are inlined by Next.js at build time, so they are
+  // set where the build runs (GitHub Actions variables), not here.
+  // Secrets, set once with `npx wrangler secret put <NAME>` and never committed:
+  //   SUPABASE_SECRET_KEY  server-only Supabase key; bypasses row level security
+  //   ADMIN_EMAILS         comma-separated admin addresses (a secret to keep them out of git)
+
+  "observability": {
+    "enabled": true,
+  },
+}
