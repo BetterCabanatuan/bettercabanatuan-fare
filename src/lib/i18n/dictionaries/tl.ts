@@ -639,6 +639,16 @@ export const tl: Dictionary = {
     message: "Ang mensahe mo",
     messageHint:
       "Ano ang nangyari, at ano ang inasahan mo? Kung tungkol sa pamasahe, isama kung magkano ang ibinayad mo.",
+    messageHints: {
+      WRONG_FARE:
+        "Aling biyahe ito? Sabihin kung magkano ang ipinakita ng app at magkano ang ibinayad mo o sa tingin mo ang tama.",
+      WRONG_ROUTE: "Aling daan, hintuan o ruta ang mali, at saan talaga dumadaan ang jeep o tricycle?",
+      APP_PROBLEM:
+        "Ano ang pinindot mo, ano ang nangyari, at ano ang inasahan mo? Makakatulong din kung anong phone o browser ang gamit mo.",
+      SUGGESTION: "Ano ang makakapagpabuti sa app para sa iyo o sa ibang pasahero?",
+      OTHER: "Sabihin mo sa amin kung ano iyon.",
+    },
+    charCount: "{count}/{max}",
     fromPage: "Isasama namin ang pahinang pinanggalingan mo para makita namin ang parehong biyahe.",
     privacy: "Mga admin lang ang nakakakita ng pangalan at email mo. Hindi ito kailanman ilalathala.",
     submit: "Ipadala ang feedback",

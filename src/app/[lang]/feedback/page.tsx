@@ -1,3 +1,4 @@
+import { UserRound } from "lucide-react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
@@ -45,9 +46,17 @@ async function SignedInOrNot({ searchParams }: Pick<PageProps<"/[lang]/feedback"
   if (!rider) return <SignInOptions from={from} signInFailed={params.error === "signin"} />;
 
   return (
-    <>
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border bg-card px-4 py-2 text-sm">
-        <p>{fill(dict.feedback.signedInAs, { name: rider.name ?? rider.email ?? "" })}</p>
+    <section aria-label={dict.feedback.title} className="rounded-2xl border bg-card">
+      <div className="flex items-center gap-3 border-b px-4 py-2 sm:px-6">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted">
+          <UserRound aria-hidden className="size-4 text-muted-foreground" />
+        </span>
+        <div className="flex min-w-0 flex-1 flex-col text-sm">
+          <p className="font-semibold break-words">
+            {fill(dict.feedback.signedInAs, { name: rider.name ?? rider.email ?? "" })}
+          </p>
+          {rider.name && rider.email && <p className="truncate text-muted-foreground">{rider.email}</p>}
+        </div>
         <form action={signOutRider}>
           <input type="hidden" name="locale" value={locale} />
           {from && <input type="hidden" name="from" value={from} />}
@@ -57,6 +66,6 @@ async function SignedInOrNot({ searchParams }: Pick<PageProps<"/[lang]/feedback"
         </form>
       </div>
       <FeedbackForm from={from} />
-    </>
+    </section>
   );
 }
