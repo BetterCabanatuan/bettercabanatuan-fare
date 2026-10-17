@@ -275,7 +275,9 @@ export function FarePlanner({
     <main className="flex flex-1 flex-col lg:flex-row">
       <section
         aria-labelledby="planner-heading"
-        className="order-2 flex flex-col gap-4 bg-muted/40 p-4 sm:gap-5 sm:p-6 lg:order-1 lg:max-h-[calc(100dvh-4.5rem)] lg:w-[440px] lg:shrink-0 lg:overflow-y-auto lg:border-r"
+        // relative: on desktop this panel scrolls on its own, and absolute children with no positioned
+        // ancestor (sr-only labels in the route list) escape its overflow and stretch the page below the footer.
+        className="relative order-2 flex flex-col gap-4 bg-muted/40 p-4 sm:gap-5 sm:p-6 lg:order-1 lg:max-h-[calc(100dvh-4.5rem)] lg:w-[440px] lg:shrink-0 lg:overflow-y-auto lg:border-r"
       >
         <div className="flex flex-col gap-1">
           <h1 id="planner-heading" className="text-xl font-extrabold tracking-tight sm:text-2xl">
