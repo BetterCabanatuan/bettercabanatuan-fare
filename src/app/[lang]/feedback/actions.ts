@@ -1,11 +1,14 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 
 import { createAuthClient } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { feedbackPath, formDataToInput, parseFeedback, sitePath, type FieldErrors } from "@/lib/feedback/submission";
-import { hasLocale, type Locale } from "@/lib/i18n/locales";
+import { en } from "@/lib/i18n/dictionaries/en";
+import { formLocale } from "@/lib/i18n/locales";
+import { notifyAdmins } from "@/lib/notifications";
 import { getRider } from "@/lib/session";
 import { siteUrl } from "@/lib/site";
 
@@ -25,17 +28,11 @@ type Provider = (typeof PROVIDERS)[number];
 
 const isProvider = (value: string): value is Provider => PROVIDERS.some((provider) => provider === value);
 
-// Root params don't reach Server Actions, so the form posts the locale and it is checked here.
-const localeFrom = (formData: FormData): Locale => {
-  const locale = String(formData.get("locale") ?? "");
-  return hasLocale(locale) ? locale : "en";
-};
-
 // Where a rider lands after signing in or out: the page whose form they used (`returnTo`,
 // e.g. /tl/fare/suggest), or else the feedback page with the page they came from.
 const backFrom = (formData: FormData): string =>
   sitePath(String(formData.get("returnTo") ?? "")) ??
-  feedbackPath(localeFrom(formData), String(formData.get("from") ?? ""));
+  feedbackPath(formLocale(formData), String(formData.get("from") ?? ""));
 
 /**
  * Starts Google or Facebook sign-in through Supabase Auth. The PKCE code verifier is saved
@@ -95,11 +92,14 @@ export async function submitFeedback(_previous: FeedbackState, formData: FormDat
         topic: parsed.data.topic,
         message: parsed.data.message,
         pagePath: parsed.data.pagePath ?? null,
-        locale: localeFrom(formData),
+        locale: formLocale(formData),
       })
       .select("id")
       .single();
     if (error) throw error;
+    // Admins read English, whatever language the rider wrote in.
+    const topic = en.feedback.topics[parsed.data.topic];
+    after(() => notifyAdmins({ kind: "feedback", id: data.id, name: topic, from: rider.name }));
     return { status: "received", reference: data.id.slice(-6).toUpperCase() };
   } catch (error) {
     console.error("[feedback] Could not save feedback", error);

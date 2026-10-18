@@ -67,7 +67,7 @@ Your name and contact details are optional. Only admins see them, so they can as
 - [Next.js](https://nextjs.org) 16 (App Router) with React 19 and TypeScript
 - Tailwind CSS 4 and [shadcn/ui](https://ui.shadcn.com)
 - [MapLibre GL](https://maplibre.org) with OpenStreetMap data, [OSRM](https://project-osrm.org) for road routing and [Photon](https://photon.komoot.io) for place search
-- [Supabase](https://supabase.com) for resident submissions (Postgres, read through its Data API from the server only) and magic-link sign-in for admins (Supabase Auth), with the sign-in email built in [React Email](https://react.email) and sent through Resend
+- [Supabase](https://supabase.com) for resident submissions (Postgres, read through its Data API from the server only) and magic-link sign-in for admins (Supabase Auth), with emails built in [React Email](https://react.email) and sent through Resend
 - [Vitest](https://vitest.dev) for unit tests
 
 Fare data lives in JSON files under `data/`. The fare pages are prerendered and all fare math runs in the browser, so the calculators don't need the database.
@@ -92,6 +92,7 @@ Fill in `.env`:
 | `SUPABASE_SECRET_KEY` | The project's secret key. The server reads and writes the database with it; never expose it to the browser. |
 | `ADMIN_EMAILS` | Comma-separated email addresses allowed to sign in to `/admin`. |
 | `NEXT_PUBLIC_SITE_URL` | Public address of the site, used for metadata, the sitemap and Open Graph images. |
+| `RESEND_API_KEY`, `EMAIL_FROM` | Optional. Resend key and sender for the new-submission and review emails. Left empty, the app logs each email instead of sending it. |
 
 Link the Supabase project, create the database tables, then start the dev server:
 
@@ -116,19 +117,19 @@ Open <http://localhost:3000>.
 | `npm run db:new -- name` | Creates an empty migration in `supabase/migrations`. |
 | `npm run db:deploy` | Applies pending migrations to the linked Supabase project. |
 | `npm run db:types` | Regenerates `src/lib/database-types.ts` from the linked project. |
-| `npm run email:dev` | Previews the admin sign-in email at <http://localhost:3001>. |
-| `npm run email:export` | Renders the email to `supabase/templates/` for the Supabase dashboard. |
+| `npm run email:dev` | Previews every email at <http://localhost:3001>. |
+| `npm run email:export` | Renders the admin sign-in email to `supabase/templates/` for the Supabase dashboard. |
 
 ## Project structure
 
 ```text
 data/            Fare rules, routes, terminals, TODAs and map data (JSON)
 docs/            Product specs, research notes and brand guide
-emails/          React Email template for the admin sign-in email (sent by Supabase)
 public/          Logo and app icons
 scripts/         Data tools, such as generating jeep route lines
 src/app/[lang]/  Pages; every page exists in English and Tagalog
 src/components/  UI components; shadcn/ui primitives are in components/ui
+src/emails/      React Email templates: supabase/ is sent by Supabase, app/ by the app
 src/lib/         Fare math (fare.ts), data loading, auth and i18n
 supabase/        Database migrations and Supabase CLI config
 ```

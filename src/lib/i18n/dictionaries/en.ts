@@ -18,9 +18,9 @@ const privacySections: LegalSection[] = [
     items: [
       "Using the fare map: nothing that identifies you. The points you set (A and B) are used to measure the road distance and find jeep routes.",
       "Searching for a place: the text you type is sent to the place search service to find matches. Your last few picks are saved only in your browser, so you can pick them again.",
-      "Suggesting a jeep route: you sign in with Google or Facebook. We keep the route's details, which an admin checks and may publish, with your name and email address, which of the two you used, and how many of your routes were approved, rejected or still waiting. Only admins see your name and email, in case they need to ask you something, and they are never published.",
+      "Suggesting a jeep route: you sign in with Google or Facebook. We keep the route's details, which an admin checks and may publish, with your name and email address, which of the two you used, and how many of your routes were approved, rejected or still waiting. Only admins see your name and email, in case they need to ask you something, and they are never published. We email you when an admin approves or rejects your route.",
       "Contributors board: if you choose a public name, it is shown at /contributors with the number of your jeep route suggestions an admin approved and the month of the latest one. Without a name, you are shown as \"Anonymous rider\". The board never shows your email or account.",
-      "Adding a TODA: the details of the TODA, which an admin checks and may publish. Your name and contact are optional. Only admins see them, in case they need to ask you something, and they are never published.",
+      "Adding a TODA: the details of the TODA, which an admin checks and may publish. Your name and contact are optional. Only admins see them, in case they need to ask you something, and they are never published. If your contact is an email address, we email you when an admin approves or rejects the TODA.",
       "Sending feedback: your name and email address from Google or Facebook, which of the two you used, your topic and message, the language you were reading in, and the page you came from. For the fare map, that page includes the two points of your trip. Admins use these to understand your feedback and to reply to you.",
       "Signing in: Supabase, our sign-in service, keeps a record of your account (name, email address, profile picture link and your Google or Facebook account ID) and of each sign-in, including your IP address and browser.",
       "Admins: the email address they sign in with, and which admin reviewed each submission.",
@@ -47,7 +47,7 @@ const privacySections: LegalSection[] = [
       "OSRM, run by FOSSGIS e.V. in Germany, receives the two points of your trip to measure the road distance. When you suggest a jeep route, it receives the route's start, end and stops to draw its road, and again when an admin reviews it.",
       "Photon, run by komoot, receives what you type in the search box and points you drop on the map, to find place names.",
       "CARTO serves the map images and unpkg serves part of the map's code. Like any website, they see your IP address and the part of the map you view.",
-      "Our email provider delivers the sign-in links that admins receive.",
+      "Resend, our email provider, delivers sign-in links and alerts about new submissions to admins. When an admin approves or rejects your route or TODA, it delivers that email to you, so it receives your email address, the submission's name and the admin's reason. Its servers may be outside the Philippines.",
     ],
   },
   {
@@ -644,7 +644,7 @@ export const en = {
     farePaidHint: "What you paid end to end, one regular passenger.",
     notes: "Anything else?",
     notesHint: "E.g. what the signboard says, how often it leaves, or which days it runs.",
-    privacy: "Only admins see your name and email, in case they need to ask about your route. The route itself is published after an admin checks it.",
+    privacy: "Only admins see your name and email, in case they need to ask about your route. The route itself is published after an admin checks it, and we email you when they do.",
     signInHeading: "Sign in to suggest a route",
     signInWhy:
       "Signing in keeps out spam and lets us ask you about your route. We only receive your name and email address.",
@@ -818,6 +818,41 @@ export const en = {
     positionMoveHint: "The listed position is wrong.",
     positionConnected: "Add it as another terminal",
     positionConnectedHint: "The tricycles also wait here, e.g. at another entrance.",
+  },
+  // The email a submitter gets when an admin approves or rejects their TODA or route.
+  reviewEmail: {
+    toda: {
+      approved: {
+        subject: "{name} is now in the TODA directory",
+        heading: "Your TODA was added",
+        body: "Thanks for sending {name}. An admin checked it, and riders can now find it in the TODA directory.",
+        action: "Open the TODA directory",
+      },
+      rejected: {
+        subject: "{name} wasn't added to the TODA directory",
+        heading: "Your TODA wasn't added",
+        body: "Thanks for sending {name}. An admin checked it and didn't add it to the directory.",
+        action: "Send a TODA again",
+      },
+    },
+    route: {
+      approved: {
+        subject: "Your jeep route {name} is now on the fare map",
+        heading: "Your jeep route was published",
+        body: "Thanks for suggesting {name}. An admin checked it, and riders can now find it on the fare map.",
+        action: "Open the fare map",
+      },
+      rejected: {
+        subject: "Your jeep route {name} wasn't published",
+        heading: "Your jeep route wasn't published",
+        body: "Thanks for suggesting {name}. An admin checked it and didn't publish it.",
+        action: "Suggest a route again",
+      },
+    },
+    reason: "Why: {reason}",
+    reference: "Reference: {reference}",
+    whySent: "You're getting this because you sent it to Pamasahe Cabanatuan. We email you only about your own submissions.",
+    footer: "Pamasahe Cabanatuan, community-made with BetterCabanatuan.",
   },
   legal: {
     updated: "Last updated {date}",

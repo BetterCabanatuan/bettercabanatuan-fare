@@ -8,6 +8,8 @@ The site runs as one Cloudflare Worker built with [OpenNext](https://opennext.js
 | --- | --- | --- |
 | `SUPABASE_SECRET_KEY` | `.env` (dev), `wrangler secret` (prod) | Read at runtime. The server's database key; bypasses row level security. |
 | `ADMIN_EMAILS` | `.env` (dev), `wrangler secret` (prod) | Read at runtime. |
+| `RESEND_API_KEY` | `.env` (dev, optional), `wrangler secret` (prod) | Read at runtime. Sends the app's emails. See [Emails](#emails). |
+| `EMAIL_FROM` | `wrangler.jsonc` `vars` (prod), `.env` (dev, optional) | Read at runtime. The sender of the app's emails. |
 | `DATABASE_URL` | GitHub secret (CI) | Supabase Session pooler string, used only by `supabase db push` in the workflow. The app doesn't read it. |
 | `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `.env` (dev), GitHub variables (CI) | Inlined into the bundle at build time. Changing one needs a new build. Setting them on the Worker has no effect. |
 | `MAINTENANCE_MODE`, `MAINTENANCE_UNTIL` | `wrangler.jsonc` `vars` (prod), shell or `.env` (dev) | Read at runtime. See [Maintenance mode](#maintenance-mode). |
@@ -30,9 +32,25 @@ npx wrangler login
 ```bash
 npx wrangler secret put SUPABASE_SECRET_KEY
 npx wrangler secret put ADMIN_EMAILS
+npx wrangler secret put RESEND_API_KEY
 ```
 
-Paste the Supabase secret key and the comma-separated admin addresses when prompted. Secrets persist across deploys. List them with `npx wrangler secret list`.
+Paste the Supabase secret key, the comma-separated admin addresses and a Resend API key when prompted. Secrets persist across deploys. List them with `npx wrangler secret list`.
+
+### Emails
+
+The app sends two kinds of email through [Resend](https://resend.com):
+
+- **New submission**, to everyone in `ADMIN_EMAILS`, when a resident sends a TODA, a jeep route or feedback.
+- **Review decision**, to the submitter, when an admin approves or rejects their TODA or route. It goes out in the language they used to submit it, and a rejection includes the admin's reason. Route submitters always get one, because their email comes from Google or Facebook. TODA submitters get one only if they typed an email address as their contact.
+
+To turn them on:
+
+1. In Resend, verify the domain you send from (**Domains → Add domain**, then add the DNS records it lists). If Supabase already sends the admin sign-in links through Resend ([supabase.md](supabase.md), step 4), that domain is already verified.
+2. Create an API key with **Sending access** only, and save it with `npx wrangler secret put RESEND_API_KEY`.
+3. Set `EMAIL_FROM` in `wrangler.jsonc` to a sender on that domain, e.g. `Pamasahe Cabanatuan <pamasahe@example.org>`, and deploy.
+
+Each email is sent after the response, so a slow or failing mail service never delays or breaks a submission or review. Failures show in the Worker logs as `[email]`. Until both values are set, the app sends nothing and logs each email it skipped.
 
 ## 3. Deploy
 
@@ -70,7 +88,7 @@ In the GitHub repository, open **Settings → Secrets and variables → Actions*
 | Variable | `NEXT_PUBLIC_SUPABASE_URL` | From Supabase **Connect → App frameworks** |
 | Variable | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Same place |
 
-`SUPABASE_SECRET_KEY` and `ADMIN_EMAILS` stay Worker secrets (step 2). The workflow doesn't touch them.
+`SUPABASE_SECRET_KEY`, `ADMIN_EMAILS` and `RESEND_API_KEY` stay Worker secrets (step 2). The workflow doesn't touch them.
 
 **Alternative: Workers Builds.** Cloudflare can build from the repository itself (**Workers & Pages → bettercabanatuan-fare → Settings → Builds → Connect**). Set the build command to `npx opennextjs-cloudflare build` and the deploy command to `npx opennextjs-cloudflare deploy`. Put the `NEXT_PUBLIC_*` values under **Build variables and secrets**. Workers Builds doesn't run migrations, so you would run `npm run db:deploy` by hand before each release that adds one. That's why this repository ships the GitHub Actions workflow instead. Don't enable both, or every push deploys twice.
 
@@ -102,7 +120,7 @@ To test the real Worker runtime locally:
 npm run preview
 ```
 
-Then open <http://localhost:8787>. Local secrets for the Worker (`SUPABASE_SECRET_KEY`, `ADMIN_EMAILS`) go in `.dev.vars`, which git ignores.
+Then open <http://localhost:8787>. Local secrets for the Worker (`SUPABASE_SECRET_KEY`, `ADMIN_EMAILS`, optionally `RESEND_API_KEY`) go in `.dev.vars`, which git ignores.
 
 ## How the database connection works
 

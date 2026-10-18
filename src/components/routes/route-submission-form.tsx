@@ -119,6 +119,8 @@ function SubmissionRound({ boundary, onSuggestAnother }: { boundary: LngLat[]; o
       noValidate
       className="flex flex-col gap-8"
     >
+      {/* So the email with the admin's decision arrives in this language. */}
+      <input type="hidden" name="locale" value={locale} />
       {state.status === "failed" && (
         <Alert variant="destructive">
           <AlertTitle>{t.failedTitle}</AlertTitle>

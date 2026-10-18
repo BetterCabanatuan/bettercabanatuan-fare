@@ -128,6 +128,15 @@ export const rejectionSchema = z
   .min(5, "Give the resident a reason, at least 5 characters.")
   .max(300, "Keep the reason to 300 characters.");
 
+/**
+ * The submitter's contact when it is an email address, so they can be told the admin's
+ * decision. The TODA form asks for "mobile number or email", so it is often a number.
+ */
+export function contactEmail(contact: string | null): string | null {
+  const parsed = z.email().safeParse(contact?.trim());
+  return parsed.success ? parsed.data : null;
+}
+
 /** Directory id for a TODA: "Sumacab Este TODA" → "sumacab-este-toda". */
 export function todaSlug(name: string): string {
   return name

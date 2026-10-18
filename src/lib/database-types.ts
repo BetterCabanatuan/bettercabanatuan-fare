@@ -135,6 +135,7 @@ export type Database = {
           fromName: string;
           id: string;
           jeepType: Database["public"]["Enums"]["JeepType"];
+          locale: string;
           name: string;
           notes: string | null;
           provider: string | null;
@@ -161,6 +162,7 @@ export type Database = {
           fromName: string;
           id?: string;
           jeepType?: Database["public"]["Enums"]["JeepType"];
+          locale?: string;
           name: string;
           notes?: string | null;
           provider?: string | null;
@@ -187,6 +189,7 @@ export type Database = {
           fromName?: string;
           id?: string;
           jeepType?: Database["public"]["Enums"]["JeepType"];
+          locale?: string;
           name?: string;
           notes?: string | null;
           provider?: string | null;
@@ -275,6 +278,7 @@ export type Database = {
           id: string;
           lat: number | null;
           lng: number | null;
+          locale: string;
           name: string;
           notes: string | null;
           officialContact: string | null;
@@ -297,6 +301,7 @@ export type Database = {
           id?: string;
           lat?: number | null;
           lng?: number | null;
+          locale?: string;
           name: string;
           notes?: string | null;
           officialContact?: string | null;
@@ -319,6 +324,7 @@ export type Database = {
           id?: string;
           lat?: number | null;
           lng?: number | null;
+          locale?: string;
           name?: string;
           notes?: string | null;
           officialContact?: string | null;

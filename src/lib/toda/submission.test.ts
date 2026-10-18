@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { LngLat } from "@/lib/geo";
 import {
+  contactEmail,
   formDataToInput,
   parseSubmission,
   rejectionSchema,
@@ -116,6 +117,19 @@ describe("rejectionSchema", () => {
   it("requires a short reason", () => {
     expect(rejectionSchema.safeParse("no").success).toBe(false);
     expect(rejectionSchema.safeParse("Duplicate of Bitas TODA").success).toBe(true);
+  });
+});
+
+describe("contactEmail", () => {
+  it("keeps an email address so the submitter can hear the decision", () => {
+    expect(contactEmail(" juan@example.com ")).toBe("juan@example.com");
+  });
+
+  it("ignores a mobile number, other text and no contact", () => {
+    expect(contactEmail("0917 123 4567")).toBeNull();
+    expect(contactEmail("ask for Mang Ben at the terminal")).toBeNull();
+    expect(contactEmail("")).toBeNull();
+    expect(contactEmail(null)).toBeNull();
   });
 });
 

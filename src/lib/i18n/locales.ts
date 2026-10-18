@@ -7,6 +7,15 @@ export const defaultLocale: Locale = "en";
 
 export const hasLocale = (value: string): value is Locale => locales.some((locale) => locale === value);
 
+/**
+ * The locale a form posts in its hidden "locale" field. Root params don't reach Server
+ * Actions, so forms send it and it is checked here; anything unknown means English.
+ */
+export const formLocale = (formData: FormData): Locale => {
+  const locale = String(formData.get("locale") ?? "");
+  return hasLocale(locale) ? locale : defaultLocale;
+};
+
 export const openGraphLocale: Record<Locale, string> = { en: "en_PH", tl: "tl_PH" };
 
 /** The public URL of a path in a locale, e.g. ("tl", "/fare") → "/tl/fare". */

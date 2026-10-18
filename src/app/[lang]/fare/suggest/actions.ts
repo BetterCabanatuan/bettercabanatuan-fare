@@ -1,7 +1,11 @@
 "use server";
 
+import { after } from "next/server";
+
 import { cityBoundary } from "@/lib/data";
 import { getDb } from "@/lib/db";
+import { formLocale } from "@/lib/i18n/locales";
+import { notifyAdmins } from "@/lib/notifications";
 import {
   SUBMISSION_LIMITS,
   formDataToInput,
@@ -59,10 +63,12 @@ export async function submitRoute(_previous: SubmitState, formData: FormData): P
         submitterName: rider.name,
         submitterContact: rider.email,
         notes: data.notes ?? null,
+        locale: formLocale(formData),
       })
-      .select("id")
+      .select("id, name")
       .single();
     if (error) throw error;
+    after(() => notifyAdmins({ kind: "route", id: submission.id, name: submission.name, from: rider.name }));
     return { status: "received", reference: submission.id.slice(-6).toUpperCase() };
   } catch (error) {
     console.error("[routes] Could not save suggestion", error);

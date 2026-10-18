@@ -19,9 +19,9 @@ const privacySections: LegalSection[] = [
     items: [
       "Sa paggamit ng mapa ng pamasahe: walang anumang nagpapakilala sa iyo. Ginagamit ang mga puntong itinakda mo (A at B) para sukatin ang layo sa daan at hanapin ang mga ruta ng jeep.",
       "Sa paghahanap ng lugar: ipinapadala ang tina-type mo sa serbisyo ng paghahanap ng lugar para makahanap ng tugma. Sa browser mo lang naka-save ang huling mga pinili mo, para mapili mo ulit.",
-      "Sa pagmungkahi ng ruta ng jeep: nagsa-sign in ka gamit ang Google o Facebook. Itinatago namin ang detalye ng ruta, na sinusuri ng admin at maaaring ilathala, kasama ang pangalan at email address mo, kung alin sa dalawa ang ginamit mo, at kung ilan sa mga ruta mo ang naaprubahan, tinanggihan o naghihintay pa. Mga admin lang ang nakakakita ng pangalan at email mo, kung sakaling may itanong sila, at hindi ito kailanman ilalathala.",
+      "Sa pagmungkahi ng ruta ng jeep: nagsa-sign in ka gamit ang Google o Facebook. Itinatago namin ang detalye ng ruta, na sinusuri ng admin at maaaring ilathala, kasama ang pangalan at email address mo, kung alin sa dalawa ang ginamit mo, at kung ilan sa mga ruta mo ang naaprubahan, tinanggihan o naghihintay pa. Mga admin lang ang nakakakita ng pangalan at email mo, kung sakaling may itanong sila, at hindi ito kailanman ilalathala. Mag-e-email kami sa iyo kapag inaprubahan o tinanggihan ng admin ang ruta mo.",
       "Listahan ng mga nag-ambag: kung pipili ka ng pampublikong pangalan, ipapakita ito sa /contributors kasama ang bilang ng mga mungkahing ruta ng jeep mo na inaprubahan ng admin at ang buwan ng pinakahuli. Kung walang pangalan, ipapakita kang \"Anonymous na pasahero\". Hindi kailanman ipapakita ng listahan ang email o account mo.",
-      "Sa pagdagdag ng TODA: ang detalye ng TODA, na sinusuri ng admin at maaaring ilathala. Opsyonal ang pangalan at contact mo. Mga admin lang ang nakakakita nito, kung sakaling may itanong sila, at hindi ito kailanman ilalathala.",
+      "Sa pagdagdag ng TODA: ang detalye ng TODA, na sinusuri ng admin at maaaring ilathala. Opsyonal ang pangalan at contact mo. Mga admin lang ang nakakakita nito, kung sakaling may itanong sila, at hindi ito kailanman ilalathala. Kung email address ang contact mo, mag-e-email kami sa iyo kapag inaprubahan o tinanggihan ng admin ang TODA.",
       "Sa pagpapadala ng feedback: ang pangalan at email address mo mula sa Google o Facebook, kung alin sa dalawa ang ginamit mo, ang paksa at mensahe mo, ang wikang binabasa mo, at ang pahinang pinanggalingan mo. Kung mula sa mapa ng pamasahe, kasama roon ang dalawang punto ng biyahe mo. Ginagamit ito ng mga admin para maintindihan ang feedback mo at para masagot ka.",
       "Sa pag-sign in: nagtatago ang Supabase, ang serbisyo namin sa pag-sign in, ng tala ng account mo (pangalan, email address, link ng profile picture at ID ng Google o Facebook account mo) at ng bawat pag-sign in, kasama ang IP address at browser mo.",
       "Mga admin: ang email address na ginagamit nila sa pag-sign in, at kung sinong admin ang sumuri sa bawat submission.",
@@ -48,7 +48,7 @@ const privacySections: LegalSection[] = [
       "Ang OSRM, na pinapatakbo ng FOSSGIS e.V. sa Germany, ay tumatanggap ng dalawang punto ng biyahe mo para sukatin ang layo sa daan. Kapag nagmungkahi ka ng ruta ng jeep, natatanggap nito ang simula, dulo at mga hintuan ng ruta para iguhit ang daan, at muli kapag sinuri ito ng admin.",
       "Ang Photon, na pinapatakbo ng komoot, ay tumatanggap ng tina-type mo sa search box at ng mga puntong inilalagay mo sa mapa, para mahanap ang pangalan ng lugar.",
       "Ang CARTO ang nagbibigay ng mga larawan ng mapa at ang unpkg ng bahagi ng code ng mapa. Gaya ng anumang website, nakikita nila ang IP address mo at ang bahagi ng mapang tinitingnan mo.",
-      "Ang email provider namin ang naghahatid ng mga sign-in link na natatanggap ng mga admin.",
+      "Ang Resend, ang email provider namin, ang naghahatid ng mga sign-in link at ng mga abiso tungkol sa bagong submission sa mga admin. Kapag inaprubahan o tinanggihan ng admin ang ruta o TODA mo, ito rin ang naghahatid ng email na iyon sa iyo, kaya natatanggap nito ang email address mo, ang pangalan ng submission at ang dahilan ng admin. Maaaring nasa labas ng Pilipinas ang mga server nito.",
     ],
   },
   {
@@ -648,7 +648,7 @@ export const tl: Dictionary = {
     farePaidHint: "Ang binayad mo mula sakayan hanggang babaan, isang regular na pasahero.",
     notes: "May iba ka pang gustong sabihin?",
     notesHint: "Hal. ang nakasulat sa karatula, gaano kadalas umalis, o anong araw ito bumibiyahe.",
-    privacy: "Mga admin lang ang nakakakita ng pangalan at email mo, kung sakaling may itanong sila tungkol sa ruta mo. Ang ruta lang ang ilalathala, at saka lang kapag nasuri na ng admin.",
+    privacy: "Mga admin lang ang nakakakita ng pangalan at email mo, kung sakaling may itanong sila tungkol sa ruta mo. Ang ruta lang ang ilalathala, at saka lang kapag nasuri na ng admin. Mag-e-email kami sa iyo kapag nasuri na ito.",
     signInHeading: "Mag-sign in para magmungkahi ng ruta",
     signInWhy:
       "Sa pag-sign in, naiiwasan ang spam at may matatanungan kami tungkol sa ruta mo. Pangalan at email address mo lang ang natatanggap namin.",
@@ -826,6 +826,41 @@ export const tl: Dictionary = {
     positionMoveHint: "Mali ang nakalistang puwesto.",
     positionConnected: "Idagdag bilang isa pang terminal",
     positionConnectedHint: "Naghihintay rin dito ang mga tricycle, hal. sa ibang entrance.",
+  },
+  reviewEmail: {
+    toda: {
+      approved: {
+        subject: "Nasa listahan ng mga TODA na ang {name}",
+        heading: "Naidagdag ang TODA mo",
+        body: "Salamat sa pagpapadala ng {name}. Sinuri ito ng admin, at makikita na ito ng mga pasahero sa listahan ng mga TODA.",
+        action: "Buksan ang listahan ng mga TODA",
+      },
+      rejected: {
+        subject: "Hindi naidagdag ang {name} sa listahan ng mga TODA",
+        heading: "Hindi naidagdag ang TODA mo",
+        body: "Salamat sa pagpapadala ng {name}. Sinuri ito ng admin at hindi ito idinagdag sa listahan.",
+        action: "Magpadala ulit ng TODA",
+      },
+    },
+    route: {
+      approved: {
+        subject: "Nasa fare map na ang ruta ng jeep mo na {name}",
+        heading: "Nailathala ang ruta ng jeep mo",
+        body: "Salamat sa pagmungkahi ng {name}. Sinuri ito ng admin, at makikita na ito ng mga pasahero sa fare map.",
+        action: "Buksan ang fare map",
+      },
+      rejected: {
+        subject: "Hindi nailathala ang ruta ng jeep mo na {name}",
+        heading: "Hindi nailathala ang ruta ng jeep mo",
+        body: "Salamat sa pagmungkahi ng {name}. Sinuri ito ng admin at hindi ito inilathala.",
+        action: "Magmungkahi ulit ng ruta",
+      },
+    },
+    reason: "Dahilan: {reason}",
+    reference: "Reference: {reference}",
+    whySent:
+      "Natanggap mo ito dahil nagpadala ka nito sa Pamasahe Cabanatuan. Nag-e-email lang kami tungkol sa sarili mong mga submission.",
+    footer: "Pamasahe Cabanatuan, gawa ng komunidad kasama ang BetterCabanatuan.",
   },
   legal: {
     updated: "Huling na-update {date}",

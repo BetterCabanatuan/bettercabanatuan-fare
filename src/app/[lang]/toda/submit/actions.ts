@@ -1,7 +1,11 @@
 "use server";
 
+import { after } from "next/server";
+
 import { cityBoundary } from "@/lib/data";
 import { getDb } from "@/lib/db";
+import { formLocale } from "@/lib/i18n/locales";
+import { notifyAdmins } from "@/lib/notifications";
 import { formDataToInput, parseSubmission, type FieldErrors } from "@/lib/toda/submission";
 
 export type SubmitState =
@@ -34,10 +38,12 @@ export async function submitToda(_previous: SubmitState, formData: FormData): Pr
         submitterContact: data.submitterContact ?? null,
         notes: data.notes ?? null,
         connectedTerminal: data.connectedTerminal,
+        locale: formLocale(formData),
       })
       .select("id")
       .single();
     if (error) throw error;
+    after(() => notifyAdmins({ kind: "toda", id: submission.id, name: data.name, from: data.submitterName ?? null }));
     return { status: "received", reference: submission.id.slice(-6).toUpperCase() };
   } catch (error) {
     console.error("[toda] Could not save submission", error);

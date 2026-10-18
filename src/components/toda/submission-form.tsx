@@ -114,6 +114,8 @@ function SubmissionRound({ boundary, todaName, onAddAnother }: SubmissionFormPro
       noValidate
       className="flex flex-col gap-8"
     >
+      {/* So the email with the admin's decision arrives in this language. */}
+      <input type="hidden" name="locale" value={locale} />
       {state.status === "failed" && (
         <Alert variant="destructive">
           <AlertTitle>Not sent</AlertTitle>
@@ -268,7 +270,8 @@ function SubmissionRound({ boundary, todaName, onAddAnother }: SubmissionFormPro
       <FieldSet>
         <FieldLegend>About you (optional)</FieldLegend>
         <FieldDescription>
-          Only our admins see this, in case they need to ask you about the TODA. It is never published.{" "}
+          Only our admins see this, in case they need to ask you about the TODA. It is never published. Leave an email
+          address to hear when an admin approves or rejects it.{" "}
           <Link href={localizePath(locale, "/privacy")} className="font-semibold text-primary underline-offset-4 hover:underline">
             {dict.legal.howWeHandle}
           </Link>

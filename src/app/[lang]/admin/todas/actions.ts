@@ -1,9 +1,11 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { after } from "next/server";
 
 import { cityBoundary } from "@/lib/data";
 import { getDb } from "@/lib/db";
+import { notifySubmitter } from "@/lib/notifications";
 import { getAdmin } from "@/lib/session";
 import { rejectionSchema, todaSlug } from "@/lib/toda/submission";
 import { formDataToTerminals, parseTerminals } from "@/lib/toda/terminals";
@@ -25,7 +27,7 @@ export async function approveSubmission(id: string): Promise<ReviewResult> {
   const db = getDb();
   const { data: submission, error } = await db
     .from("toda_submission")
-    .select("name")
+    .select("name, submitterContact, locale")
     .eq("id", id)
     .eq("status", "PENDING")
     .maybeSingle();
@@ -44,7 +46,10 @@ export async function approveSubmission(id: string): Promise<ReviewResult> {
     reviewer_email: admin.email,
   });
   if (approveError) throw approveError;
-  return verified ? { ok: true } : { ok: false, message: ALREADY_REVIEWED };
+  if (!verified) return { ok: false, message: ALREADY_REVIEWED };
+
+  after(() => notifySubmitter({ kind: "toda", outcome: "approved", id, ...submission }));
+  return { ok: true };
 }
 
 export async function rejectSubmission(id: string, reason: string): Promise<ReviewResult> {
@@ -65,11 +70,15 @@ export async function rejectSubmission(id: string, reason: string): Promise<Revi
     })
     .eq("id", id)
     .eq("status", "PENDING")
-    .select("id");
+    .select("name, submitterContact, locale");
   if (error) throw error;
 
   refresh();
-  return data.length === 1 ? { ok: true } : { ok: false, message: ALREADY_REVIEWED };
+  const [rejected] = data;
+  if (!rejected) return { ok: false, message: ALREADY_REVIEWED };
+
+  after(() => notifySubmitter({ kind: "toda", outcome: "rejected", id, reason: parsed.data, ...rejected }));
+  return { ok: true };
 }
 
 /**

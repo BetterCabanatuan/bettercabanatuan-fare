@@ -1,10 +1,12 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 
 import { getDb } from "@/lib/db";
 import type { LngLat } from "@/lib/geo";
+import { notifySubmitter } from "@/lib/notifications";
 import { routeSlug } from "@/lib/routes/queries";
 import { getAdmin } from "@/lib/session";
 import { rejectionSchema } from "@/lib/toda/submission";
@@ -27,7 +29,7 @@ export async function approveRouteSubmission(id: string): Promise<ReviewResult> 
   const db = getDb();
   const { data: submission, error } = await db
     .from("route_submission")
-    .select("name, fromLat, fromLng, toLat, toLng, waypoints")
+    .select("name, fromLat, fromLng, toLat, toLng, waypoints, submitterContact, locale")
     .eq("id", id)
     .eq("status", "PENDING")
     .maybeSingle();
@@ -63,7 +65,11 @@ export async function approveRouteSubmission(id: string): Promise<ReviewResult> 
   if (approveError) throw approveError;
 
   refresh();
-  return verified ? { ok: true } : { ok: false, message: ALREADY_REVIEWED };
+  if (!verified) return { ok: false, message: ALREADY_REVIEWED };
+
+  const { name, submitterContact, locale } = submission;
+  after(() => notifySubmitter({ kind: "route", outcome: "approved", id, name, submitterContact, locale }));
+  return { ok: true };
 }
 
 /**
@@ -99,11 +105,15 @@ export async function rejectRouteSubmission(id: string, reason: string): Promise
     })
     .eq("id", id)
     .eq("status", "PENDING")
-    .select("id");
+    .select("name, submitterContact, locale");
   if (error) throw error;
 
   refresh();
-  return data.length === 1 ? { ok: true } : { ok: false, message: ALREADY_REVIEWED };
+  const [rejected] = data;
+  if (!rejected) return { ok: false, message: ALREADY_REVIEWED };
+
+  after(() => notifySubmitter({ kind: "route", outcome: "rejected", id, reason: parsed.data, ...rejected }));
+  return { ok: true };
 }
 
 

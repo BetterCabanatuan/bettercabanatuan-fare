@@ -48,7 +48,7 @@ Admins sign in with a one-time email link. Only addresses in `ADMIN_EMAILS` get 
 1. **Authentication → URL Configuration**: set **Site URL** to the production address, and add these under **Redirect URLs**:
    - `http://localhost:3000/api/auth/confirm`
    - `https://[FILL: PRODUCTION_DOMAIN]/api/auth/confirm`
-2. **Authentication → Emails → Templates**: the sign-in email is a React Email template, [`emails/admin-sign-in.tsx`](../../emails/admin-sign-in.tsx), exported to [`supabase/templates/admin-sign-in.html`](../../supabase/templates/admin-sign-in.html). Paste the whole HTML file into both **Magic link** and **Confirm signup**, with the subject `Your Pamasahe Cabanatuan sign-in link`. An admin's very first sign-in creates their user, so Supabase sends **Confirm signup** that time and **Magic link** after.
+2. **Authentication → Emails → Templates**: the sign-in email is a React Email template, [`src/emails/supabase/admin-sign-in.tsx`](../../src/emails/supabase/admin-sign-in.tsx), exported to [`supabase/templates/admin-sign-in.html`](../../supabase/templates/admin-sign-in.html). Paste the whole HTML file into both **Magic link** and **Confirm signup**, with the subject `Your Pamasahe Cabanatuan sign-in link`. An admin's very first sign-in creates their user, so Supabase sends **Confirm signup** that time and **Magic link** after.
 
    The template's link is `{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email`. `{{ .RedirectTo }}` is the app's `/api/auth/confirm?next=/admin/todas` address, so the same template works from localhost and production, and the token works on any device. With Supabase's default template the link still works, but only in the browser that asked for it.
 3. **Authentication → Providers → Email**: set **Email OTP Expiration** to `600` seconds, so the link expires in 10 minutes as the sign-in page says.
@@ -83,13 +83,15 @@ This creates an empty file in `supabase/migrations`. Write the SQL, then:
 1. Apply it with `npm run db:deploy`. Test it on a separate Supabase project (or a local stack with `npx supabase start`, which needs Docker) before it touches production data.
 2. Regenerate the TypeScript types with `npm run db:types`, and commit both files.
 
-## 7. Change the sign-in email
+## 7. Change the emails
 
 ```bash
 npm run email:dev
 ```
 
-This opens a live preview at <http://localhost:3001>. Edit `emails/admin-sign-in.tsx`, then run `npm run email:export` to regenerate `supabase/templates/admin-sign-in.html`, commit both, and paste the new HTML into both dashboard templates (step 4). Keep the `{{ .RedirectTo }}` and `{{ .TokenHash }}` placeholders in the link; Supabase fills them in when it sends the email. Supabase sends the email, so changing it needs no deploy.
+This opens a live preview of every email at <http://localhost:3001>. For the sign-in email, edit `src/emails/supabase/admin-sign-in.tsx`, then run `npm run email:export` to regenerate `supabase/templates/admin-sign-in.html`, commit both, and paste the new HTML into both dashboard templates (step 4). Keep the `{{ .RedirectTo }}` and `{{ .TokenHash }}` placeholders in the link; Supabase fills them in when it sends the email. Supabase sends the email, so changing it needs no deploy.
+
+The emails in `src/emails/app/` are sent by the app itself ([cloudflare.md](cloudflare.md#emails)), so a change to them goes live with the next deploy and needs no export. Their rider-facing text is in `reviewEmail` in the dictionaries, in English and Tagalog.
 
 ## Row level security
 

@@ -12,7 +12,7 @@
   "compatibility_flags": [
     // Node.js APIs for Next.js.
     "nodejs_compat",
-    // fetch() may only reach public addresses (Supabase, OSRM).
+    // fetch() may only reach public addresses (Supabase, OSRM, Resend).
     "global_fetch_strictly_public",
   ],
 
@@ -31,11 +31,16 @@
     "MAINTENANCE_MODE": "false",
     // Optional end time shown as "Back by …", e.g. "2026-10-18T18:00+08:00"; empty for unknown.
     "MAINTENANCE_UNTIL": "",
+    // Sender of the emails the app sends (new-submission alerts, review decisions), on a
+    // domain verified in Resend, e.g. "Pamasahe Cabanatuan <pamasahe@example.org>". While
+    // it is empty the app sends no email. docs/deploy/cloudflare.md#emails
+    "EMAIL_FROM": "",
   },
   // Secrets, set once with `npx wrangler secret put <NAME>` (or as type "Secret" in the
   // dashboard) and never committed. Unlike "vars", deploys leave them in place:
   //   SUPABASE_SECRET_KEY  server-only Supabase key; bypasses row level security
   //   ADMIN_EMAILS         comma-separated admin addresses (a secret to keep them out of git)
+  //   RESEND_API_KEY       sends the app's emails; without it the app sends none
 
   "observability": {
     "enabled": true,
