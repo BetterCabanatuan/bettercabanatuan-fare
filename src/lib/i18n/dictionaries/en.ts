@@ -245,6 +245,7 @@ export const en = {
       "Jeep and tricycle fares for Cabanatuan City, from a community-driven project: residents help map jeep routes and list TODAs, and every fare names its source.",
     mapData: "Map data © OpenStreetMap contributors",
     alpha: "Alpha version: fares are estimates and may differ from the actual rates.",
+    version: "Alpha · v{version}",
     faresHeading: "Fares",
     todaDirectory: "TODA directory",
     sources: "Sources",

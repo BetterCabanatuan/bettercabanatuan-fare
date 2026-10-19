@@ -2,8 +2,8 @@ import Link from "next/link";
 
 import { LogoMark } from "@/components/shared/logo-mark";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
-import { localizePath } from "@/lib/i18n/locales";
-import { betterCabanatuanUrl } from "@/lib/site";
+import { fill, localizePath } from "@/lib/i18n/locales";
+import { appVersion, betterCabanatuanUrl } from "@/lib/site";
 
 type FooterLink = { href: string; label: string; external?: boolean };
 type FooterSection = { id: string; heading: string; links: FooterLink[] };
@@ -121,6 +121,9 @@ export async function Footer() {
         <div className="mt-10 flex flex-col gap-4 border-t border-background/20 pt-6 md:flex-row md:items-center md:justify-between">
           <p className="text-sm text-background/75">
             <span className="font-bold text-background">Pamasahe Cabanatuan</span> · {t.about}
+            <span className="mt-1 block font-mono text-xs text-highlight">
+              {fill(t.version, { version: appVersion })}
+            </span>
           </p>
           <nav aria-label={t.legalHeading}>
             <ul className="flex flex-wrap gap-x-5">

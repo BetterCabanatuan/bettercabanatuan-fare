@@ -247,6 +247,7 @@ export const tl: Dictionary = {
       "Pamasahe sa jeep at tricycle sa Lungsod ng Cabanatuan, mula sa proyektong pinalalago ng komunidad: tumutulong ang mga residente na i-mapa ang ruta ng jeep at ilista ang mga TODA, at nakasaad sa bawat pamasahe kung saan ito galing.",
     mapData: "Datos ng mapa © mga contributor ng OpenStreetMap",
     alpha: "Alpha version: tantiya lang ang mga pamasahe at maaaring iba sa aktuwal na singil.",
+    version: "Alpha · v{version}",
     faresHeading: "Pamasahe",
     todaDirectory: "Listahan ng mga TODA",
     sources: "Mga pinagkunan",
