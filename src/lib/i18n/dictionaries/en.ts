@@ -269,6 +269,7 @@ export const en = {
     label: "Alpha notice",
     tag: "Alpha",
     text: "Fares and routes here are estimates and may differ from the actual fare. Check the official fare matrix when in doubt.",
+    report: "Spot a mistake? Tell us",
   },
   maintenance: {
     heading: "Pamasahe Cabanatuan is down for maintenance",
@@ -726,7 +727,11 @@ export const en = {
     reference: "Your reference:",
     sendAnother: "Send another",
     backToMap: "Back to the fare map",
-    plannerLink: "Wrong fare or road? Send feedback",
+    prompt: {
+      heading: "Fare or route look wrong?",
+      body: "Tell us what you paid or what's off. An admin reads every report, and each one helps fix the fare for every rider.",
+      action: "Send feedback",
+    },
     footerLink: "Send feedback",
     errors: {
       topic: "Choose what your feedback is about.",

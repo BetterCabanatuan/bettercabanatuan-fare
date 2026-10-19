@@ -13,6 +13,7 @@ import {
   UnmappedRoutes,
 } from "@/components/fare/jeep-route-list";
 import type { RouteStatus } from "@/components/fare/types";
+import { FareFeedbackPrompt } from "@/components/feedback/fare-feedback-prompt";
 import { useDictionary } from "@/components/shared/dictionary-provider";
 import { JeepIcon } from "@/components/shared/vehicle-icons";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +49,7 @@ type JeepPanelProps = {
   onHighlightRoute: (routeId: string | null) => void;
   onUseTricycle: () => void;
   onSelectRoad: (index: number) => void;
+  feedbackHref: string;
 };
 
 export function JeepPanel({
@@ -65,6 +67,7 @@ export function JeepPanel({
   onHighlightRoute,
   onUseTricycle,
   onSelectRoad,
+  feedbackHref,
 }: JeepPanelProps) {
   const { dict } = useDictionary();
   const withLine = routes.filter(hasLine);
@@ -101,6 +104,8 @@ export function JeepPanel({
         hasBothPoints={hasBothPoints}
         onSelectRoad={onSelectRoad}
       />
+
+      <FareFeedbackPrompt href={feedbackHref} />
 
       {withLine.length > 0 ? (
         <JeepRouteList

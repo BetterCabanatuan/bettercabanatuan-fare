@@ -271,6 +271,7 @@ export const tl: Dictionary = {
     label: "Paalala: alpha version",
     tag: "Alpha",
     text: "Tantiya lang ang mga pamasahe at ruta dito at maaaring iba sa aktuwal na pamasahe. Tingnan ang opisyal na fare matrix kung may duda.",
+    report: "May nakitang mali? Sabihin sa amin",
   },
   maintenance: {
     heading: "Naka-maintenance muna ang Pamasahe Cabanatuan",
@@ -734,7 +735,11 @@ export const tl: Dictionary = {
     reference: "Ang reference mo:",
     sendAnother: "Magpadala ulit",
     backToMap: "Bumalik sa mapa ng pamasahe",
-    plannerLink: "Maling pamasahe o daan? Magpadala ng feedback",
+    prompt: {
+      heading: "Mali ba ang pamasahe o ruta?",
+      body: "Sabihin kung magkano ang ibinayad mo o kung ano ang mali. Binabasa ng admin ang bawat ulat, at nakatutulong ito sa lahat ng pasahero.",
+      action: "Magpadala ng feedback",
+    },
     footerLink: "Magpadala ng feedback",
     errors: {
       topic: "Piliin kung tungkol saan ang feedback mo.",

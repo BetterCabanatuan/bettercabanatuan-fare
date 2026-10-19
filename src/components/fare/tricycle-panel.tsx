@@ -7,6 +7,7 @@ import { RoadOptions } from "@/components/fare/road-options";
 import { TricycleFareHistory } from "@/components/fare/tricycle-fare-history";
 import { TricycleFareMatrix } from "@/components/fare/tricycle-fare-matrix";
 import type { RouteStatus } from "@/components/fare/types";
+import { FareFeedbackPrompt } from "@/components/feedback/fare-feedback-prompt";
 import { useDictionary } from "@/components/shared/dictionary-provider";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +47,7 @@ type TricyclePanelProps = {
   hasBothPoints: boolean;
   outsideCity: boolean;
   onSelectRoad: (index: number) => void;
+  feedbackHref: string;
 };
 
 type TricycleText = Dictionary["tricycle"];
@@ -89,6 +91,7 @@ export function TricyclePanel({
   hasBothPoints,
   outsideCity,
   onSelectRoad,
+  feedbackHref,
 }: TricyclePanelProps) {
   const { dict } = useDictionary();
   const t = dict.tricycle;
@@ -323,6 +326,8 @@ export function TricyclePanel({
           </Dialog>
         </section>
       )}
+
+      <FareFeedbackPrompt href={feedbackHref} />
 
       <TricycleFareMatrix rules={rules} confirmed={source.confirmed} basis={basis} />
       <TricycleFareHistory />

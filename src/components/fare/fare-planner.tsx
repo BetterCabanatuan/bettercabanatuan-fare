@@ -1,7 +1,6 @@
 "use client";
 
-import { ArrowDownUp, LocateFixed, MessageSquareWarning, X } from "lucide-react";
-import Link from "next/link";
+import { ArrowDownUp, LocateFixed, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -117,6 +116,8 @@ export function FarePlanner({
   const currentKey = pointsKey(points);
   const aPosition = points.a?.position;
   const bPosition = points.b?.position;
+  // Carries the trip, so an admin reading the feedback can open the same fare.
+  const feedbackHref = feedbackPath(locale, [localizePath(locale, "/fare"), tripQuery(mode, points)].filter(Boolean).join("?"));
 
   // The road routes come from an outside service, so they are synced in an effect. Both
   // modes draw them: jeep mode shows them until the rider picks a trip.
@@ -385,6 +386,7 @@ export function FarePlanner({
             hasBothPoints={Boolean(currentKey)}
             outsideCity={outsideCity}
             onSelectRoad={selectRoad}
+            feedbackHref={feedbackHref}
           />
         ) : (
           <JeepPanel
@@ -408,17 +410,9 @@ export function FarePlanner({
             }}
             onUseTricycle={() => switchMode("tricycle")}
             onSelectRoad={selectRoad}
+            feedbackHref={feedbackHref}
           />
         )}
-
-        <Link
-          // Carries the trip, so an admin reading the feedback can open the same fare.
-          href={feedbackPath(locale, [localizePath(locale, "/fare"), tripQuery(mode, points)].filter(Boolean).join("?"))}
-          className="inline-flex min-h-11 items-center gap-2 self-start text-sm font-semibold text-primary underline-offset-4 hover:underline"
-        >
-          <MessageSquareWarning aria-hidden className="size-4" />
-          {dict.feedback.plannerLink}
-        </Link>
       </section>
 
       <div ref={mapBoxRef} className="order-1 h-[clamp(13rem,34dvh,20rem)] scroll-mt-2 sm:h-[55dvh] lg:sticky lg:top-0 lg:order-2 lg:h-[calc(100dvh-4.5rem)] lg:flex-1">
