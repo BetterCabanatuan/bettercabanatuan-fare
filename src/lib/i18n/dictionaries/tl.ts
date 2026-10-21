@@ -485,7 +485,7 @@ export const tl: Dictionary = {
       baseOption: "{from} – {to} (base na singil)",
       hint: "Sumusunod lang ang pamasahe sa gasolina kapag nag-anunsyo ang lungsod ng mas mataas na singil. Gamitin ang base na singil maliban kung iba ang nasa sticker ng tricycle.",
       warning:
-        "Ipinapatupad lang ang mas mataas na singil na ito kapag inanunsyo ng Tricycle Franchising and Regulatory Board ng lungsod, at nang hanggang 60 araw. Wala pa kaming nakitang anunsyo, kaya tingnan ang sticker sa tricycle.",
+        "Batay ang singil na ito sa tricycle fare guidelines ng lungsod, Ordinansa Blg. 050-2026 na may petsang 14 Abril 2026 (Seksyon 5, pag-aangkop ng pamasahe sa presyo ng gasolina). Tingnan ang sticker sa tricycle.",
       applied: "Singil para sa gasolinang {from} – {to} kada litro",
     },
     matrixBand: "Para sa gasolinang {from} – {to} kada litro",

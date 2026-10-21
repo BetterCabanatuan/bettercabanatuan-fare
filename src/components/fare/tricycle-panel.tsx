@@ -10,7 +10,6 @@ import { TricycleFareMatrix } from "@/components/fare/tricycle-fare-matrix";
 import type { RouteStatus, TricycleOptions } from "@/components/fare/types";
 import { FareFeedbackPrompt } from "@/components/feedback/fare-feedback-prompt";
 import { useDictionary } from "@/components/shared/dictionary-provider";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -185,6 +184,11 @@ export function TricyclePanel({
         </div>
       </div>
 
+      {/*
+        Hidden at the owner's request (2026-10-21): the rates now follow the city's fare guidelines
+        poster for Ord. 050-2026. To restore, uncomment this block and re-import Alert,
+        AlertDescription and AlertTitle from "@/components/ui/alert".
+
       {!source.confirmed && (
         // A static disclaimer, so "note" rather than the Alert's default "alert" role.
         <Alert role="note" className="border-warning-border bg-warning text-warning-foreground">
@@ -195,6 +199,7 @@ export function TricyclePanel({
           </AlertDescription>
         </Alert>
       )}
+      */}
 
       <div aria-live="polite" className="flex flex-col gap-3">
         {measuring && (

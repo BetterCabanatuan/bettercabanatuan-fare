@@ -481,7 +481,7 @@ export const en = {
       baseOption: "{from} – {to} (base rate)",
       hint: "Fares follow gasoline only after the city announces a higher rate. Keep the base rate unless the sticker in the tricycle shows otherwise.",
       warning:
-        "This higher rate applies only once the city's Tricycle Franchising and Regulatory Board announces it, and for up to 60 days. We haven't found an announcement yet, so check the sticker in the tricycle.",
+        "This rate is from the city's tricycle fare guidelines, Ordinance No. 050-2026 dated 14 April 2026 (Section 5, fare adjustment for fuel prices). Check the sticker in the tricycle.",
       applied: "Rate for gasoline at {from} – {to} per litre",
     },
     matrixBand: "For gasoline at {from} – {to} per litre",
