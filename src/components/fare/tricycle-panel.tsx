@@ -1,15 +1,15 @@
 "use client";
 
-import { useId, useState, type ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { Maximize2, Minus, Plus, TriangleAlert } from "lucide-react";
 
+import { bandRange, FuelBandSelect } from "@/components/fare/fuel-band-select";
 import { RoadOptions } from "@/components/fare/road-options";
 import { TricycleFareHistory } from "@/components/fare/tricycle-fare-history";
 import { TricycleFareMatrix } from "@/components/fare/tricycle-fare-matrix";
-import type { RouteStatus } from "@/components/fare/types";
+import type { RouteStatus, TricycleOptions } from "@/components/fare/types";
 import { FareFeedbackPrompt } from "@/components/feedback/fare-feedback-prompt";
 import { useDictionary } from "@/components/shared/dictionary-provider";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,9 +25,11 @@ import { Switch } from "@/components/ui/switch";
 import type { FareSourceInfo } from "@/lib/data";
 import { formatDate } from "@/lib/format-date";
 import {
+  canRequestSpecialTrip,
   displayKm,
   formatPeso,
   tricycleFare,
+  withFuelBand,
   type Passengers,
   type TricycleFare,
   type TricycleFareRules,
@@ -48,6 +50,9 @@ type TricyclePanelProps = {
   outsideCity: boolean;
   onSelectRoad: (index: number) => void;
   feedbackHref: string;
+  complaints: ReactNode;
+  options: TricycleOptions;
+  onOptionsChange: (options: TricycleOptions) => void;
 };
 
 type TricycleText = Dictionary["tricycle"];
@@ -92,19 +97,26 @@ export function TricyclePanel({
   outsideCity,
   onSelectRoad,
   feedbackHref,
+  complaints,
+  options,
+  onOptionsChange,
 }: TricyclePanelProps) {
   const { dict } = useDictionary();
   const t = dict.tricycle;
-  const [passengers, setPassengers] = useState<Passengers>({ regular: 1, discounted: 0 });
-  const [specialTripRequested, setSpecialTripRequested] = useState(false);
+  const { passengers, specialTripRequested, fuelBandIndex } = options;
+  const setPassengers = (next: Passengers) => onOptionsChange({ ...options, passengers: next });
   const resultTitleId = useId();
+
+  const fuelBand = rules.fuelBands[fuelBandIndex];
+  const bandRules = withFuelBand(rules, fuelBand);
+  const raisedRate = fuelBandIndex > 0;
+  const bandApplied = raisedRate ? fill(t.fuelBand.applied, bandRange(fuelBand)) : null;
 
   const totalPassengers = passengers.regular + passengers.discounted;
   const atMax = totalPassengers >= rules.maxPassengers;
   const atMin = totalPassengers <= 1;
-  // A special trip is one passenger hiring the whole tricycle (Ord. 050-2026 Sec. 2d).
-  const canRequestSpecialTrip = totalPassengers === 1;
-  const specialTrip = specialTripRequested && canRequestSpecialTrip;
+  const soloRider = canRequestSpecialTrip(passengers);
+  const specialTrip = specialTripRequested && soloRider;
 
   const roadRoute = hasBothPoints && route.state === "ready" ? route.routes[route.selected] : null;
   const routeError = hasBothPoints && route.state === "error" ? route.reason : null;
@@ -112,7 +124,7 @@ export function TricyclePanel({
   const idle = !roadRoute && !routeError && !measuring;
   const distanceKm = roadRoute?.distanceKm ?? null;
 
-  const fare = distanceKm !== null ? tricycleFare(rules, distanceKm, passengers, specialTrip) : null;
+  const fare = distanceKm !== null ? tricycleFare(bandRules, distanceKm, passengers, specialTrip) : null;
   const resultLabel = outsideCity ? t.estimateOnly : t.resultTitle;
   const distanceText = distanceKm !== null && fare ? distanceLine(distanceKm, fare.billableKm, t) : "";
   const basis = basisLine(source, t);
@@ -152,17 +164,30 @@ export function TricyclePanel({
             {t.specialTripToggle}
             <Switch
               checked={specialTrip}
-              disabled={!canRequestSpecialTrip}
-              onCheckedChange={setSpecialTripRequested}
+              disabled={!soloRider}
+              onCheckedChange={(checked) => onOptionsChange({ ...options, specialTripRequested: checked })}
             />
           </label>
           <p className="text-sm text-muted-foreground">
-            {canRequestSpecialTrip
+            {soloRider
               ? fill(t.specialTripHint, { times: rules.specialTripMultiplier })
               : t.specialTripSoloOnly}
           </p>
         </div>
+        <div className="mt-4 flex flex-col gap-3 border-t pt-4">
+          <FuelBandSelect
+            bands={rules.fuelBands}
+            value={fuelBandIndex}
+            onChange={(index) => onOptionsChange({ ...options, fuelBandIndex: index })}
+          />
+          {raisedRate && <Notice>{t.fuelBand.warning}</Notice>}
+        </div>
       </div>
+
+      {/*
+        Hidden at the owner's request (2026-10-21): the rates now follow the city's fare guidelines
+        poster for Ord. 050-2026. To restore, uncomment this block and re-import Alert,
+        AlertDescription and AlertTitle from "@/components/ui/alert".
 
       {!source.confirmed && (
         // A static disclaimer, so "note" rather than the Alert's default "alert" role.
@@ -174,6 +199,7 @@ export function TricyclePanel({
           </AlertDescription>
         </Alert>
       )}
+      */}
 
       <div aria-live="polite" className="flex flex-col gap-3">
         {measuring && (
@@ -210,7 +236,7 @@ export function TricyclePanel({
           roads={route.routes}
           selected={route.selected}
           onSelect={onSelectRoad}
-          fareFor={(km) => tricycleFare(rules, km, passengers, specialTrip).total}
+          fareFor={(km) => tricycleFare(bandRules, km, passengers, specialTrip).total}
         />
       )}
 
@@ -247,6 +273,7 @@ export function TricyclePanel({
 
           <div className="flex flex-col gap-0.5">
             <p className="text-sm font-medium tabular-nums">{distanceText}</p>
+            {bandApplied && <p className="text-sm font-semibold text-highlight">{bandApplied}</p>}
             <p className="text-sm text-background/70">{t.routeNote}</p>
           </div>
 
@@ -271,9 +298,9 @@ export function TricyclePanel({
               <p className="text-sm text-background/70 tabular-nums">
                 {fill(t.extraKm, {
                   extra: fare.extraKm,
-                  base: rules.baseKm,
-                  regular: formatPeso(rules.perSucceedingKm.regular),
-                  discounted: formatPeso(rules.perSucceedingKm.discounted),
+                  base: bandRules.baseKm,
+                  regular: formatPeso(bandRules.perSucceedingKm.regular),
+                  discounted: formatPeso(bandRules.perSucceedingKm.discounted),
                 })}
               </p>
             )}
@@ -311,6 +338,7 @@ export function TricyclePanel({
                 {passengerSummary(passengers, t)}
                 {fare.specialTrip ? ` · ${t.specialTripBadge}` : ""}
               </p>
+              {bandApplied && <p className="text-xl font-semibold text-highlight">{bandApplied}</p>}
               <DialogDescription className="max-w-xl text-base text-background/80">
                 {basis}
                 {source.confirmed ? "" : ` ${t.notConfirmed}`}
@@ -328,8 +356,9 @@ export function TricyclePanel({
       )}
 
       <FareFeedbackPrompt href={feedbackHref} />
+      {complaints}
 
-      <TricycleFareMatrix rules={rules} confirmed={source.confirmed} basis={basis} />
+      <TricycleFareMatrix rules={bandRules} fuelBand={fuelBand} confirmed={source.confirmed} basis={basis} />
       <TricycleFareHistory />
     </div>
   );

@@ -13,20 +13,26 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatPeso, type Centavos, type TricycleFareRules } from "@/lib/fare";
+import { bandRange } from "@/components/fare/fuel-band-select";
+import { formatPeso, type Centavos, type FuelBand, type TricycleFareRules } from "@/lib/fare";
 import { fill } from "@/lib/i18n/locales";
 
 type TricycleFareMatrixProps = {
+  /** Rules with the selected fuel band's rates already applied. */
   rules: TricycleFareRules;
+  fuelBand: FuelBand;
   confirmed: boolean;
   basis: string;
 };
 
-export function TricycleFareMatrix({ rules, confirmed, basis }: TricycleFareMatrixProps) {
+export function TricycleFareMatrix({ rules, fuelBand, confirmed, basis }: TricycleFareMatrixProps) {
   const { dict } = useDictionary();
   const t = dict.tricycle;
   const titleId = useId();
   const { baseFare, perSucceedingKm, specialTripMultiplier } = rules;
+  // The city's poster prints "+₱5" per km for discounted riders, which is the regular base
+  // rate; its own Sec. 5 table and the 20% discount give ₱4. Riders may quote either.
+  const baseBandPerKm = rules.fuelBands[0].perSucceedingKm;
 
   const rows: { key: string; label: string; regular: Centavos; discounted: Centavos }[] = [
     { key: "base", label: fill(t.matrixFirstKm, { km: rules.baseKm }), ...baseFare },
@@ -54,6 +60,7 @@ export function TricycleFareMatrix({ rules, confirmed, basis }: TricycleFareMatr
           </Badge>
         )}
       </div>
+      <p className="-mt-2 text-sm text-muted-foreground">{fill(t.matrixBand, bandRange(fuelBand))}</p>
 
       <Table aria-labelledby={titleId} className="text-sm">
         <TableHeader>
@@ -93,6 +100,13 @@ export function TricycleFareMatrix({ rules, confirmed, basis }: TricycleFareMatr
       <p className="flex items-start gap-2 text-sm text-muted-foreground">
         <Info aria-hidden className="mt-0.5 size-4 shrink-0" />
         {t.fuelPrice}
+      </p>
+      <p className="flex items-start gap-2 text-sm text-muted-foreground">
+        <Info aria-hidden className="mt-0.5 size-4 shrink-0" />
+        {fill(t.posterNote, {
+          poster: formatPeso(baseBandPerKm.regular),
+          rate: formatPeso(baseBandPerKm.discounted),
+        })}
       </p>
       <p className="border-t pt-3 text-xs text-muted-foreground">{basis}</p>
     </section>

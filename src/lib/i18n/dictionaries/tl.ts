@@ -401,6 +401,7 @@ export const tl: Dictionary = {
     layerTerminals: "Mga terminal at sakayan",
     layerRouteEnds: "Mga dulo ng ruta",
     layersNote: "Laging nasa mapa ang A at B mo at ang rutang pinili mo.",
+    mapFuelBand: "Pamasahe sa gasolinang {from} – {to}/L",
   },
   search: {
     placeholder: "Maghanap ng lugar o palatandaan",
@@ -427,6 +428,8 @@ export const tl: Dictionary = {
       "Ayon sa layo ang pamasahe, kaya pinakamura ang pinakamaikling daan. Pang-kotseng walang hinto ang oras; mas matagal ang tricycle at jeep.",
     mapLabel: "{minutes} min · {km} km",
     pickRoad: "Gamitin ang daang ito: {summary}",
+    pickRoadFare: "Gamitin ang daang ito: {summary}, pamasahe {fare}",
+    roadFare: "Pamasahe {fare}: {summary}",
   },
   tricycle: {
     passengers: "Mga pasahero",
@@ -475,7 +478,29 @@ export const tl: Dictionary = {
     specialTripBadge: "Special trip",
     specialTripApplied: "Special trip: {times} × ang pamasahe ng isang pasahero.",
     fuelPrice:
-      "Kapag tumaas ang presyo ng gasolina, maaaring magtakda ang lungsod ng pansamantalang mas mataas na singil. Tingnan ang fare sticker sa loob ng tricycle.",
+      "Kapag tumaas ang presyo ng gasolina, maaaring magtakda ang lungsod ng mas mataas na singil nang hanggang 60 araw. Piliin ang presyo ng gasolina sa itaas para makita ito, at tingnan ang fare sticker sa loob ng tricycle.",
+    fuelBand: {
+      label: "Presyo ng gasolina kada litro",
+      option: "{from} – {to}",
+      baseOption: "{from} – {to} (base na singil)",
+      hint: "Sumusunod lang ang pamasahe sa gasolina kapag nag-anunsyo ang lungsod ng mas mataas na singil. Gamitin ang base na singil maliban kung iba ang nasa sticker ng tricycle.",
+      warning:
+        "Batay ang singil na ito sa tricycle fare guidelines ng lungsod, Ordinansa Blg. 050-2026 na may petsang 14 Abril 2026 (Seksyon 5, pag-aangkop ng pamasahe sa presyo ng gasolina). Tingnan ang sticker sa tricycle.",
+      applied: "Singil para sa gasolinang {from} – {to} kada litro",
+    },
+    matrixBand: "Para sa gasolinang {from} – {to} kada litro",
+    posterNote:
+      "Sinasabi ng poster ng lungsod na +{poster} kada km ang senior, PWD at estudyante, pero {rate} ang nakalista sa sarili nitong talaan ng presyo ng gasolina, na may 20% na diskwento. {rate} ang gamit ng calculator na ito.",
+    complaints: {
+      title: "Sobra ang singil?",
+      body: "Tumawag o mag-text sa tricycle hotline ng lungsod. Ibigay ang plate number, petsa at oras, at kung saan ito nangyari.",
+      call: "Tumawag sa {number}",
+      text: "Mag-text sa {number}",
+      penaltiesTitle: "Mga parusa ayon sa ordinansa",
+      fineOrImpound: "Paglabag {n}: multang {fine} o pagkumpiska ng tricycle nang {days} araw",
+      mtopRevoked: "Paglabag {n}: kanselasyon at pagbawi ng permit ng operator (MTOP)",
+      penaltiesNote: "Sa unang dalawang paglabag, multa o pagkumpiska ang parusa, hindi pareho.",
+    },
     perRegular: "{amount} bawat regular na pasahero",
     perDiscounted: "{amount} bawat pasaherong may diskwento",
     unconfirmedBadge: "Hindi pa kumpirmado",

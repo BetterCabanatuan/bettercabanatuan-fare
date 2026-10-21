@@ -399,6 +399,7 @@ export const en = {
     layerTerminals: "Terminals and stops",
     layerRouteEnds: "Route ends",
     layersNote: "Your A and B points and the route you picked always stay on the map.",
+    mapFuelBand: "Fares for gasoline at {from} – {to}/L",
   },
   search: {
     placeholder: "Search a place or landmark",
@@ -425,6 +426,8 @@ export const en = {
       "The fare goes by distance, so the shortest road costs least. Times are for a car that doesn't stop; tricycles and jeeps take longer.",
     mapLabel: "{minutes} min · {km} km",
     pickRoad: "Use this road: {summary}",
+    pickRoadFare: "Use this road: {summary}, fare {fare}",
+    roadFare: "Fare {fare}: {summary}",
   },
   tricycle: {
     passengers: "Passengers",
@@ -471,7 +474,29 @@ export const en = {
     specialTripBadge: "Special trip",
     specialTripApplied: "Special trip: {times} × the passenger fare.",
     fuelPrice:
-      "When fuel prices rise, the city can set a temporary higher rate. Check the fare sticker in the tricycle.",
+      "When gasoline prices rise, the city can set a higher rate for up to 60 days. Pick the gasoline price above to see it, and check the fare sticker in the tricycle.",
+    fuelBand: {
+      label: "Gasoline price per litre",
+      option: "{from} – {to}",
+      baseOption: "{from} – {to} (base rate)",
+      hint: "Fares follow gasoline only after the city announces a higher rate. Keep the base rate unless the sticker in the tricycle shows otherwise.",
+      warning:
+        "This rate is from the city's tricycle fare guidelines, Ordinance No. 050-2026 dated 14 April 2026 (Section 5, fare adjustment for fuel prices). Check the sticker in the tricycle.",
+      applied: "Rate for gasoline at {from} – {to} per litre",
+    },
+    matrixBand: "For gasoline at {from} – {to} per litre",
+    posterNote:
+      "The city's fare poster says senior, PWD and student riders pay +{poster} per km, but its own gasoline price table lists {rate}, which is 20% off. This calculator uses {rate}.",
+    complaints: {
+      title: "Overcharged?",
+      body: "Call or text the city's tricycle hotline. Give the plate number, the date and time, and where it happened.",
+      call: "Call {number}",
+      text: "Text {number}",
+      penaltiesTitle: "Penalties under the ordinance",
+      fineOrImpound: "Offense {n}: {fine} fine or {days}-day impoundment of the tricycle",
+      mtopRevoked: "Offense {n}: the operator's permit (MTOP) is cancelled and revoked",
+      penaltiesNote: "For the first two offenses it is a fine or impoundment, not both.",
+    },
     perRegular: "{amount} per regular passenger",
     perDiscounted: "{amount} per discounted passenger",
     unconfirmedBadge: "Unconfirmed",

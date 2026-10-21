@@ -5,6 +5,15 @@ export type Centavos = number;
 
 export type FareClass = "regular" | "discounted";
 
+/** A gasoline price band from the Ord. 050-2026 Sec. 5 provisional fare table. */
+export type FuelBand = {
+  /** Gasoline price per litre the band covers. */
+  gasolineFrom: Centavos;
+  gasolineTo: Centavos;
+  baseFare: Record<FareClass, Centavos>;
+  perSucceedingKm: Record<FareClass, Centavos>;
+};
+
 export type TricycleFareRules = {
   baseKm: number;
   /** Per passenger, covering the first baseKm. */
@@ -14,6 +23,8 @@ export type TricycleFareRules = {
   maxPassengers: number;
   /** A passenger-requested special trip costs this many passenger fares. */
   specialTripMultiplier: number;
+  /** Cheapest first; the first band holds the base rates above. */
+  fuelBands: FuelBand[];
 };
 
 export type JeepType = "traditional" | "modern";
@@ -76,6 +87,19 @@ export const billableKm = (distanceKm: number): number => Math.max(1, Math.round
  */
 export const tricycleBillableKm = (distanceKm: number): number =>
   Math.max(1, Math.ceil(displayKm(distanceKm)));
+
+/**
+ * The rules with a fuel band's rates in place of the base rates. A band above the first
+ * applies only once the city's Tricycle Franchising and Regulatory Board activates it (Sec. 5).
+ */
+export const withFuelBand = (rules: TricycleFareRules, band: FuelBand): TricycleFareRules => ({
+  ...rules,
+  baseFare: band.baseFare,
+  perSucceedingKm: band.perSucceedingKm,
+});
+
+/** A special trip is one passenger hiring the whole tricycle (Ord. 050-2026 Sec. 2d). */
+export const canRequestSpecialTrip = ({ regular, discounted }: Passengers): boolean => regular + discounted === 1;
 
 export function tricycleFare(
   rules: TricycleFareRules,

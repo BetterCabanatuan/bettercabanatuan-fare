@@ -3,6 +3,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 
 import { FarePlanner } from "@/components/fare/fare-planner";
+import { TricycleComplaints } from "@/components/fare/tricycle-complaints";
 import {
   cityBoundary,
   jeepPreviousRates,
@@ -50,6 +51,7 @@ async function Planner() {
     <FarePlanner
       tricycleRules={tricycleRules}
       tricycleSource={tricycleSource}
+      tricycleComplaints={<TricycleComplaints />}
       jeepRules={jeepRules}
       jeepPreviousRates={jeepPreviousRates}
       jeepSource={jeepSource}

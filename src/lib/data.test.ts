@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
 
-import { cityBoundary, jeepRoutes, jeepRules, landmarks, terminals, tricycleRules, tricycleSource } from "@/lib/data";
+import {
+  cityBoundary,
+  jeepRoutes,
+  jeepRules,
+  landmarks,
+  terminals,
+  tricycleHotline,
+  tricyclePenalties,
+  tricycleRules,
+  tricycleSource,
+} from "@/lib/data";
 import { haversineKm, isInsideRing } from "@/lib/geo";
 
 describe("data files", () => {
@@ -8,6 +18,22 @@ describe("data files", () => {
     expect(tricycleRules.baseFare.regular).toBe(3500);
     expect(tricycleRules.perSucceedingKm.discounted).toBe(400);
     expect(tricycleSource.reference).toBe("050-2026");
+  });
+
+  it("load the Sec. 5 fuel bands and Sec. 8 penalties", () => {
+    expect(tricycleRules.fuelBands).toHaveLength(11);
+    expect(tricycleRules.fuelBands[4]).toEqual({
+      gasolineFrom: 9000,
+      gasolineTo: 9999,
+      baseFare: { regular: 4500, discounted: 3600 },
+      perSucceedingKm: { regular: 700, discounted: 550 },
+    });
+    expect(tricyclePenalties).toEqual([
+      { offense: 1, fine: 50000, impoundDays: 1 },
+      { offense: 2, fine: 100000, impoundDays: 7 },
+      { offense: 3, mtopRevoked: true },
+    ]);
+    expect(tricycleHotline).toBe("0998-500-2726");
   });
 
   it("load the jeep rules and every route", () => {

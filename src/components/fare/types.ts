@@ -1,5 +1,14 @@
 // Shared contracts between the fare planner, its map, search and side panels.
+import type { Passengers } from "@/lib/fare";
 import type { LngLat } from "@/lib/geo";
+
+/** What the rider sets in the tricycle panel. The planner owns it so the map can show the same fare. */
+export type TricycleOptions = {
+  passengers: Passengers;
+  specialTripRequested: boolean;
+  /** Index into the fuel bands; 0 is the base rate. */
+  fuelBandIndex: number;
+};
 
 export type PointKey = "a" | "b";
 

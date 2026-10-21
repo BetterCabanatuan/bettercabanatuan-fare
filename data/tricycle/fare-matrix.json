@@ -1,7 +1,7 @@
 {
-  "_status": "UNCONFIRMED. Rates are read from a certified true copy of Ordinance No. 050-2026 shared by a student council, not a copy published by the city. Still unknown: the legal effective date (Sec. 15: 15 days after newspaper publication), whether the city has switched on a fuel-price provisional rate (Sec. 5), and which rate the 2026-10-19 stickers show. Mark confirmed once someone photographs a sticker or the TMLU confirms. See docs/research/tricycle-fares-and-tariffs.md.",
+  "_status": "UNCONFIRMED. Rates are read from a certified true copy of Ordinance No. 050-2026 shared by a student council, not a copy published by the city. Still unknown: the legal effective date (Sec. 15: 15 days after newspaper publication), whether the city has switched on a fuel-price provisional rate (Sec. 5; the app defaults to the base band), and which rate the 2026-10-19 stickers show. Mark confirmed once someone photographs a sticker or the TMLU confirms. See docs/research/tricycle-fares-and-tariffs.md.",
   "confirmed": false,
-  "lastChecked": "2026-10-18",
+  "lastChecked": "2026-10-21",
   "current": {
     "label": "2026 Tricycle Fare Matrix Ordinance of Cabanatuan City",
     "ordinanceNo": "050-2026",
@@ -28,7 +28,26 @@
     "maxPassengers": 3,
     "specialTripMultiplier": 2,
     "specialTrip": "Allowed only when the passenger requests it: one passenger hires the whole tricycle so it leaves the City Supermarket TODA terminal without waiting, and pays two passenger fares (Sec. 2d). The ordinance does not say whether this applies to street pick-ups.",
-    "fuelPriceAdjustment": "Not modelled. The rates above are the base band for gasoline at PHP 50.00-59.99/L. For every PHP 10/L rise the Tricycle Franchising and Regulatory Board may set a provisional rate of +PHP 2.50 base and +PHP 0.50 per km, for up to 60 days (Sec. 5).",
+    "fuelPriceAdjustment": "The rates above are the base band for gasoline at PHP 50.00-59.99/L. For every PHP 10/L rise the Tricycle Franchising and Regulatory Board may set a provisional rate of +PHP 2.50 base and +PHP 0.50 per km, for up to 60 days (Sec. 5). The bands below copy the Sec. 5 table; a band applies only once the board activates it. Discounted per-km rates are 80% rounded to the nearest PHP 0.50, so they are not exactly 80%. The city's poster prints band ranges as e.g. PHP 50.00-59.00; the certified copy reads 50.00-59.99.",
+    "fuelBands": [
+      { "gasolineFrom": 50.0, "gasolineTo": 59.99, "baseFare": { "regular": 35.0, "discounted": 28.0 }, "perSucceedingKm": { "regular": 5.0, "discounted": 4.0 } },
+      { "gasolineFrom": 60.0, "gasolineTo": 69.99, "baseFare": { "regular": 37.5, "discounted": 30.0 }, "perSucceedingKm": { "regular": 5.5, "discounted": 4.5 } },
+      { "gasolineFrom": 70.0, "gasolineTo": 79.99, "baseFare": { "regular": 40.0, "discounted": 32.0 }, "perSucceedingKm": { "regular": 6.0, "discounted": 5.0 } },
+      { "gasolineFrom": 80.0, "gasolineTo": 89.99, "baseFare": { "regular": 42.5, "discounted": 34.0 }, "perSucceedingKm": { "regular": 6.5, "discounted": 5.0 } },
+      { "gasolineFrom": 90.0, "gasolineTo": 99.99, "baseFare": { "regular": 45.0, "discounted": 36.0 }, "perSucceedingKm": { "regular": 7.0, "discounted": 5.5 } },
+      { "gasolineFrom": 100.0, "gasolineTo": 109.99, "baseFare": { "regular": 47.5, "discounted": 38.0 }, "perSucceedingKm": { "regular": 7.5, "discounted": 6.0 } },
+      { "gasolineFrom": 110.0, "gasolineTo": 119.99, "baseFare": { "regular": 50.0, "discounted": 40.0 }, "perSucceedingKm": { "regular": 8.0, "discounted": 6.5 } },
+      { "gasolineFrom": 120.0, "gasolineTo": 129.99, "baseFare": { "regular": 52.5, "discounted": 42.0 }, "perSucceedingKm": { "regular": 8.5, "discounted": 7.0 } },
+      { "gasolineFrom": 130.0, "gasolineTo": 139.99, "baseFare": { "regular": 55.0, "discounted": 44.0 }, "perSucceedingKm": { "regular": 9.0, "discounted": 7.0 } },
+      { "gasolineFrom": 140.0, "gasolineTo": 149.99, "baseFare": { "regular": 57.5, "discounted": 46.0 }, "perSucceedingKm": { "regular": 9.5, "discounted": 7.5 } },
+      { "gasolineFrom": 150.0, "gasolineTo": 159.99, "baseFare": { "regular": 60.0, "discounted": 48.0 }, "perSucceedingKm": { "regular": 10.0, "discounted": 8.0 } }
+    ],
+    "penalties": [
+      { "offense": 1, "fine": 500.0, "impoundDays": 1 },
+      { "offense": 2, "fine": 1000.0, "impoundDays": 7 },
+      { "offense": 3, "mtopRevoked": true }
+    ],
+    "penaltiesNote": "Sec. 8: the first two offenses are a fine OR impoundment of the unit, not both. The third cancels and revokes the operator's MTOP.",
     "barangayTable": "Not modelled. Sec. 4 also lists fixed fares from the City Supermarket TODA terminal to 89 barangays; above about 6.5 km they are lower than the per-km formula.",
     "complaintsHotline": "0998-500-2726",
     "sources": [
