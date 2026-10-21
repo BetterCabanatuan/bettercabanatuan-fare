@@ -765,6 +765,15 @@ export const en = {
       invalid: "Check this answer.",
     },
   },
+  whatsNew: {
+    title: "What's new in Pamasahe",
+    description: "What changed in each version of Pamasahe Cabanatuan, the jeep and tricycle fare calculator for Cabanatuan City.",
+    intro: "Every update to the fare map, newest first. Pamasahe is still in alpha, so fares and features keep improving.",
+    version: "Version {version}",
+    latest: "Latest",
+    released: "Released {date}",
+    footerLink: "What's new",
+  },
   contributors: {
     title: "Route contributors",
     description: "Riders who mapped Cabanatuan City's jeep routes, ranked by the routes an admin approved.",

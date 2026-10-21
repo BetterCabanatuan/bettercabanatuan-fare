@@ -5,6 +5,7 @@ import {
   jeepRoutes,
   jeepRules,
   landmarks,
+  releases,
   terminals,
   tricycleHotline,
   tricyclePenalties,
@@ -12,6 +13,7 @@ import {
   tricycleSource,
 } from "@/lib/data";
 import { haversineKm, isInsideRing } from "@/lib/geo";
+import { appVersion } from "@/lib/site";
 
 describe("data files", () => {
   it("load the tricycle matrix in centavos", () => {
@@ -34,6 +36,10 @@ describe("data files", () => {
       { offense: 3, mtopRevoked: true },
     ]);
     expect(tricycleHotline).toBe("0998-500-2726");
+  });
+
+  it("list the current version first on the What's new page", () => {
+    expect(releases[0].version).toBe(appVersion);
   });
 
   it("load the jeep rules and every route", () => {

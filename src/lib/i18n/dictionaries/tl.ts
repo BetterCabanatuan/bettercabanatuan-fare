@@ -773,6 +773,15 @@ export const tl: Dictionary = {
       invalid: "Pakitingnan ang sagot na ito.",
     },
   },
+  whatsNew: {
+    title: "Ano ang bago sa Pamasahe",
+    description: "Ang nagbago sa bawat bersyon ng Pamasahe Cabanatuan, ang calculator ng pamasahe sa jeep at tricycle sa Lungsod ng Cabanatuan.",
+    intro: "Lahat ng update sa fare map, pinakabago muna. Alpha pa ang Pamasahe, kaya patuloy na gumaganda ang mga pamasahe at feature.",
+    version: "Bersyon {version}",
+    latest: "Pinakabago",
+    released: "Inilabas noong {date}",
+    footerLink: "Ano ang bago",
+  },
   contributors: {
     title: "Mga nag-ambag ng ruta",
     description: "Mga pasaherong nagmapa ng mga ruta ng jeep sa Cabanatuan City, ayon sa dami ng rutang inaprubahan ng admin.",

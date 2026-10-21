@@ -8,6 +8,7 @@ import jeepRulesJson from "../../data/jeepney/fare-rules.json";
 import routesJson from "../../data/jeepney/routes.json";
 import terminalsJson from "../../data/jeepney/terminals.json";
 import tricycleJson from "../../data/tricycle/fare-matrix.json";
+import whatsNewJson from "../../data/whats-new.json";
 import {
   toCentavos,
   type Centavos,
@@ -17,6 +18,7 @@ import {
   type TricycleFareRules,
 } from "@/lib/fare";
 import { projectOntoLine, type LngLat } from "@/lib/geo";
+import type { Locale } from "@/lib/i18n/locales";
 import type { JeepRoute, JeepStop, JeepTerminal } from "@/lib/jeep-routes";
 import { collectUrls } from "@/lib/source-text";
 
@@ -105,6 +107,20 @@ const jeepRulesSchema = z.object({
     traditional: z.object({ baseFare: peso, perSucceedingKm: peso }),
     modern: z.object({ baseFare: peso, perSucceedingKm: peso }),
   }),
+});
+
+const whatsNewSchema = z.object({
+  releases: z
+    .array(
+      z.object({
+        version: z.string().regex(/^\d+\.\d+\.\d+(-[\w.]+)?$/),
+        date: z.iso.date(),
+        changes: z.array(z.object({ en: z.string().min(1), tl: z.string().min(1) })).min(1),
+      }),
+    )
+    .min(1)
+    // ISO dates sort as strings, so newest-first means each date is no later than the one before.
+    .refine((releases) => releases.every((release, i) => i === 0 || release.date <= releases[i - 1].date), "Releases must be newest first"),
 });
 
 const routesSchema = z.object({
@@ -279,3 +295,8 @@ export const landmarks: Landmark[] = landmarksSchema
   .landmarks.map(({ lat, lng, ...landmark }) => ({ ...landmark, position: [lng, lat] }));
 
 export const cityBoundary: LngLat[] = boundarySchema.parse(boundaryJson).geometry.coordinates[0];
+
+export type Release = { version: string; date: string; changes: Record<Locale, string>[] };
+
+/** Newest first, for the What's new page. The first entry is the version in package.json. */
+export const releases: Release[] = whatsNewSchema.parse(whatsNewJson).releases;

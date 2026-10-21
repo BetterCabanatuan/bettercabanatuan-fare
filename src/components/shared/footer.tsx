@@ -121,8 +121,15 @@ export async function Footer() {
         <div className="mt-10 flex flex-col gap-4 border-t border-background/20 pt-6 md:flex-row md:items-center md:justify-between">
           <p className="text-sm text-background/75">
             <span className="font-bold text-background">Pamasahe Cabanatuan</span> · {t.about}
-            <span className="mt-1 block font-mono text-xs text-highlight">
+            <span className="mt-1 flex flex-wrap items-center gap-x-2 font-mono text-xs text-highlight">
               {fill(t.version, { version: appVersion })}
+              <span aria-hidden>·</span>
+              <Link
+                href={path("/whats-new")}
+                className="inline-flex min-h-11 items-center underline underline-offset-4 hover:text-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-background"
+              >
+                {dict.whatsNew.footerLink}
+              </Link>
             </span>
           </p>
           <nav aria-label={t.legalHeading}>

@@ -1,0 +1,45 @@
+{
+  "_note": "Newest release first. The first entry's version must match package.json (a test checks this). Write each change the way a rider would say it, in English and Tagalog.",
+  "releases": [
+    {
+      "version": "1.1.0",
+      "date": "2026-10-21",
+      "changes": [
+        {
+          "en": "Pick today's gasoline price to see the tricycle fare at that price, from the fuel price table in Ordinance No. 050-2026 (14 April 2026).",
+          "tl": "Piliin ang presyo ng gasolina ngayon para makita ang pamasahe sa tricycle sa presyong iyon, ayon sa talaan ng presyo ng gasolina sa Ordinansa Blg. 050-2026 (14 Abril 2026)."
+        },
+        {
+          "en": "The map shows the tricycle fare on every road between your two points, and which gasoline price it uses.",
+          "tl": "Makikita sa mapa ang pamasahe sa tricycle sa bawat daan sa pagitan ng dalawang punto mo, at kung aling presyo ng gasolina ang gamit."
+        },
+        {
+          "en": "Overcharged? Call or text the city's tricycle hotline right from the fare page, and see the penalties for drivers and operators.",
+          "tl": "Sobra ang singil? Tumawag o mag-text sa tricycle hotline ng lungsod mula mismo sa pahina ng pamasahe, at tingnan ang mga parusa sa driver at operator."
+        },
+        {
+          "en": "A note explains why seniors, PWDs and students pay ₱4.00 for each extra km, not the ₱5.00 printed on the city's poster.",
+          "tl": "May paliwanag kung bakit ₱4.00 ang bawat dagdag na km ng senior, PWD at estudyante, hindi ang ₱5.00 na nakasulat sa poster ng lungsod."
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-19",
+      "changes": [
+        {
+          "en": "First alpha release: tricycle fares from Ordinance No. 050-2026 and jeep fares from the LTFRB on one fare map, with the shortest and fastest roads.",
+          "tl": "Unang alpha release: pamasahe sa tricycle mula sa Ordinansa Blg. 050-2026 at sa jeep mula sa LTFRB sa iisang fare map, kasama ang pinakamaikli at pinakamabilis na daan."
+        },
+        {
+          "en": "A TODA directory and a jeep route list, built from residents' suggestions and checked by an admin.",
+          "tl": "Listahan ng mga TODA at ruta ng jeep, mula sa mungkahi ng mga residente at sinusuri ng admin."
+        },
+        {
+          "en": "Send feedback on a wrong fare or route, and check every data source on the Sources page.",
+          "tl": "Magpadala ng feedback sa maling pamasahe o ruta, at tingnan ang lahat ng pinagkunan ng datos sa pahinang Mga pinagkunan."
+        }
+      ]
+    }
+  ]
+}
