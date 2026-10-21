@@ -6,17 +6,34 @@ import {
   jeepFare,
   tricycleBillableKm,
   tricycleFare,
+  withFuelBand,
+  type FuelBand,
   type JeepFareRules,
   type TricycleFareRules,
 } from "@/lib/fare";
 
+// Rows of the Ord. 050-2026 Sec. 5 table, as in data/tricycle/fare-matrix.json.
+const baseBand: FuelBand = {
+  gasolineFrom: 5000,
+  gasolineTo: 5999,
+  baseFare: { regular: 3500, discounted: 2800 },
+  perSucceedingKm: { regular: 500, discounted: 400 },
+};
+const band90: FuelBand = {
+  gasolineFrom: 9000,
+  gasolineTo: 9999,
+  baseFare: { regular: 4500, discounted: 3600 },
+  perSucceedingKm: { regular: 700, discounted: 550 },
+};
+
 // Mirrors data/tricycle/fare-matrix.json (Ordinance No. 050-2026, base fuel band).
 const tricycleRules: TricycleFareRules = {
   baseKm: 3,
-  baseFare: { regular: 3500, discounted: 2800 },
-  perSucceedingKm: { regular: 500, discounted: 400 },
+  baseFare: baseBand.baseFare,
+  perSucceedingKm: baseBand.perSucceedingKm,
   maxPassengers: 3,
   specialTripMultiplier: 2,
+  fuelBands: [baseBand, band90],
 };
 
 // Mirrors data/jeepney/fare-rules.json (effective 2026-09-28).
@@ -93,6 +110,28 @@ describe("tricycleFare (worked examples from docs/research/tricycle-fares-and-ta
     expect(tricycleFare(tricycleRules, 2.4, { regular: 1, discounted: 0 }, true).total).toBe(7000);
     expect(tricycleFare(tricycleRules, 2.4, { regular: 0, discounted: 1 }, true).total).toBe(5600);
     expect(tricycleFare(tricycleRules, 11.4, { regular: 1, discounted: 0 }, true).total).toBe(16000);
+  });
+});
+
+describe("withFuelBand (Ord. 050-2026 Sec. 5)", () => {
+  it("keeps the base rates for the base band", () => {
+    const rules = withFuelBand(tricycleRules, baseBand);
+    expect(tricycleFare(rules, 5, { regular: 1, discounted: 1 }, false).total).toBe(4500 + 3600);
+  });
+
+  it("uses the ₱90–99.99 band's base and per-km rates", () => {
+    const fare = tricycleFare(withFuelBand(tricycleRules, band90), 5, { regular: 1, discounted: 1 }, false);
+    // ₱45 + 2 × ₱7 = ₱59 regular; ₱36 + 2 × ₱5.50 = ₱47 discounted.
+    expect(fare).toMatchObject({ regularEach: 5900, discountedEach: 4700, total: 10600 });
+  });
+
+  it("doubles the band fare for a special trip", () => {
+    expect(tricycleFare(withFuelBand(tricycleRules, band90), 2, { regular: 1, discounted: 0 }, true).total).toBe(9000);
+  });
+
+  it("keeps the other rules", () => {
+    const rules = withFuelBand(tricycleRules, band90);
+    expect(rules).toMatchObject({ baseKm: 3, maxPassengers: 3, specialTripMultiplier: 2 });
   });
 });
 

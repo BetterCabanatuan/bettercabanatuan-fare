@@ -2,7 +2,7 @@
 
 import { ArrowDownUp, LocateFixed, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { JeepPanel } from "@/components/fare/jeep-panel";
 import { PlannerMap } from "@/components/fare/planner-map";
@@ -30,6 +30,8 @@ type Points = { a?: Place; b?: Place };
 type FarePlannerProps = {
   tricycleRules: TricycleFareRules;
   tricycleSource: FareSourceInfo;
+  /** Server-rendered hotline and penalties, shown in the tricycle panel. */
+  tricycleComplaints: ReactNode;
   jeepRules: JeepFareRules;
   jeepPreviousRates: JeepPreviousRates;
   jeepSource: FareSourceInfo;
@@ -85,6 +87,7 @@ function tripLines(trip: JeepTrip, { a, b }: Points): MapLine[] {
 export function FarePlanner({
   tricycleRules,
   tricycleSource,
+  tricycleComplaints,
   jeepRules,
   jeepPreviousRates,
   jeepSource,
@@ -387,6 +390,7 @@ export function FarePlanner({
             outsideCity={outsideCity}
             onSelectRoad={selectRoad}
             feedbackHref={feedbackHref}
+            complaints={tricycleComplaints}
           />
         ) : (
           <JeepPanel

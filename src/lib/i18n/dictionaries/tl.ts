@@ -475,7 +475,29 @@ export const tl: Dictionary = {
     specialTripBadge: "Special trip",
     specialTripApplied: "Special trip: {times} × ang pamasahe ng isang pasahero.",
     fuelPrice:
-      "Kapag tumaas ang presyo ng gasolina, maaaring magtakda ang lungsod ng pansamantalang mas mataas na singil. Tingnan ang fare sticker sa loob ng tricycle.",
+      "Kapag tumaas ang presyo ng gasolina, maaaring magtakda ang lungsod ng mas mataas na singil nang hanggang 60 araw. Piliin ang presyo ng gasolina sa itaas para makita ito, at tingnan ang fare sticker sa loob ng tricycle.",
+    fuelBand: {
+      label: "Presyo ng gasolina kada litro",
+      option: "{from} – {to}",
+      baseOption: "{from} – {to} (base na singil)",
+      hint: "Sumusunod lang ang pamasahe sa gasolina kapag nag-anunsyo ang lungsod ng mas mataas na singil. Gamitin ang base na singil maliban kung iba ang nasa sticker ng tricycle.",
+      warning:
+        "Ipinapatupad lang ang mas mataas na singil na ito kapag inanunsyo ng Tricycle Franchising and Regulatory Board ng lungsod, at nang hanggang 60 araw. Wala pa kaming nakitang anunsyo, kaya tingnan ang sticker sa tricycle.",
+      applied: "Singil para sa gasolinang {from} – {to} kada litro",
+    },
+    matrixBand: "Para sa gasolinang {from} – {to} kada litro",
+    posterNote:
+      "Sinasabi ng poster ng lungsod na +{poster} kada km ang senior, PWD at estudyante, pero {rate} ang nakalista sa sarili nitong talaan ng presyo ng gasolina, na may 20% na diskwento. {rate} ang gamit ng calculator na ito.",
+    complaints: {
+      title: "Sobra ang singil?",
+      body: "Tumawag o mag-text sa tricycle hotline ng lungsod. Ibigay ang plate number, petsa at oras, at kung saan ito nangyari.",
+      call: "Tumawag sa {number}",
+      text: "Mag-text sa {number}",
+      penaltiesTitle: "Mga parusa ayon sa ordinansa",
+      fineOrImpound: "Paglabag {n}: multang {fine} o pagkumpiska ng tricycle nang {days} araw",
+      mtopRevoked: "Paglabag {n}: kanselasyon at pagbawi ng permit ng operator (MTOP)",
+      penaltiesNote: "Sa unang dalawang paglabag, multa o pagkumpiska ang parusa, hindi pareho.",
+    },
     perRegular: "{amount} bawat regular na pasahero",
     perDiscounted: "{amount} bawat pasaherong may diskwento",
     unconfirmedBadge: "Hindi pa kumpirmado",

@@ -8,7 +8,14 @@ import jeepRulesJson from "../../data/jeepney/fare-rules.json";
 import routesJson from "../../data/jeepney/routes.json";
 import terminalsJson from "../../data/jeepney/terminals.json";
 import tricycleJson from "../../data/tricycle/fare-matrix.json";
-import { toCentavos, type Centavos, type JeepFareRules, type JeepType, type TricycleFareRules } from "@/lib/fare";
+import {
+  toCentavos,
+  type Centavos,
+  type FareClass,
+  type JeepFareRules,
+  type JeepType,
+  type TricycleFareRules,
+} from "@/lib/fare";
 import { projectOntoLine, type LngLat } from "@/lib/geo";
 import type { JeepRoute, JeepStop, JeepTerminal } from "@/lib/jeep-routes";
 import { collectUrls } from "@/lib/source-text";
@@ -31,19 +38,52 @@ const todoOr = <T extends z.ZodType>(schema: T) =>
     typeof value === "string" && value.startsWith("TODO") ? null : value,
   );
 
+const fareByClass = z.object({ regular: peso, discounted: peso });
+
+const fuelBandSchema = z.object({
+  gasolineFrom: peso,
+  gasolineTo: peso,
+  baseFare: fareByClass,
+  perSucceedingKm: fareByClass,
+});
+
+const penaltySchema = z.union([
+  z.object({ offense: z.number().int().positive(), fine: peso, impoundDays: z.number().int().positive() }),
+  z.object({ offense: z.number().int().positive(), mtopRevoked: z.literal(true) }),
+]);
+
+const sameRates = (a: z.infer<typeof fareByClass>, b: z.infer<typeof fareByClass>) =>
+  a.regular === b.regular && a.discounted === b.discounted;
+
 const tricycleSchema = z.object({
   confirmed: z.boolean(),
   lastChecked: z.iso.date(),
-  current: z.object({
-    label: z.string(),
-    ordinanceNo: todoOr(z.string()),
-    effectiveDate: todoOr(z.string()),
-    baseKm: z.number().positive(),
-    baseFare: z.object({ regular: peso, discounted: peso }),
-    perSucceedingKm: z.object({ regular: peso, discounted: peso }),
-    maxPassengers: z.number().int().positive(),
-    specialTripMultiplier: z.number().int().positive(),
-  }),
+  current: z
+    .object({
+      label: z.string(),
+      ordinanceNo: todoOr(z.string()),
+      effectiveDate: todoOr(z.string()),
+      baseKm: z.number().positive(),
+      baseFare: fareByClass,
+      perSucceedingKm: fareByClass,
+      maxPassengers: z.number().int().positive(),
+      specialTripMultiplier: z.number().int().positive(),
+      fuelBands: z
+        .array(fuelBandSchema)
+        .min(1)
+        .refine(
+          // Each band starts one centavo after the last one ends, so every price has one band.
+          (bands) => bands.every((band, i) => i === 0 || toCentavos(band.gasolineFrom) === toCentavos(bands[i - 1].gasolineTo) + 1),
+          "Fuel bands must be in order with no gaps or overlaps",
+        ),
+      complaintsHotline: z.string(),
+      penalties: z.array(penaltySchema).min(1),
+    })
+    .refine(
+      ({ baseFare, perSucceedingKm, fuelBands }) =>
+        sameRates(baseFare, fuelBands[0].baseFare) && sameRates(perSucceedingKm, fuelBands[0].perSucceedingKm),
+      "The first fuel band must hold the base rates",
+    ),
 });
 
 const jeepRuleSchema = z.object({
@@ -124,18 +164,36 @@ const boundarySchema = z.object({
 const tricycle = tricycleSchema.parse(tricycleJson);
 const jeep = jeepRulesSchema.parse(jeepRulesJson);
 
-const { baseFare, perSucceedingKm } = tricycle.current;
+const toFareByClass = ({ regular, discounted }: z.infer<typeof fareByClass>): Record<FareClass, Centavos> => ({
+  regular: toCentavos(regular),
+  discounted: toCentavos(discounted),
+});
 
 export const tricycleRules: TricycleFareRules = {
   baseKm: tricycle.current.baseKm,
-  baseFare: { regular: toCentavos(baseFare.regular), discounted: toCentavos(baseFare.discounted) },
-  perSucceedingKm: {
-    regular: toCentavos(perSucceedingKm.regular),
-    discounted: toCentavos(perSucceedingKm.discounted),
-  },
+  baseFare: toFareByClass(tricycle.current.baseFare),
+  perSucceedingKm: toFareByClass(tricycle.current.perSucceedingKm),
   maxPassengers: tricycle.current.maxPassengers,
   specialTripMultiplier: tricycle.current.specialTripMultiplier,
+  fuelBands: tricycle.current.fuelBands.map((band) => ({
+    gasolineFrom: toCentavos(band.gasolineFrom),
+    gasolineTo: toCentavos(band.gasolineTo),
+    baseFare: toFareByClass(band.baseFare),
+    perSucceedingKm: toFareByClass(band.perSucceedingKm),
+  })),
 };
+
+export type TricyclePenalty =
+  | { offense: number; fine: Centavos; impoundDays: number }
+  | { offense: number; mtopRevoked: true };
+
+/** Ord. 050-2026 Sec. 8: a fine or impoundment for the first offenses, then MTOP revocation. */
+export const tricyclePenalties: TricyclePenalty[] = tricycle.current.penalties.map((penalty) =>
+  "fine" in penalty ? { ...penalty, fine: toCentavos(penalty.fine) } : penalty,
+);
+
+/** The city's call-or-text line for tricycle complaints. */
+export const tricycleHotline: string = tricycle.current.complaintsHotline;
 
 export const tricycleSource: FareSourceInfo = {
   confirmed: tricycle.confirmed,

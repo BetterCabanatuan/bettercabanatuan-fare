@@ -3,6 +3,7 @@
 import { useId, useState, type ReactNode } from "react";
 import { Maximize2, Minus, Plus, TriangleAlert } from "lucide-react";
 
+import { bandRange, FuelBandSelect } from "@/components/fare/fuel-band-select";
 import { RoadOptions } from "@/components/fare/road-options";
 import { TricycleFareHistory } from "@/components/fare/tricycle-fare-history";
 import { TricycleFareMatrix } from "@/components/fare/tricycle-fare-matrix";
@@ -28,6 +29,7 @@ import {
   displayKm,
   formatPeso,
   tricycleFare,
+  withFuelBand,
   type Passengers,
   type TricycleFare,
   type TricycleFareRules,
@@ -48,6 +50,7 @@ type TricyclePanelProps = {
   outsideCity: boolean;
   onSelectRoad: (index: number) => void;
   feedbackHref: string;
+  complaints: ReactNode;
 };
 
 type TricycleText = Dictionary["tricycle"];
@@ -92,12 +95,20 @@ export function TricyclePanel({
   outsideCity,
   onSelectRoad,
   feedbackHref,
+  complaints,
 }: TricyclePanelProps) {
   const { dict } = useDictionary();
   const t = dict.tricycle;
   const [passengers, setPassengers] = useState<Passengers>({ regular: 1, discounted: 0 });
   const [specialTripRequested, setSpecialTripRequested] = useState(false);
+  // Defaults to the base band: a higher band is only in force once the city activates it.
+  const [fuelBandIndex, setFuelBandIndex] = useState(0);
   const resultTitleId = useId();
+
+  const fuelBand = rules.fuelBands[fuelBandIndex];
+  const bandRules = withFuelBand(rules, fuelBand);
+  const raisedRate = fuelBandIndex > 0;
+  const bandApplied = raisedRate ? fill(t.fuelBand.applied, bandRange(fuelBand)) : null;
 
   const totalPassengers = passengers.regular + passengers.discounted;
   const atMax = totalPassengers >= rules.maxPassengers;
@@ -112,7 +123,7 @@ export function TricyclePanel({
   const idle = !roadRoute && !routeError && !measuring;
   const distanceKm = roadRoute?.distanceKm ?? null;
 
-  const fare = distanceKm !== null ? tricycleFare(rules, distanceKm, passengers, specialTrip) : null;
+  const fare = distanceKm !== null ? tricycleFare(bandRules, distanceKm, passengers, specialTrip) : null;
   const resultLabel = outsideCity ? t.estimateOnly : t.resultTitle;
   const distanceText = distanceKm !== null && fare ? distanceLine(distanceKm, fare.billableKm, t) : "";
   const basis = basisLine(source, t);
@@ -162,6 +173,10 @@ export function TricyclePanel({
               : t.specialTripSoloOnly}
           </p>
         </div>
+        <div className="mt-4 flex flex-col gap-3 border-t pt-4">
+          <FuelBandSelect bands={rules.fuelBands} value={fuelBandIndex} onChange={setFuelBandIndex} />
+          {raisedRate && <Notice>{t.fuelBand.warning}</Notice>}
+        </div>
       </div>
 
       {!source.confirmed && (
@@ -210,7 +225,7 @@ export function TricyclePanel({
           roads={route.routes}
           selected={route.selected}
           onSelect={onSelectRoad}
-          fareFor={(km) => tricycleFare(rules, km, passengers, specialTrip).total}
+          fareFor={(km) => tricycleFare(bandRules, km, passengers, specialTrip).total}
         />
       )}
 
@@ -247,6 +262,7 @@ export function TricyclePanel({
 
           <div className="flex flex-col gap-0.5">
             <p className="text-sm font-medium tabular-nums">{distanceText}</p>
+            {bandApplied && <p className="text-sm font-semibold text-highlight">{bandApplied}</p>}
             <p className="text-sm text-background/70">{t.routeNote}</p>
           </div>
 
@@ -271,9 +287,9 @@ export function TricyclePanel({
               <p className="text-sm text-background/70 tabular-nums">
                 {fill(t.extraKm, {
                   extra: fare.extraKm,
-                  base: rules.baseKm,
-                  regular: formatPeso(rules.perSucceedingKm.regular),
-                  discounted: formatPeso(rules.perSucceedingKm.discounted),
+                  base: bandRules.baseKm,
+                  regular: formatPeso(bandRules.perSucceedingKm.regular),
+                  discounted: formatPeso(bandRules.perSucceedingKm.discounted),
                 })}
               </p>
             )}
@@ -311,6 +327,7 @@ export function TricyclePanel({
                 {passengerSummary(passengers, t)}
                 {fare.specialTrip ? ` · ${t.specialTripBadge}` : ""}
               </p>
+              {bandApplied && <p className="text-xl font-semibold text-highlight">{bandApplied}</p>}
               <DialogDescription className="max-w-xl text-base text-background/80">
                 {basis}
                 {source.confirmed ? "" : ` ${t.notConfirmed}`}
@@ -328,8 +345,9 @@ export function TricyclePanel({
       )}
 
       <FareFeedbackPrompt href={feedbackHref} />
+      {complaints}
 
-      <TricycleFareMatrix rules={rules} confirmed={source.confirmed} basis={basis} />
+      <TricycleFareMatrix rules={bandRules} fuelBand={fuelBand} confirmed={source.confirmed} basis={basis} />
       <TricycleFareHistory />
     </div>
   );

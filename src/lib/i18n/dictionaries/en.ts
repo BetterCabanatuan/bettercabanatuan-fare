@@ -471,7 +471,29 @@ export const en = {
     specialTripBadge: "Special trip",
     specialTripApplied: "Special trip: {times} × the passenger fare.",
     fuelPrice:
-      "When fuel prices rise, the city can set a temporary higher rate. Check the fare sticker in the tricycle.",
+      "When gasoline prices rise, the city can set a higher rate for up to 60 days. Pick the gasoline price above to see it, and check the fare sticker in the tricycle.",
+    fuelBand: {
+      label: "Gasoline price per litre",
+      option: "{from} – {to}",
+      baseOption: "{from} – {to} (base rate)",
+      hint: "Fares follow gasoline only after the city announces a higher rate. Keep the base rate unless the sticker in the tricycle shows otherwise.",
+      warning:
+        "This higher rate applies only once the city's Tricycle Franchising and Regulatory Board announces it, and for up to 60 days. We haven't found an announcement yet, so check the sticker in the tricycle.",
+      applied: "Rate for gasoline at {from} – {to} per litre",
+    },
+    matrixBand: "For gasoline at {from} – {to} per litre",
+    posterNote:
+      "The city's fare poster says senior, PWD and student riders pay +{poster} per km, but its own gasoline price table lists {rate}, which is 20% off. This calculator uses {rate}.",
+    complaints: {
+      title: "Overcharged?",
+      body: "Call or text the city's tricycle hotline. Give the plate number, the date and time, and where it happened.",
+      call: "Call {number}",
+      text: "Text {number}",
+      penaltiesTitle: "Penalties under the ordinance",
+      fineOrImpound: "Offense {n}: {fine} fine or {days}-day impoundment of the tricycle",
+      mtopRevoked: "Offense {n}: the operator's permit (MTOP) is cancelled and revoked",
+      penaltiesNote: "For the first two offenses it is a fine or impoundment, not both.",
+    },
     perRegular: "{amount} per regular passenger",
     perDiscounted: "{amount} per discounted passenger",
     unconfirmedBadge: "Unconfirmed",
