@@ -98,6 +98,9 @@ export const withFuelBand = (rules: TricycleFareRules, band: FuelBand): Tricycle
   perSucceedingKm: band.perSucceedingKm,
 });
 
+/** A special trip is one passenger hiring the whole tricycle (Ord. 050-2026 Sec. 2d). */
+export const canRequestSpecialTrip = ({ regular, discounted }: Passengers): boolean => regular + discounted === 1;
+
 export function tricycleFare(
   rules: TricycleFareRules,
   distanceKm: number,

@@ -1,13 +1,13 @@
 "use client";
 
-import { useId, useState, type ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { Maximize2, Minus, Plus, TriangleAlert } from "lucide-react";
 
 import { bandRange, FuelBandSelect } from "@/components/fare/fuel-band-select";
 import { RoadOptions } from "@/components/fare/road-options";
 import { TricycleFareHistory } from "@/components/fare/tricycle-fare-history";
 import { TricycleFareMatrix } from "@/components/fare/tricycle-fare-matrix";
-import type { RouteStatus } from "@/components/fare/types";
+import type { RouteStatus, TricycleOptions } from "@/components/fare/types";
 import { FareFeedbackPrompt } from "@/components/feedback/fare-feedback-prompt";
 import { useDictionary } from "@/components/shared/dictionary-provider";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -26,6 +26,7 @@ import { Switch } from "@/components/ui/switch";
 import type { FareSourceInfo } from "@/lib/data";
 import { formatDate } from "@/lib/format-date";
 import {
+  canRequestSpecialTrip,
   displayKm,
   formatPeso,
   tricycleFare,
@@ -51,6 +52,8 @@ type TricyclePanelProps = {
   onSelectRoad: (index: number) => void;
   feedbackHref: string;
   complaints: ReactNode;
+  options: TricycleOptions;
+  onOptionsChange: (options: TricycleOptions) => void;
 };
 
 type TricycleText = Dictionary["tricycle"];
@@ -96,13 +99,13 @@ export function TricyclePanel({
   onSelectRoad,
   feedbackHref,
   complaints,
+  options,
+  onOptionsChange,
 }: TricyclePanelProps) {
   const { dict } = useDictionary();
   const t = dict.tricycle;
-  const [passengers, setPassengers] = useState<Passengers>({ regular: 1, discounted: 0 });
-  const [specialTripRequested, setSpecialTripRequested] = useState(false);
-  // Defaults to the base band: a higher band is only in force once the city activates it.
-  const [fuelBandIndex, setFuelBandIndex] = useState(0);
+  const { passengers, specialTripRequested, fuelBandIndex } = options;
+  const setPassengers = (next: Passengers) => onOptionsChange({ ...options, passengers: next });
   const resultTitleId = useId();
 
   const fuelBand = rules.fuelBands[fuelBandIndex];
@@ -113,9 +116,8 @@ export function TricyclePanel({
   const totalPassengers = passengers.regular + passengers.discounted;
   const atMax = totalPassengers >= rules.maxPassengers;
   const atMin = totalPassengers <= 1;
-  // A special trip is one passenger hiring the whole tricycle (Ord. 050-2026 Sec. 2d).
-  const canRequestSpecialTrip = totalPassengers === 1;
-  const specialTrip = specialTripRequested && canRequestSpecialTrip;
+  const soloRider = canRequestSpecialTrip(passengers);
+  const specialTrip = specialTripRequested && soloRider;
 
   const roadRoute = hasBothPoints && route.state === "ready" ? route.routes[route.selected] : null;
   const routeError = hasBothPoints && route.state === "error" ? route.reason : null;
@@ -163,18 +165,22 @@ export function TricyclePanel({
             {t.specialTripToggle}
             <Switch
               checked={specialTrip}
-              disabled={!canRequestSpecialTrip}
-              onCheckedChange={setSpecialTripRequested}
+              disabled={!soloRider}
+              onCheckedChange={(checked) => onOptionsChange({ ...options, specialTripRequested: checked })}
             />
           </label>
           <p className="text-sm text-muted-foreground">
-            {canRequestSpecialTrip
+            {soloRider
               ? fill(t.specialTripHint, { times: rules.specialTripMultiplier })
               : t.specialTripSoloOnly}
           </p>
         </div>
         <div className="mt-4 flex flex-col gap-3 border-t pt-4">
-          <FuelBandSelect bands={rules.fuelBands} value={fuelBandIndex} onChange={setFuelBandIndex} />
+          <FuelBandSelect
+            bands={rules.fuelBands}
+            value={fuelBandIndex}
+            onChange={(index) => onOptionsChange({ ...options, fuelBandIndex: index })}
+          />
           {raisedRate && <Notice>{t.fuelBand.warning}</Notice>}
         </div>
       </div>

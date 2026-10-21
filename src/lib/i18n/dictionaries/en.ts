@@ -399,6 +399,7 @@ export const en = {
     layerTerminals: "Terminals and stops",
     layerRouteEnds: "Route ends",
     layersNote: "Your A and B points and the route you picked always stay on the map.",
+    mapFuelBand: "Fares for gasoline at {from} – {to}/L",
   },
   search: {
     placeholder: "Search a place or landmark",
@@ -425,6 +426,8 @@ export const en = {
       "The fare goes by distance, so the shortest road costs least. Times are for a car that doesn't stop; tricycles and jeeps take longer.",
     mapLabel: "{minutes} min · {km} km",
     pickRoad: "Use this road: {summary}",
+    pickRoadFare: "Use this road: {summary}, fare {fare}",
+    roadFare: "Fare {fare}: {summary}",
   },
   tricycle: {
     passengers: "Passengers",

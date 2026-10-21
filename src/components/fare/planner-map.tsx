@@ -19,7 +19,7 @@ import {
   useMap,
   type MapRef,
 } from "@/components/ui/map";
-import { displayKm } from "@/lib/fare";
+import { displayKm, formatPeso, type Centavos } from "@/lib/fare";
 import type { LngLat } from "@/lib/geo";
 import { fill } from "@/lib/i18n/locales";
 import type { JeepRoute, JeepTerminal } from "@/lib/jeep-routes";
@@ -51,6 +51,10 @@ type PlannerMapProps = {
   /** Roads between A and B to choose from, when there is more than one. */
   roadChoices: { roads: RoadRoute[]; selected: number } | null;
   onSelectRoad: (index: number) => void;
+  /** The fare for a road of this length; when given, each road's label leads with it. */
+  roadFare?: (distanceKm: number) => Centavos;
+  /** The gasoline band the road fares use; `raised` when it is above the base rate. */
+  fuelBand?: { label: string; raised: boolean };
   boundary: LngLat[];
   /** Jeep routes whose terminals, far ends and (when highlighted) stops get markers in jeep mode. */
   routes: JeepRoute[];
@@ -75,6 +79,8 @@ export function PlannerMap({
   lines,
   roadChoices,
   onSelectRoad,
+  roadFare,
+  fuelBand,
   boundary,
   routes,
   terminals,
@@ -120,7 +126,12 @@ export function PlannerMap({
       ))}
 
       {roadChoices && (
-        <RoadChoices roads={roadChoices.roads} selected={roadChoices.selected} onSelect={onSelectRoad} />
+        <RoadChoices
+          roads={roadChoices.roads}
+          selected={roadChoices.selected}
+          onSelect={onSelectRoad}
+          fareFor={roadFare}
+        />
       )}
 
       {mode === "jeep" && (
@@ -175,6 +186,18 @@ export function PlannerMap({
       <FitToTrip a={a} b={b} lines={lines} roads={roadChoices?.roads ?? []} />
       {loading && <LoadingBar />}
       {nextPin && <MapHint pin={nextPin} mode={mode} />}
+      {fuelBand && (
+        <p
+          className={cn(
+            "pointer-events-none absolute top-2 left-2 z-10 rounded-md px-2 py-1 text-xs font-semibold tabular-nums shadow-md",
+            fuelBand.raised
+              ? "border border-warning-border bg-warning text-warning-foreground"
+              : "bg-white text-[#15181C] ring-1 ring-black/15",
+          )}
+        >
+          {fuelBand.label}
+        </p>
+      )}
     </Map>
   );
 }
@@ -292,20 +315,25 @@ function PinIcon({ pin }: { pin: PointKey }) {
 
 /**
  * The roads the rider did not pick, drawn grey under the picked one, and a label on every
- * road with its time and distance. Clicking a grey road or any label picks that road.
+ * road with its fare (when known), time and distance. Clicking a grey road or any label
+ * picks that road.
  */
 function RoadChoices({
   roads,
   selected,
   onSelect,
+  fareFor,
 }: {
   roads: RoadRoute[];
   selected: number;
   onSelect: (index: number) => void;
+  fareFor?: (distanceKm: number) => Centavos;
 }) {
   const { dict } = useDictionary();
   const t = dict.roads;
   const lines = roads.map((road) => road.line);
+  // A lone road has nothing to pick between, so its label is plain text.
+  const pickable = roads.length > 1;
 
   return (
     <>
@@ -320,6 +348,22 @@ function RoadChoices({
           lines.filter((_, other) => other !== index),
         );
         const isSelected = index === selected;
+        const summary = roadSummary(road, t);
+        const fare = fareFor ? formatPeso(fareFor(road.distanceKm)) : null;
+        const tag = (
+          <span
+            className={cn(
+              "flex flex-col items-center rounded-md px-2 py-1 text-xs font-semibold whitespace-nowrap tabular-nums shadow-md",
+              isSelected ? "bg-[#1B3F8B] text-white" : "bg-white text-[#15181C] ring-1 ring-black/15",
+            )}
+          >
+            {fare && <span className="text-sm font-bold">{fare}</span>}
+            {fill(t.mapLabel, {
+              minutes: Math.max(1, Math.round(road.durationMin)),
+              km: displayKm(road.distanceKm).toFixed(1),
+            })}
+          </span>
+        );
         return (
           <MapMarker
             key={`${road.distanceKm}:${road.durationMin}`}
@@ -329,25 +373,21 @@ function RoadChoices({
             className={isSelected ? "z-[5]" : undefined}
           >
             <MarkerContent>
-              <button
-                type="button"
-                aria-pressed={isSelected}
-                aria-label={fill(t.pickRoad, { summary: roadSummary(road, t) })}
-                onClick={() => onSelect(index)}
-                className="flex min-h-11 items-center p-1.5 outline-none focus-visible:[&>span]:ring-3 focus-visible:[&>span]:ring-ring/50"
-              >
-                <span
-                  className={cn(
-                    "rounded-md px-2 py-1 text-xs font-semibold whitespace-nowrap tabular-nums shadow-md",
-                    isSelected ? "bg-[#1B3F8B] text-white" : "bg-white text-[#15181C] ring-1 ring-black/15",
-                  )}
+              {pickable ? (
+                <button
+                  type="button"
+                  aria-pressed={isSelected}
+                  aria-label={fare ? fill(t.pickRoadFare, { summary, fare }) : fill(t.pickRoad, { summary })}
+                  onClick={() => onSelect(index)}
+                  className="flex min-h-11 items-center p-1.5 outline-none focus-visible:[&>span]:ring-3 focus-visible:[&>span]:ring-ring/50"
                 >
-                  {fill(t.mapLabel, {
-                    minutes: Math.max(1, Math.round(road.durationMin)),
-                    km: displayKm(road.distanceKm).toFixed(1),
-                  })}
+                  {tag}
+                </button>
+              ) : (
+                <span role="img" aria-label={fare ? fill(t.roadFare, { fare, summary }) : summary} className="flex p-1.5">
+                  {tag}
                 </span>
-              </button>
+              )}
             </MarkerContent>
           </MapMarker>
         );

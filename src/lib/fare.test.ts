@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   billableKm,
+  canRequestSpecialTrip,
   formatPeso,
   jeepFare,
   tricycleBillableKm,
@@ -110,6 +111,15 @@ describe("tricycleFare (worked examples from docs/research/tricycle-fares-and-ta
     expect(tricycleFare(tricycleRules, 2.4, { regular: 1, discounted: 0 }, true).total).toBe(7000);
     expect(tricycleFare(tricycleRules, 2.4, { regular: 0, discounted: 1 }, true).total).toBe(5600);
     expect(tricycleFare(tricycleRules, 11.4, { regular: 1, discounted: 0 }, true).total).toBe(16000);
+  });
+});
+
+describe("canRequestSpecialTrip (Ord. 050-2026 Sec. 2d)", () => {
+  it("allows a special trip only for one passenger", () => {
+    expect(canRequestSpecialTrip({ regular: 1, discounted: 0 })).toBe(true);
+    expect(canRequestSpecialTrip({ regular: 0, discounted: 1 })).toBe(true);
+    expect(canRequestSpecialTrip({ regular: 1, discounted: 1 })).toBe(false);
+    expect(canRequestSpecialTrip({ regular: 3, discounted: 0 })).toBe(false);
   });
 });
 

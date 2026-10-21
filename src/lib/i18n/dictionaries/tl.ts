@@ -401,6 +401,7 @@ export const tl: Dictionary = {
     layerTerminals: "Mga terminal at sakayan",
     layerRouteEnds: "Mga dulo ng ruta",
     layersNote: "Laging nasa mapa ang A at B mo at ang rutang pinili mo.",
+    mapFuelBand: "Pamasahe sa gasolinang {from} – {to}/L",
   },
   search: {
     placeholder: "Maghanap ng lugar o palatandaan",
@@ -427,6 +428,8 @@ export const tl: Dictionary = {
       "Ayon sa layo ang pamasahe, kaya pinakamura ang pinakamaikling daan. Pang-kotseng walang hinto ang oras; mas matagal ang tricycle at jeep.",
     mapLabel: "{minutes} min · {km} km",
     pickRoad: "Gamitin ang daang ito: {summary}",
+    pickRoadFare: "Gamitin ang daang ito: {summary}, pamasahe {fare}",
+    roadFare: "Pamasahe {fare}: {summary}",
   },
   tricycle: {
     passengers: "Mga pasahero",

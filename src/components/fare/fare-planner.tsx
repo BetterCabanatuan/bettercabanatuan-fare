@@ -4,6 +4,7 @@ import { ArrowDownUp, LocateFixed, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
+import { bandRange } from "@/components/fare/fuel-band-select";
 import { JeepPanel } from "@/components/fare/jeep-panel";
 import { PlannerMap } from "@/components/fare/planner-map";
 import { PointSearch } from "@/components/fare/point-search";
@@ -12,16 +13,22 @@ import { TricyclePanel } from "@/components/fare/tricycle-panel";
 import { useMyLocation } from "@/components/fare/use-my-location";
 import { useDictionary } from "@/components/shared/dictionary-provider";
 import { JeepIcon, TricycleIcon } from "@/components/shared/vehicle-icons";
-import type { MapLine, Place, PointKey, RouteStatus } from "@/components/fare/types";
+import type { MapLine, Place, PointKey, RouteStatus, TricycleOptions } from "@/components/fare/types";
 import { Button } from "@/components/ui/button";
 import type { MapRef } from "@/components/ui/map";
 import type { FareSourceInfo, JeepPreviousRates, Landmark } from "@/lib/data";
-import type { JeepFareRules, TricycleFareRules } from "@/lib/fare";
+import {
+  canRequestSpecialTrip,
+  tricycleFare,
+  withFuelBand,
+  type JeepFareRules,
+  type TricycleFareRules,
+} from "@/lib/fare";
 import { isInsideRing, sliceLine, type LngLat } from "@/lib/geo";
 import { hasLine, type JeepRoute, type JeepTerminal, type JeepTrip } from "@/lib/jeep-routes";
 import { fetchRoadRoutes, reversePlace } from "@/lib/map-services";
 import { feedbackPath } from "@/lib/feedback/submission";
-import { localizePath } from "@/lib/i18n/locales";
+import { fill, localizePath } from "@/lib/i18n/locales";
 import { cn } from "@/lib/utils";
 
 type Mode = "tricycle" | "jeep";
@@ -113,6 +120,12 @@ export function FarePlanner({
   const [roadChoice, setRoadChoice] = useState<{ key: string; index: number }>({ key: "", index: 0 });
   const [selectedTrip, setSelectedTrip] = useState<{ key: string; trip: JeepTrip } | null>(null);
   const [highlightedRouteId, setHighlightedRouteId] = useState<string | null>(null);
+  // Starts on the base fuel band: a higher band is only in force once the city activates it.
+  const [tricycleOptions, setTricycleOptions] = useState<TricycleOptions>({
+    passengers: { regular: 1, discounted: 0 },
+    specialTripRequested: false,
+    fuelBandIndex: 0,
+  });
   const mapRef = useRef<MapRef>(null);
   const mapBoxRef = useRef<HTMLDivElement>(null);
 
@@ -161,8 +174,8 @@ export function FarePlanner({
 
   const roadLines: MapLine[] = roads.length > 0 ? [{ id: "road", line: roads[selectedRoad].line, kind: "road" }] : [];
   // Other roads show as choices wherever the picked road shows: always for tricycles, and
-  // for jeeps until a trip is picked.
-  const showRoadChoices = roads.length > 1 && (mode === "tricycle" || !trip);
+  // for jeeps until a trip is picked. A lone tricycle road still gets its fare label.
+  const showRoadChoices = mode === "tricycle" ? roads.length > 0 : roads.length > 1 && !trip;
   const drawableRoutes = jeepRoutes.filter(hasLine);
   const highlightedRoute = drawableRoutes.find((preset) => preset.id === highlightedRouteId);
   const pickedLines: MapLine[] = highlightedRoute
@@ -178,6 +191,19 @@ export function FarePlanner({
             .map((preset): MapLine => ({ id: preset.id, line: preset.directions[0].line, kind: "route" })),
           ...(trip ? tripLines(trip, points) : [...pickedLines, ...roadLines]),
         ];
+
+  // The map labels each road with the same fare the tricycle panel shows for it.
+  const fuelBand = tricycleRules.fuelBands[tricycleOptions.fuelBandIndex];
+  const bandRules = withFuelBand(tricycleRules, fuelBand);
+  const specialTrip = tricycleOptions.specialTripRequested && canRequestSpecialTrip(tricycleOptions.passengers);
+  const roadFare =
+    mode === "tricycle"
+      ? (distanceKm: number) => tricycleFare(bandRules, distanceKm, tricycleOptions.passengers, specialTrip).total
+      : undefined;
+  const mapFuelBand =
+    mode === "tricycle" && roads.length > 0
+      ? { label: fill(dict.planner.mapFuelBand, bandRange(fuelBand)), raised: tricycleOptions.fuelBandIndex > 0 }
+      : undefined;
 
   const outsideCity = [points.a, points.b].some(
     (place) => place !== undefined && !isInsideRing(place.position, boundary),
@@ -391,6 +417,8 @@ export function FarePlanner({
             onSelectRoad={selectRoad}
             feedbackHref={feedbackHref}
             complaints={tricycleComplaints}
+            options={tricycleOptions}
+            onOptionsChange={setTricycleOptions}
           />
         ) : (
           <JeepPanel
@@ -427,6 +455,8 @@ export function FarePlanner({
           b={points.b}
           lines={lines}
           roadChoices={showRoadChoices ? { roads, selected: selectedRoad } : null}
+          roadFare={roadFare}
+          fuelBand={mapFuelBand}
           onSelectRoad={selectRoad}
           boundary={boundary}
           routes={jeepRoutes}
