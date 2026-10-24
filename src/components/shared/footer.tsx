@@ -1,6 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
 
-import { LogoMark } from "@/components/shared/logo-mark";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { fill, localizePath } from "@/lib/i18n/locales";
 import { appVersion, betterCabanatuanUrl } from "@/lib/site";
@@ -85,16 +85,15 @@ export async function Footer() {
               href={path("/")}
               className="flex min-h-11 items-center gap-3 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-background"
             >
-              {/* The logo's blue city outline disappears on the dark band, so it sits on a white tile. */}
-              <span className="rounded-lg bg-background p-1.5">
-                <LogoMark className="h-8 w-auto" />
-              </span>
-              <span className="flex flex-col uppercase leading-none">
-                <span className="text-base font-extrabold tracking-tight">Pamasahe</span>
-                <span className="mt-1 text-[10px] font-semibold tracking-[0.18em] text-background/70">
-                  {dict.nav.city}
-                </span>
-              </span>
+              {/* The dark-background lockup: white wordmark and peso on the near-black band. */}
+              <Image
+                src="/logo-lockup-dark.svg"
+                alt={`Pamasahe ${dict.nav.city}`}
+                width={1776}
+                height={476}
+                unoptimized
+                className="h-14 w-auto"
+              />
             </Link>
             <p className="max-w-sm text-sm text-pretty text-background/75">{t.tagline}</p>
             <p className="max-w-sm rounded-md border border-highlight/40 px-3 py-2 text-xs text-pretty text-highlight">
