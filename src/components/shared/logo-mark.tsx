@@ -1,11 +1,12 @@
 import Image from "next/image";
 
 /**
- * The fare app's mark, a sibling of the BetterCabanatuan logo: the city silhouette with the
- * Philippine sun rising behind it, where the sun is a peso coin. Decorative next to the
- * wordmark, so it has empty alt text. The favicon (app/icon.svg) is the peso sun alone,
- * because the city outline turns to mush at 16 px.
+ * The Pamasahe mark: the city silhouette with the Philippine sun rising behind it and the
+ * peso inside the sun. It is the lockup (public/logo-lockup.svg) without the wordmark, so
+ * the navbar can set "Pamasahe" and the city name as text that follows the language.
+ * Decorative next to that text, so it has empty alt text. The peso is black on a see-through
+ * disc, so the mark needs a light background.
  */
 export function LogoMark({ className }: { className?: string }) {
-  return <Image src="/logo.svg" alt="" width={128} height={100} priority unoptimized className={className} />;
+  return <Image src="/logo.svg" alt="" width={611} height={476} priority unoptimized className={className} />;
 }
