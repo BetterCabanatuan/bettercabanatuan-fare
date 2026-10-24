@@ -43,7 +43,7 @@ export default async function MaintenancePage() {
       <header className="border-b bg-background">
         <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-2">
           <div className="mr-auto flex min-h-11 items-center gap-2.5">
-            {/* The city outline is dark blue, so dark mode sets the mark on a light tile. */}
+            {/* The peso in the mark is black, so dark mode sets the mark on a light tile. */}
             <LogoMark className="h-[38px] w-auto shrink-0 dark:box-content dark:rounded-md dark:bg-white dark:p-1" />
             <span className="flex flex-col uppercase leading-none">
               <span className="text-base font-extrabold tracking-tight">Pamasahe</span>
